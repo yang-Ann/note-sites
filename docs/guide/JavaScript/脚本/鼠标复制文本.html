@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+
+<body>
+  <span>测试的文本</span>
+  <button onClick="handle(event)">绑定</button>
+  <script>
+    handle();
+    function handle() {
+      javascript: (
+        function () {
+          const isMouseupEventKey = Symbol.for("_An_isMouseupEvent");
+          const spanElKey = Symbol.for("_An_spanEl");
+          const mouseupEventFnKey = Symbol.for("mouseupEventFn");
+          const timerKey = Symbol.for("timer");
+
+          let opacity = 1, /* 透明度 */
+            value = "", /* 当前选中的文本 */
+            prevValue = " ", /* 上次复制的文本 */
+            frequency = 0.011; /* 文本每次的减少的透明度 */
+
+          /* 最大文本长度 */
+          const maxTextLen = 10;
+          /* 文本样式 */
+          const cssText = `color: white; 
+                font-size: 16px;
+                font-weight: bold;
+                background: rgba(0, 0, 0, 0.3);
+                border-radius: 4px;
+                padding: 4px 8px;
+                letter-spacing: 1px;
+                opacity: 1;
+                position: fixed;
+                z-index: 9999;
+                right: 0;
+                bottom: 5%;
+                transform: translate(-50%, -50%);`;
+
+          /* 插入span并设置样式 */
+          if (!window[spanElKey]) {
+            window[spanElKey] = document.createElement("span");
+            window[spanElKey].style.cssText = cssText;
+            document.body.append(window[spanElKey]);
+          }
+
+          /* 已存在则解绑事件 */
+          if (window[isMouseupEventKey] && window[spanElKey] && window[mouseupEventFnKey]) {
+            window.removeEventListener("mouseup", window[mouseupEventFnKey]);
+            window[spanElKey].innerText = "事件已解除绑定";
+            timeOpacity();
+            /* 重置状态 */
+            window[isMouseupEventKey] = false;
+            window[mouseupEventFnKey] = null;
+            setTimeout(() => {
+              window[spanElKey].parentNode.removeChild(window[spanElKey]);
+              window[spanElKey] = null;
+            }, 1500);
+            return;
+          }
+
+          window.addEventListener("mouseup", mouseupEventFn);
+          /* 保存事件回调引用 */
+          window[mouseupEventFnKey] = mouseupEventFn;
+          /* 添加标识 */
+          window[isMouseupEventKey] = true;
+
+          window[spanElKey].innerText = "事件绑定成功";
+          timeOpacity();
+
+          async function mouseupEventFn(e) {
+
+            /* 获取选中的文本 */
+            value = window.getSelection().toString().trim();
+            if (value === "") return;
+
+            /* 文本相同 */
+            /* 
+            const clipText = await navigator.clipboard.readText();
+            if (clipText === value || prevValue === value) {
+              logColorBlockText("文本相同", `clipText: ${clipText}, prevValue: ${prevValue}`, "warning");
+              return;
+            }; 
+            */
+            if (prevValue === value) {
+              logColorBlockText("文本相同", `prevValue: ${prevValue}`, "warning");
+              return;
+            };
+
+            if (window[timerKey] !== null) {
+              clearVariate();
+            }
+
+            /* 文本截取 */
+            window[spanElKey].innerText = (value.length > maxTextLen)
+              ? value.slice(0, maxTextLen) + "..."
+              : value;
+
+            if (navigator.clipboard) {
+              try {
+                await navigator.clipboard.writeText(value);
+                prevValue = value;
+              } catch (error) {
+                /* 复制失败 */
+                window[spanElKey].innerText = "文本复制失败";
+                logColorBlockText("文本复制失败: ", value, "danger");
+                console.error(error);
+              } finally {
+                timeOpacity();
+              }
+              return;
+            }
+
+
+            if (document.execCommand) {
+              prevValue = value;
+              document.execCommand("Copy");
+              timeOpacity();
+            }
+          }
+
+          /* 清空定时器 */
+          function clearVariate() {
+            clearInterval(window[timerKey]);
+            window[timerKey] = null;
+            opacity = 1;
+          }
+
+          /* 开启定时器 */
+          function timeOpacity() {
+            window[timerKey] = setInterval(() => {
+              try {
+                opacity = (opacity - frequency);
+                window[spanElKey].style.opacity = opacity;
+                if (opacity <= 0) {
+                  clearVariate();
+                  value = "";
+                }
+              } catch (error) {
+                /* 预防内存泄露 */
+                window.location.reload();
+              }
+            }, 16);
+          }
+
+          /* 控制台输出块文本信息 */
+          function logColorBlockText(title, info, type = "default") {
+
+            const typeColor = {
+              default: "#35495E",
+              primary: "#3488ff",
+              success: "#43B883",
+              warning: "#e6a23c",
+              danger: "#f56c6c"
+            };
+
+            console.log(
+              `%c${title}%c${info}%c`,
+              `background: ${typeColor[type]}; padding: 2px 2px 2px 4px; border-radius: 3px 0 0 3px; color: #fff;`,
+              `background: #35495E; padding: 2px 4px 2px 2px; border-radius: 0 3px 3px 0;  color: #fff;`,
+              `background: transparent`);
+          }
+        }
+      )();
+    }
+  </script>
+</body>
+
+</html>

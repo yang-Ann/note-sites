@@ -1,0 +1,8 @@
+YYYY-02-DD 21:53:12 >>> F:\project\note-sites\gitee-active\src\logger\images\1675950792097.png
+locator.click: Target closed
+=========================== logs ===========================
+waiting for getByRole('link', { name: 'Logo en Gitee Pages' })
+============================================================
+    at file:///F:/project/note-sites/gitee-active/src/index.ts:43:71
+
+

@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>AJAX | An的个人笔记</title>
+    <meta name="generator" content="VuePress 1.9.7">
+    <link rel="icon" href="/note-sites/favicon.ico">
+    <script type="module" src="/note-sites/js/index.js"></script>
+    <meta name="description" content="记录学习笔记">
+    <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+    
+    <link rel="preload" href="/note-sites/assets/css/0.styles.8adf5dfb.css" as="style"><link rel="preload" href="/note-sites/assets/js/app.933c6aa6.js" as="script"><link rel="preload" href="/note-sites/assets/js/5.72fb1f51.js" as="script"><link rel="preload" href="/note-sites/assets/js/1.9e97c91a.js" as="script"><link rel="preload" href="/note-sites/assets/js/34.7a5ff1fa.js" as="script"><link rel="prefetch" href="/note-sites/assets/js/10.7d967ac6.js"><link rel="prefetch" href="/note-sites/assets/js/11.26d85b24.js"><link rel="prefetch" href="/note-sites/assets/js/12.aa2b6520.js"><link rel="prefetch" href="/note-sites/assets/js/13.e65a4142.js"><link rel="prefetch" href="/note-sites/assets/js/14.a50de596.js"><link rel="prefetch" href="/note-sites/assets/js/15.4ea1b233.js"><link rel="prefetch" href="/note-sites/assets/js/16.e3ce623e.js"><link rel="prefetch" href="/note-sites/assets/js/17.2ee6d882.js"><link rel="prefetch" href="/note-sites/assets/js/18.c038c0d2.js"><link rel="prefetch" href="/note-sites/assets/js/19.b7b6f2b0.js"><link rel="prefetch" href="/note-sites/assets/js/20.bd4bf3ff.js"><link rel="prefetch" href="/note-sites/assets/js/21.16ea9630.js"><link rel="prefetch" href="/note-sites/assets/js/22.504dc5df.js"><link rel="prefetch" href="/note-sites/assets/js/23.47d5fdbb.js"><link rel="prefetch" href="/note-sites/assets/js/24.bf17f1a6.js"><link rel="prefetch" href="/note-sites/assets/js/25.238e5baa.js"><link rel="prefetch" href="/note-sites/assets/js/26.94d68aef.js"><link rel="prefetch" href="/note-sites/assets/js/27.02730a8e.js"><link rel="prefetch" href="/note-sites/assets/js/28.8c7bbad3.js"><link rel="prefetch" href="/note-sites/assets/js/29.f5ad117a.js"><link rel="prefetch" href="/note-sites/assets/js/3.30df5e8f.js"><link rel="prefetch" href="/note-sites/assets/js/30.74065020.js"><link rel="prefetch" href="/note-sites/assets/js/31.2451f110.js"><link rel="prefetch" href="/note-sites/assets/js/32.8629e940.js"><link rel="prefetch" href="/note-sites/assets/js/33.ee081e4c.js"><link rel="prefetch" href="/note-sites/assets/js/35.bebbdc35.js"><link rel="prefetch" href="/note-sites/assets/js/36.7f5256fa.js"><link rel="prefetch" href="/note-sites/assets/js/37.0d692601.js"><link rel="prefetch" href="/note-sites/assets/js/38.21319764.js"><link rel="prefetch" href="/note-sites/assets/js/39.01de7218.js"><link rel="prefetch" href="/note-sites/assets/js/4.bab13a3b.js"><link rel="prefetch" href="/note-sites/assets/js/40.4b122055.js"><link rel="prefetch" href="/note-sites/assets/js/41.5052770a.js"><link rel="prefetch" href="/note-sites/assets/js/42.cef42881.js"><link rel="prefetch" href="/note-sites/assets/js/43.ab3952b2.js"><link rel="prefetch" href="/note-sites/assets/js/6.9c2288c4.js"><link rel="prefetch" href="/note-sites/assets/js/7.174f18a1.js"><link rel="prefetch" href="/note-sites/assets/js/8.55765e76.js"><link rel="prefetch" href="/note-sites/assets/js/9.8d957bde.js">
+    <link rel="stylesheet" href="/note-sites/assets/css/0.styles.8adf5dfb.css">
+  </head>
+  <body>
+    <div id="app" data-server-rendered="true"><div class="theme-container no-sidebar" data-v-c0d124fa><div data-v-c0d124fa><div class="password-shadow password-wrapper-out" style="display:none;" data-v-30dff670 data-v-c0d124fa data-v-c0d124fa><h3 class="title" data-v-30dff670>An的个人笔记</h3> <p class="description" data-v-30dff670>记录学习笔记</p> <label id="box" class="inputBox" data-v-30dff670><input type="password" value="" data-v-30dff670> <span data-v-30dff670>Konck! Knock!</span> <button data-v-30dff670>OK</button></label> <div class="footer" data-v-30dff670><span data-v-30dff670><i class="iconfont reco-theme" data-v-30dff670></i> <a target="blank" href="https://vuepress-theme-reco.recoluan.com" data-v-30dff670>vuePress-theme-reco</a></span> <span data-v-30dff670><i class="iconfont reco-copyright" data-v-30dff670></i> <a data-v-30dff670><span data-v-30dff670>An</span>
+          
+        <!---->
+        2023
+      </a></span></div></div> <div class="hide" data-v-c0d124fa><header class="navbar" data-v-c0d124fa><div class="sidebar-button"><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="img" viewBox="0 0 448 512" class="icon"><path fill="currentColor" d="M436 124H12c-6.627 0-12-5.373-12-12V80c0-6.627 5.373-12 12-12h424c6.627 0 12 5.373 12 12v32c0 6.627-5.373 12-12 12zm0 160H12c-6.627 0-12-5.373-12-12v-32c0-6.627 5.373-12 12-12h424c6.627 0 12 5.373 12 12v32c0 6.627-5.373 12-12 12zm0 160H12c-6.627 0-12-5.373-12-12v-32c0-6.627 5.373-12 12-12h424c6.627 0 12 5.373 12 12v32c0 6.627-5.373 12-12 12z"></path></svg></div> <a href="/note-sites/" class="home-link router-link-active"><!----> <span class="site-name">An的个人笔记</span></a> <div class="links"><div class="color-picker"><a class="color-button"><i class="iconfont reco-color"></i></a> <div class="color-picker-menu" style="display:none;"><div class="mode-options"><h4 class="title">Choose mode</h4> <ul class="color-mode-options"><li class="dark">dark</li><li class="auto active">auto</li><li class="light">light</li></ul></div></div></div> <div class="search-box"><i class="iconfont reco-search"></i> <input aria-label="Search" autocomplete="off" spellcheck="false" value=""> <!----></div> <nav class="nav-links can-hide"><div class="nav-item"><a href="/note-sites/" class="nav-link"><i class="iconfont reco-home"></i>
+  Home
+</a></div><div class="nav-item"><a href="/note-sites/tag/" class="nav-link"><i class="iconfont reco-tag"></i>
+  全部
+</a></div><div class="nav-item"><div class="dropdown-wrapper"><a class="dropdown-title"><span class="title"><i class="iconfont reco-category"></i>
+      分类
+    </span> <span class="arrow right"></span></a> <ul class="nav-dropdown" style="display:none;"><li class="dropdown-item"><!----> <a href="/note-sites/categories/第三方库/" class="nav-link"><i class="undefined"></i>
+  第三方库
+</a></li><li class="dropdown-item"><!----> <a href="/note-sites/categories/编程语言/" class="nav-link"><i class="undefined"></i>
+  编程语言
+</a></li><li class="dropdown-item"><!----> <a href="/note-sites/categories/前端基础/" class="nav-link"><i class="undefined"></i>
+  前端基础
+</a></li><li class="dropdown-item"><!----> <a href="/note-sites/categories/版本管理/" class="nav-link"><i class="undefined"></i>
+  版本管理
+</a></li><li class="dropdown-item"><!----> <a href="/note-sites/categories/Go/" class="nav-link"><i class="undefined"></i>
+  Go
+</a></li><li class="dropdown-item"><!----> <a href="/note-sites/categories/Shell/" class="nav-link"><i class="undefined"></i>
+  Shell
+</a></li><li class="dropdown-item"><!----> <a href="/note-sites/categories/数据库/" class="nav-link"><i class="undefined"></i>
+  数据库
+</a></li><li class="dropdown-item"><!----> <a href="/note-sites/categories/Linux/" class="nav-link"><i class="undefined"></i>
+  Linux
+</a></li><li class="dropdown-item"><!----> <a href="/note-sites/categories/包管理工具/" class="nav-link"><i class="undefined"></i>
+  包管理工具
+</a></li><li class="dropdown-item"><!----> <a href="/note-sites/categories/web开发框架/" class="nav-link"><i class="undefined"></i>
+  web开发框架
+</a></li><li class="dropdown-item"><!----> <a href="/note-sites/categories/打包工具/" class="nav-link"><i class="undefined"></i>
+  打包工具
+</a></li><li class="dropdown-item"><!----> <a href="/note-sites/categories/小程序/" class="nav-link"><i class="undefined"></i>
+  小程序
+</a></li><li class="dropdown-item"><!----> <a href="/note-sites/categories/编程干货/" class="nav-link"><i class="undefined"></i>
+  编程干货
+</a></li><li class="dropdown-item"><!----> <a href="/note-sites/categories/系统语言/" class="nav-link"><i class="undefined"></i>
+  系统语言
+</a></li></ul></div></div><div class="nav-item"><div class="dropdown-wrapper"><a class="dropdown-title"><span class="title"><i class="iconfont reco-document"></i>
+      前端
+    </span> <span class="arrow right"></span></a> <ul class="nav-dropdown" style="display:none;"><li class="dropdown-item"><!----> <a href="/note-sites/guide/HTML/HTML.html" class="nav-link"><i class="undefined"></i>
+  HTML
+</a></li><li class="dropdown-item"><!----> <a href="/note-sites/guide/CSS/CSS.html" class="nav-link"><i class="undefined"></i>
+  CSS
+</a></li><li class="dropdown-item"><!----> <a href="/note-sites/guide/JavaScript/JavaScript.html" class="nav-link"><i class="undefined"></i>
+  JavaScript
+</a></li><li class="dropdown-item"><!----> <a href="/note-sites/guide/TypeScript/TypeScript.html" class="nav-link"><i class="undefined"></i>
+  TypeScript
+</a></li><li class="dropdown-item"><h4>其他</h4> <ul class="dropdown-subitem-wrapper"><li class="dropdown-subitem"><a href="/note-sites/guide/JQuery/JQuery.html" class="nav-link"><i class="undefined"></i>
+  JQuery
+</a></li><li class="dropdown-subitem"><a href="/note-sites/guide/JavaScript/AJAX.html" aria-current="page" class="nav-link router-link-exact-active router-link-active"><i class="undefined"></i>
+  AJAX
+</a></li><li class="dropdown-subitem"><a href="/note-sites/guide/Axios/Axios.html" class="nav-link"><i class="undefined"></i>
+  Axios
+</a></li><li class="dropdown-subitem"><a href="/note-sites/guide/webpack/webpack.html" class="nav-link"><i class="undefined"></i>
+  webpack
+</a></li><li class="dropdown-subitem"><a href="/note-sites/guide/Three/Three.html" class="nav-link"><i class="undefined"></i>
+  Three
+</a></li><li class="dropdown-subitem"><a href="/note-sites/guide/Electron/Electron.html" class="nav-link"><i class="undefined"></i>
+  electron
+</a></li><li class="dropdown-subitem"><a href="/note-sites/guide/Electron/VS Code.html" class="nav-link"><i class="undefined"></i>
+  VS Code
+</a></li></ul></li><li class="dropdown-item"><!----> <a href="/note-sites/guide/设计模式.html" class="nav-link"><i class="undefined"></i>
+  设计模式
+</a></li><li class="dropdown-item"><!----> <a href="/note-sites/guide/Node/Node.html" class="nav-link"><i class="undefined"></i>
+  Node
+</a></li><li class="dropdown-item"><!----> <a href="/note-sites/guide/Node/Npm.html" class="nav-link"><i class="undefined"></i>
+  npm
+</a></li></ul></div></div><div class="nav-item"><div class="dropdown-wrapper"><a class="dropdown-title"><span class="title"><i class="iconfont reco-api"></i>
+      框架
+    </span> <span class="arrow right"></span></a> <ul class="nav-dropdown" style="display:none;"><li class="dropdown-item"><!----> <a href="/note-sites/guide/Vue/Vue2.html" class="nav-link"><i class="undefined"></i>
+  Vue2
+</a></li><li class="dropdown-item"><!----> <a href="/note-sites/guide/Vue/Vue3.html" class="nav-link"><i class="undefined"></i>
+  Vue3
+</a></li><li class="dropdown-item"><!----> <a href="/note-sites/guide/React/React-16.html" class="nav-link"><i class="undefined"></i>
+  React-16
+</a></li><li class="dropdown-item"><!----> <a href="/note-sites/guide/React/React-18.html" class="nav-link"><i class="undefined"></i>
+  React-18
+</a></li><li class="dropdown-item"><!----> <a href="/note-sites/guide/微信小程序/微信小程序.html" class="nav-link"><i class="undefined"></i>
+  微信小程序
+</a></li></ul></div></div><div class="nav-item"><div class="dropdown-wrapper"><a class="dropdown-title"><span class="title"><i class="iconfont reco-other"></i>
+      其他
+    </span> <span class="arrow right"></span></a> <ul class="nav-dropdown" style="display:none;"><li class="dropdown-item"><!----> <a href="/note-sites/guide/Git/Git.html" class="nav-link"><i class="undefined"></i>
+  Git
+</a></li><li class="dropdown-item"><!----> <a href="/note-sites/guide/C语言/C语言.html" class="nav-link"><i class="undefined"></i>
+  C语言
+</a></li><li class="dropdown-item"><!----> <a href="/note-sites/guide/Java/Java.html" class="nav-link"><i class="undefined"></i>
+  Java
+</a></li><li class="dropdown-item"><!----> <a href="/note-sites/guide/ArcGIS/ArcGIS.html" class="nav-link"><i class="undefined"></i>
+  ArcGIS
+</a></li><li class="dropdown-item"><!----> <a href="/note-sites/guide/Linux/Linux.html" class="nav-link"><i class="undefined"></i>
+  Linux
+</a></li><li class="dropdown-item"><!----> <a href="/note-sites/guide/Linux/Shell.html" class="nav-link"><i class="undefined"></i>
+  Shell
+</a></li><li class="dropdown-item"><!----> <a href="/note-sites/guide/Rust/Rust.html" class="nav-link"><i class="undefined"></i>
+  Rust
+</a></li></ul></div></div><div class="nav-item"><div class="dropdown-wrapper"><a class="dropdown-title"><span class="title"><i class="undefined"></i>
+      博客生成工具
+    </span> <span class="arrow right"></span></a> <ul class="nav-dropdown" style="display:none;"><li class="dropdown-item"><!----> <a href="https://vuepress.vuejs.org/zh" target="_blank" rel="noopener noreferrer" class="nav-link external"><i class="undefined"></i>
+  vuepress
+  <span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></li><li class="dropdown-item"><!----> <a href="https://vuepress-theme-reco.recoluan.com" target="_blank" rel="noopener noreferrer" class="nav-link external"><i class="undefined"></i>
+  vuepress-theme-reco
+  <span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></li></ul></div></div> <!----></nav></div></header> <div class="sidebar-mask" data-v-c0d124fa></div> <aside class="sidebar" data-v-c0d124fa><div class="personal-info-wrapper" data-v-5c49c935 data-v-c0d124fa><img src="/note-sites/assets/img/logo.png" alt="author-avatar" class="personal-img" data-v-5c49c935> <h3 class="name" data-v-5c49c935>
+    An
+  </h3> <div class="num" data-v-5c49c935><div data-v-5c49c935><h3 data-v-5c49c935>32</h3> <h6 data-v-5c49c935>文章</h6></div> <div data-v-5c49c935><h3 data-v-5c49c935>26</h3> <h6 data-v-5c49c935>标签</h6></div></div> <ul class="social-links" data-v-5c49c935><li class="social-item" data-v-5c49c935><i class="iconfont reco-github" style="color:#849b87;" data-v-5c49c935></i></li><li class="social-item" data-v-5c49c935><i class="iconfont reco-mayun" style="color:#f26d6d;" data-v-5c49c935></i></li><li class="social-item" data-v-5c49c935><i class="iconfont reco-juejin" style="color:#3498db;" data-v-5c49c935></i></li><li class="social-item" data-v-5c49c935><i class="iconfont reco-npm" style="color:#f47e60;" data-v-5c49c935></i></li><li class="social-item" data-v-5c49c935><i class="iconfont reco-bilibili" style="color:#f26d6d;" data-v-5c49c935></i></li></ul> <hr data-v-5c49c935></div> <nav class="nav-links"><div class="nav-item"><a href="/note-sites/" class="nav-link"><i class="iconfont reco-home"></i>
+  Home
+</a></div><div class="nav-item"><a href="/note-sites/tag/" class="nav-link"><i class="iconfont reco-tag"></i>
+  全部
+</a></div><div class="nav-item"><div class="dropdown-wrapper"><a class="dropdown-title"><span class="title"><i class="iconfont reco-category"></i>
+      分类
+    </span> <span class="arrow right"></span></a> <ul class="nav-dropdown" style="display:none;"><li class="dropdown-item"><!----> <a href="/note-sites/categories/第三方库/" class="nav-link"><i class="undefined"></i>
+  第三方库
+</a></li><li class="dropdown-item"><!----> <a href="/note-sites/categories/编程语言/" class="nav-link"><i class="undefined"></i>
+  编程语言
+</a></li><li class="dropdown-item"><!----> <a href="/note-sites/categories/前端基础/" class="nav-link"><i class="undefined"></i>
+  前端基础
+</a></li><li class="dropdown-item"><!----> <a href="/note-sites/categories/版本管理/" class="nav-link"><i class="undefined"></i>
+  版本管理
+</a></li><li class="dropdown-item"><!----> <a href="/note-sites/categories/Go/" class="nav-link"><i class="undefined"></i>
+  Go
+</a></li><li class="dropdown-item"><!----> <a href="/note-sites/categories/Shell/" class="nav-link"><i class="undefined"></i>
+  Shell
+</a></li><li class="dropdown-item"><!----> <a href="/note-sites/categories/数据库/" class="nav-link"><i class="undefined"></i>
+  数据库
+</a></li><li class="dropdown-item"><!----> <a href="/note-sites/categories/Linux/" class="nav-link"><i class="undefined"></i>
+  Linux
+</a></li><li class="dropdown-item"><!----> <a href="/note-sites/categories/包管理工具/" class="nav-link"><i class="undefined"></i>
+  包管理工具
+</a></li><li class="dropdown-item"><!----> <a href="/note-sites/categories/web开发框架/" class="nav-link"><i class="undefined"></i>
+  web开发框架
+</a></li><li class="dropdown-item"><!----> <a href="/note-sites/categories/打包工具/" class="nav-link"><i class="undefined"></i>
+  打包工具
+</a></li><li class="dropdown-item"><!----> <a href="/note-sites/categories/小程序/" class="nav-link"><i class="undefined"></i>
+  小程序
+</a></li><li class="dropdown-item"><!----> <a href="/note-sites/categories/编程干货/" class="nav-link"><i class="undefined"></i>
+  编程干货
+</a></li><li class="dropdown-item"><!----> <a href="/note-sites/categories/系统语言/" class="nav-link"><i class="undefined"></i>
+  系统语言
+</a></li></ul></div></div><div class="nav-item"><div class="dropdown-wrapper"><a class="dropdown-title"><span class="title"><i class="iconfont reco-document"></i>
+      前端
+    </span> <span class="arrow right"></span></a> <ul class="nav-dropdown" style="display:none;"><li class="dropdown-item"><!----> <a href="/note-sites/guide/HTML/HTML.html" class="nav-link"><i class="undefined"></i>
+  HTML
+</a></li><li class="dropdown-item"><!----> <a href="/note-sites/guide/CSS/CSS.html" class="nav-link"><i class="undefined"></i>
+  CSS
+</a></li><li class="dropdown-item"><!----> <a href="/note-sites/guide/JavaScript/JavaScript.html" class="nav-link"><i class="undefined"></i>
+  JavaScript
+</a></li><li class="dropdown-item"><!----> <a href="/note-sites/guide/TypeScript/TypeScript.html" class="nav-link"><i class="undefined"></i>
+  TypeScript
+</a></li><li class="dropdown-item"><h4>其他</h4> <ul class="dropdown-subitem-wrapper"><li class="dropdown-subitem"><a href="/note-sites/guide/JQuery/JQuery.html" class="nav-link"><i class="undefined"></i>
+  JQuery
+</a></li><li class="dropdown-subitem"><a href="/note-sites/guide/JavaScript/AJAX.html" aria-current="page" class="nav-link router-link-exact-active router-link-active"><i class="undefined"></i>
+  AJAX
+</a></li><li class="dropdown-subitem"><a href="/note-sites/guide/Axios/Axios.html" class="nav-link"><i class="undefined"></i>
+  Axios
+</a></li><li class="dropdown-subitem"><a href="/note-sites/guide/webpack/webpack.html" class="nav-link"><i class="undefined"></i>
+  webpack
+</a></li><li class="dropdown-subitem"><a href="/note-sites/guide/Three/Three.html" class="nav-link"><i class="undefined"></i>
+  Three
+</a></li><li class="dropdown-subitem"><a href="/note-sites/guide/Electron/Electron.html" class="nav-link"><i class="undefined"></i>
+  electron
+</a></li><li class="dropdown-subitem"><a href="/note-sites/guide/Electron/VS Code.html" class="nav-link"><i class="undefined"></i>
+  VS Code
+</a></li></ul></li><li class="dropdown-item"><!----> <a href="/note-sites/guide/设计模式.html" class="nav-link"><i class="undefined"></i>
+  设计模式
+</a></li><li class="dropdown-item"><!----> <a href="/note-sites/guide/Node/Node.html" class="nav-link"><i class="undefined"></i>
+  Node
+</a></li><li class="dropdown-item"><!----> <a href="/note-sites/guide/Node/Npm.html" class="nav-link"><i class="undefined"></i>
+  npm
+</a></li></ul></div></div><div class="nav-item"><div class="dropdown-wrapper"><a class="dropdown-title"><span class="title"><i class="iconfont reco-api"></i>
+      框架
+    </span> <span class="arrow right"></span></a> <ul class="nav-dropdown" style="display:none;"><li class="dropdown-item"><!----> <a href="/note-sites/guide/Vue/Vue2.html" class="nav-link"><i class="undefined"></i>
+  Vue2
+</a></li><li class="dropdown-item"><!----> <a href="/note-sites/guide/Vue/Vue3.html" class="nav-link"><i class="undefined"></i>
+  Vue3
+</a></li><li class="dropdown-item"><!----> <a href="/note-sites/guide/React/React-16.html" class="nav-link"><i class="undefined"></i>
+  React-16
+</a></li><li class="dropdown-item"><!----> <a href="/note-sites/guide/React/React-18.html" class="nav-link"><i class="undefined"></i>
+  React-18
+</a></li><li class="dropdown-item"><!----> <a href="/note-sites/guide/微信小程序/微信小程序.html" class="nav-link"><i class="undefined"></i>
+  微信小程序
+</a></li></ul></div></div><div class="nav-item"><div class="dropdown-wrapper"><a class="dropdown-title"><span class="title"><i class="iconfont reco-other"></i>
+      其他
+    </span> <span class="arrow right"></span></a> <ul class="nav-dropdown" style="display:none;"><li class="dropdown-item"><!----> <a href="/note-sites/guide/Git/Git.html" class="nav-link"><i class="undefined"></i>
+  Git
+</a></li><li class="dropdown-item"><!----> <a href="/note-sites/guide/C语言/C语言.html" class="nav-link"><i class="undefined"></i>
+  C语言
+</a></li><li class="dropdown-item"><!----> <a href="/note-sites/guide/Java/Java.html" class="nav-link"><i class="undefined"></i>
+  Java
+</a></li><li class="dropdown-item"><!----> <a href="/note-sites/guide/ArcGIS/ArcGIS.html" class="nav-link"><i class="undefined"></i>
+  ArcGIS
+</a></li><li class="dropdown-item"><!----> <a href="/note-sites/guide/Linux/Linux.html" class="nav-link"><i class="undefined"></i>
+  Linux
+</a></li><li class="dropdown-item"><!----> <a href="/note-sites/guide/Linux/Shell.html" class="nav-link"><i class="undefined"></i>
+  Shell
+</a></li><li class="dropdown-item"><!----> <a href="/note-sites/guide/Rust/Rust.html" class="nav-link"><i class="undefined"></i>
+  Rust
+</a></li></ul></div></div><div class="nav-item"><div class="dropdown-wrapper"><a class="dropdown-title"><span class="title"><i class="undefined"></i>
+      博客生成工具
+    </span> <span class="arrow right"></span></a> <ul class="nav-dropdown" style="display:none;"><li class="dropdown-item"><!----> <a href="https://vuepress.vuejs.org/zh" target="_blank" rel="noopener noreferrer" class="nav-link external"><i class="undefined"></i>
+  vuepress
+  <span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></li><li class="dropdown-item"><!----> <a href="https://vuepress-theme-reco.recoluan.com" target="_blank" rel="noopener noreferrer" class="nav-link external"><i class="undefined"></i>
+  vuepress-theme-reco
+  <span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></li></ul></div></div> <!----></nav> <!----> </aside> <div class="password-shadow password-wrapper-in" style="display:none;" data-v-30dff670 data-v-c0d124fa><h3 class="title" data-v-30dff670>AJAX</h3> <!----> <label id="box" class="inputBox" data-v-30dff670><input type="password" value="" data-v-30dff670> <span data-v-30dff670>Konck! Knock!</span> <button data-v-30dff670>OK</button></label> <div class="footer" data-v-30dff670><span data-v-30dff670><i class="iconfont reco-theme" data-v-30dff670></i> <a target="blank" href="https://vuepress-theme-reco.recoluan.com" data-v-30dff670>vuePress-theme-reco</a></span> <span data-v-30dff670><i class="iconfont reco-copyright" data-v-30dff670></i> <a data-v-30dff670><span data-v-30dff670>An</span>
+          
+        <!---->
+        2023
+      </a></span></div></div> <div data-v-c0d124fa><div data-v-c0d124fa><main class="page"><section style="display:;"><div class="page-title"><h1 class="title">AJAX</h1> <div data-v-7b22c628><i class="iconfont reco-account" data-v-7b22c628><span data-v-7b22c628>An</span></i> <i class="iconfont reco-date" data-v-7b22c628><span data-v-7b22c628>2022/3/17</span></i> <!----> <i class="tags iconfont reco-tag" data-v-7b22c628><span class="tag-item" data-v-7b22c628>AJAX</span></i></div></div> <div class="theme-reco-content content__default"><p></p><div class="table-of-contents"><ul><li><a href="#ajax的介绍和特点">AJAX的介绍和特点</a></li><li><a href="#同步和异步">同步和异步</a><ul><li><a href="#阻塞与线程">阻塞与线程</a></li><li><a href="#消息队列和事件循环">消息队列和事件循环</a><ul><li><a href="#消息队列">消息队列</a></li><li><a href="#事件循环">事件循环</a></li></ul></li><li><a href="#异步任务的分类">异步任务的分类</a><ul><li><a href="#js代码的执行顺序">js代码的执行顺序:</a></li></ul></li></ul></li><li><a href="#同源策略">同源策略</a></li><li><a href="#http">HTTP</a><ul><li><a href="#请求报文">请求报文</a></li><li><a href="#响应报文">响应报文</a></li></ul></li><li><a href="#原生js发送ajax请求">原生JS发送ajax请求</a><ul><li><a href="#xmlhttprequest-https-www-ruanyifeng-com-blog-2012-09-xmlhttprequest-level-2-html-对象">XMLHttpRequest 对象</a></li><li><a href="#open">open()</a></li><li><a href="#send">send()</a></li><li><a href="#xmlhttprequest-对象的事件或方法">XMLHttpRequest 对象的事件或方法</a><ul><li><a href="#ontimeout事件">ontimeout事件</a></li><li><a href="#onerror事件">onerror事件</a></li><li><a href="#onreadystatechange-事件">onreadystatechange 事件</a></li><li><a href="#progress-事件">progress 事件</a></li></ul></li><li><a href="#formdata对象">formData对象</a></li><li><a href="#jquery-发送-ajax请求">JQuery 发送 AJAX请求</a></li><li><a href="#fetch-https-www-ruanyifeng-com-blog-2020-12-fetch-tutorial-html-发送-ajax请求">fetch 发送 AJAX请求</a><ul><li><a href="#fetch-的标头属性">fetch 的标头属性:</a></li><li><a href="#通过标头属性判断请求是否成功">通过标头属性判断请求是否成功</a></li></ul></li></ul></li></ul></div><p></p> <h1 id="ajax"><a href="#ajax" class="header-anchor">#</a> AJAX</h1> <h2 id="ajax的介绍和特点"><a href="#ajax的介绍和特点" class="header-anchor">#</a> AJAX的介绍和特点</h2> <div class="language- line-numbers-mode"><pre class="language-text"><code>Ajax 全称为 Asynchronous Javascript And XML(异步JavaScript和XML), 
+使用AJAX可以在浏览器中向服务器发送异步请求, 最大优势: 不用刷新页面来获取数据
+AJAX 不是新的编程语言, 而是一种将现有的标准组合到一起使用的新方式
+</code></pre> <div class="line-numbers-wrapper"><span class="line-number">1</span><br><span class="line-number">2</span><br><span class="line-number">3</span><br></div></div><ul><li><p>优点:</p> <ul><li>可以无需刷新页面与服务器端进行通信</li> <li>允许你根据用户事件来更新部分页面内容</li></ul></li> <li><p>缺点</p> <ul><li>没有浏览历史, 不能回退</li> <li>存在<code>跨度问题</code>(同源策略)</li> <li><code>SEO</code> 不友好, 爬虫程序爬取不到对应的数据</li></ul></li></ul> <h2 id="同步和异步"><a href="#同步和异步" class="header-anchor">#</a> 同步和异步</h2> <ul><li><p>同步</p> <div class="language- line-numbers-mode"><pre class="language-text"><code>同步就是后一个任务等待前一个任务执行完毕后, 再执行, 执行顺序和代码的书写顺序一致
+</code></pre> <div class="line-numbers-wrapper"><span class="line-number">1</span><br></div></div></li> <li><p>异步</p> <div class="language- line-numbers-mode"><pre class="language-text"><code>异步是非阻塞的, 异步逻辑与主逻辑相互独立, 主逻辑不需要等待异步逻辑完成, 而是可以继续的往下执行
+执行完毕, 通过回调函数来通知主线程
+</code></pre> <div class="line-numbers-wrapper"><span class="line-number">1</span><br><span class="line-number">2</span><br></div></div></li></ul> <h3 id="阻塞与线程"><a href="#阻塞与线程" class="header-anchor">#</a> 阻塞与线程</h3> <ul><li><p>阻塞</p> <div class="language- line-numbers-mode"><pre class="language-text"><code>线程在执行中如果遇到磁盘读写或者网络通信(统称为I/O操作), 通常要耗费较长的时间, 
+这是操作系统会剥夺这个线程的CPU控制权, 使其暂停执行, 
+同时将资源让给其他的工作线程, 这种线程的调度方式称为阻塞
+
+当I/O操作结束, 操作系统将这个线程的阻塞状态解除, 恢复其对CPU的控制权, 令其继续执行, 这种I/O模式就是常说的同步式I/O
+</code></pre> <div class="line-numbers-wrapper"><span class="line-number">1</span><br><span class="line-number">2</span><br><span class="line-number">3</span><br><span class="line-number">4</span><br><span class="line-number">5</span><br></div></div><div class="language- line-numbers-mode"><pre class="language-text"><code>相应地, 异步式I/O是针对上述的I/O操作, 不采用阻塞模式, 
+当线程遇到I/O操作时, 不会以阻塞的方式等待I/O操作的结束, 
+而只是将I/O操作请求发送给操作系统, 然后继续执行下一条语句.
+
+当操作系统完成I/O操作, 以事件的形式通知执行I/O操作的线程, 
+线程会在特定的时间处理这个事件, 可以使用异步式I/O, 单线程即可胜任.
+异步式I/O里的一个重要的概念: 事件！
+</code></pre> <div class="line-numbers-wrapper"><span class="line-number">1</span><br><span class="line-number">2</span><br><span class="line-number">3</span><br><span class="line-number">4</span><br><span class="line-number">5</span><br><span class="line-number">6</span><br><span class="line-number">7</span><br></div></div></li></ul> <h3 id="消息队列和事件循环"><a href="#消息队列和事件循环" class="header-anchor">#</a> 消息队列和事件循环</h3> <ul><li><p>JS单线程</p> <div class="language- line-numbers-mode"><pre class="language-text"><code>我们常说“JavaScript是一门单线程的语言”, 所以JavaScript是采用异步式I/O+事件循环模式的
+所谓的单线程, 是指在JS引擎中负责解释和执行JavaScript代码的线程只有一个, 我们称它为: 主线程
+
+实际上还存在其他的线程, 例如: 处理AJAX请求的线程、处理DOM事件的线程、定时器线程、读写文件的线程(在Nodo.js中)等等, 我们称它们为: 工作线程
+
+单线程也就意味着, 所有任务需要排队, 前一个任务结束, 才会执行后一个任务.
+如果前一个任务耗时很长, 后一个任务就不得不一直等着.
+
+我们可以采用异步式I/O+事件循环模式时, 当耗时的I/O的操作结束后, 
+会以事件的形式通知主线程, 这样就可以避免阻塞, 那么这个通知机制就是利用消息队列和事件循环.
+</code></pre> <div class="line-numbers-wrapper"><span class="line-number">1</span><br><span class="line-number">2</span><br><span class="line-number">3</span><br><span class="line-number">4</span><br><span class="line-number">5</span><br><span class="line-number">6</span><br><span class="line-number">7</span><br><span class="line-number">8</span><br><span class="line-number">9</span><br><span class="line-number">10</span><br></div></div></li></ul> <h4 id="消息队列"><a href="#消息队列" class="header-anchor">#</a> 消息队列</h4> <div class="language- line-numbers-mode"><pre class="language-text"><code>当采用异步式I/O+事件循环后, 所有任务可以分成两种:
+一种是同步任务, 另一种是异步任务(先只分为同步任务和异步任务, 后面再细分)
+
+同步任务指的是, 在主线程上排队执行的任务, 只有前一个任务执行完毕, 才能执行后一个任务;
+异步任务指的是, 暂时不进入主线程而是进入消息队列的任务, 只有主线程的同步任务全部结束后该任务才会进入主线程执行;
+
+一句话概括: 工作线程将消息(异步任务)放到消息队列, 主线程通过事件循环去取消息
+</code></pre> <div class="line-numbers-wrapper"><span class="line-number">1</span><br><span class="line-number">2</span><br><span class="line-number">3</span><br><span class="line-number">4</span><br><span class="line-number">5</span><br><span class="line-number">6</span><br><span class="line-number">7</span><br></div></div><ol><li>所有同步任务都在<code>主线程</code>上执行, 形成一个<code>执行栈</code>(execution context stack)</li> <li><code>主线程</code>之外, 还存在一个<code>消息队列</code>; 只要异步任务有了运行结果, 就在<code>消息队列</code>之中放置一个<code>事件</code></li> <li>一旦<code>执行栈</code>中的所有同步任务执行完毕, 系统就会读取<code>消息队列</code>, 看看里面有哪些<code>事件</code>, 然后将<code>事件</code>放入<code>执行栈</code>, 开始执行</li> <li><code>主线程</code>只会做一件事情, 就是从<code>消息队列</code>里面取消息(一次只取一条消息)、放入执行栈执行消息, 再取消息、再执行, 不断重复上面的流程</li></ol> <h4 id="事件循环"><a href="#事件循环" class="header-anchor">#</a> 事件循环</h4> <div class="language- line-numbers-mode"><pre class="language-text"><code>上文提到主线程从消息队列中读取执行消息, 这个过程是循环不断的; 
+当消息队列为空时, 就会等待直到消息队列变成非空
+
+而且主线程只有在将当前的消息执行完成后, 才会去取下一个消息
+这种机制就叫做事件循环机制, 取一个消息并执行的过程叫做 一次事件循环
+
+可见异步过程的回调函数, 一定不在当前这一轮事件循环中执行, 可不一定会在下一轮事件循环中进行(取决于异步任务结束往消息队列添加消息时, 队列中是否有其它消息)
+</code></pre> <div class="line-numbers-wrapper"><span class="line-number">1</span><br><span class="line-number">2</span><br><span class="line-number">3</span><br><span class="line-number">4</span><br><span class="line-number">5</span><br><span class="line-number">6</span><br><span class="line-number">7</span><br></div></div><h3 id="异步任务的分类"><a href="#异步任务的分类" class="header-anchor">#</a> 异步任务的分类</h3> <ul><li><p>宏任务(macrotask)</p> <div class="language- line-numbers-mode"><pre class="language-text"><code>宏任务就是将当前任务放在下一次任务列最顶部
+</code></pre> <div class="line-numbers-wrapper"><span class="line-number">1</span><br></div></div><ul><li>常见的宏任务
+<ul><li><code>setTimeout</code> <code>setInterval</code> <code>requestAnimationFrame</code> <code>ajax</code> <code>setimmediate</code> <code>读取文件</code></li></ul></li></ul></li> <li><p>微任务(microtask)</p> <div class="language- line-numbers-mode"><pre class="language-text"><code>微任务会将当前任务放入下一次任务列的底部(比宏任务先执行)
+</code></pre> <div class="line-numbers-wrapper"><span class="line-number">1</span><br></div></div><ul><li>常见的微任务
+<ul><li><code>Promise对象</code>的 <code>then</code> <code>catch</code> <code>finally</code> <code>process.nextTick</code></li></ul></li></ul></li></ul> <h4 id="js代码的执行顺序"><a href="#js代码的执行顺序" class="header-anchor">#</a> js代码的执行顺序:</h4> <ol><li>同步任务</li> <li><code>process.nextTick</code>(node)</li> <li>微任务</li> <li>宏任务</li> <li><code>setimmediate</code>(node)</li></ol> <blockquote><p>真正的执行顺序和上面的有点区别的就是: js会先执行一个宏任务后在去执行当前的所有微任务, 然后继续等待其他任务, 其实 <strong>script</strong> 就是一个宏任务, 浏览器会先去执行 <strong>script</strong> 然后再去执行所有的微任务, 所以可以简单的理解为 <strong>微任务比宏任务的优先级更高也没什么问题</strong></p></blockquote> <h2 id="同源策略"><a href="#同源策略" class="header-anchor">#</a> 同源策略</h2> <p>同源策略(Same origin policy)是浏览器的一种安全策略, 同源: 协议 域名 端口号 必须完全相同,
+违背同源策略就是 跨域(CORS), 请求可以发送, 但是数据回不了</p> <p>临时解决:</p> <ul><li>前端开发环境可以使用 代理服务器 ( 生产环境需要后端支持 )</li></ul> <blockquote><p><a href="https://www.ruanyifeng.com/blog/2016/04/cors.html" target="_blank" rel="noopener noreferrer">CORS<span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></p></blockquote> <h2 id="http"><a href="#http" class="header-anchor">#</a> HTTP</h2> <div class="language- line-numbers-mode"><pre class="language-text"><code>HTTP 也叫 超文本传输协议, 全称(Hypertext Transfer Protocol, HTTP), 
+协议详细规定了浏览器和万维网服务器之间互相通信的规则
+</code></pre> <div class="line-numbers-wrapper"><span class="line-number">1</span><br><span class="line-number">2</span><br></div></div><h3 id="请求报文"><a href="#请求报文" class="header-anchor">#</a> 请求报文</h3> <div class="language- line-numbers-mode"><pre class="language-text"><code>浏览器向服务器发送的内容叫 请求(request)
+
+重点是格式与参数
+	请求行(3部分)   URL路径 / 请求类型: GET POST / HTTP请求版本
+	请求头         可以携带 token, 设置表单数据提交数据的编码类型content-type
+	空行 (必须得有)
+	请求体          GET请求的请求体是空的, 而POST请求请求体可以不为空
+</code></pre> <div class="line-numbers-wrapper"><span class="line-number">1</span><br><span class="line-number">2</span><br><span class="line-number">3</span><br><span class="line-number">4</span><br><span class="line-number">5</span><br><span class="line-number">6</span><br><span class="line-number">7</span><br></div></div><h3 id="响应报文"><a href="#响应报文" class="header-anchor">#</a> 响应报文</h3> <div class="language- line-numbers-mode"><pre class="language-text"><code>服务器返回给浏览器的结果叫 响应(response)
+
+    响应行(3部分)   协议版本 / 响应状态码 / 响应状态字符串
+                                         200 表示 ok
+                                         400 表示 字段对应不上
+                                         404 表示 找不到
+                                         403 表示 访问被禁止
+                                         405 表示 请求方式不一致
+                                         401 表示 未授权
+                                         500 表示 内部错误
+    响应头
+    空行 (必须得有)
+    响应体           服务器返回的数据
+</code></pre> <div class="line-numbers-wrapper"><span class="line-number">1</span><br><span class="line-number">2</span><br><span class="line-number">3</span><br><span class="line-number">4</span><br><span class="line-number">5</span><br><span class="line-number">6</span><br><span class="line-number">7</span><br><span class="line-number">8</span><br><span class="line-number">9</span><br><span class="line-number">10</span><br><span class="line-number">11</span><br><span class="line-number">12</span><br><span class="line-number">13</span><br></div></div><blockquote><p><a href="https://www.runoob.com/http/http-status-codes.html" target="_blank" rel="noopener noreferrer">HTTP状态码<span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a>, <a href="https://www.runoob.com/http/http-content-type.html" target="_blank" rel="noopener noreferrer">content-type<span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></p></blockquote> <ul><li><p>请求头和响应头包含的内容</p> <ul><li><p>请求(request)   客户端  ---&gt; 服务端</p> <div class="language-http line-numbers-mode"><pre class="language-http"><code>GET(请求的方式) /newcoder/hello.html(请求的目标资源) HTTP/1.1(请求采用的协议和版本号) 
+<span class="token header"><span class="token header-name keyword">Accept</span><span class="token punctuation">:</span> <span class="token header-value">*/*(客户端能接收的资源类型) </span></span>
+<span class="token header"><span class="token header-name keyword">Accept-Language</span><span class="token punctuation">:</span> <span class="token header-value">en-us(客户端接收的语言类型) </span></span>
+<span class="token header"><span class="token header-name keyword">Connection</span><span class="token punctuation">:</span> <span class="token header-value">Keep-Alive(维护客户端和服务端的连接关系) </span></span>
+<span class="token header"><span class="token header-name keyword">Host</span><span class="token punctuation">:</span> <span class="token header-value">localhost:8080(连接的目标主机和端口号) </span></span>
+<span class="token header"><span class="token header-name keyword">Referer</span><span class="token punctuation">:</span> <span class="token header-value">http://localhost/links.asp(告诉服务器我来自于哪里) </span></span>
+<span class="token header"><span class="token header-name keyword">User-Agent</span><span class="token punctuation">:</span> <span class="token header-value">Mozilla/4.0(客户端版本号的名字) </span></span>
+<span class="token header"><span class="token header-name keyword">Accept-Encoding</span><span class="token punctuation">:</span> <span class="token header-value">gzip, deflate(客户端能接收的压缩数据的类型) </span></span>
+<span class="token header"><span class="token header-name keyword">If-Modified-Since</span><span class="token punctuation">:</span> <span class="token header-value">Tue, 11 Jul 2000 18:23:51 GMT(缓存时间)  </span></span>
+Cookie(客户端暂存服务端的信息) 
+<span class="token header"><span class="token header-name keyword">Date</span><span class="token punctuation">:</span> <span class="token header-value">Tue, 11 Jul 2000 18:23:51 GMT(客户端请求服务端的时间)</span></span>
+</code></pre> <div class="line-numbers-wrapper"><span class="line-number">1</span><br><span class="line-number">2</span><br><span class="line-number">3</span><br><span class="line-number">4</span><br><span class="line-number">5</span><br><span class="line-number">6</span><br><span class="line-number">7</span><br><span class="line-number">8</span><br><span class="line-number">9</span><br><span class="line-number">10</span><br><span class="line-number">11</span><br></div></div></li> <li><p>响应(response)     服务端 ---&gt; 客户端</p> <div class="language-http line-numbers-mode"><pre class="language-http"><code>HTTP/1.1(响应采用的协议和版本号) 200(状态码) OK(描述信息)
+<span class="token header"><span class="token header-name keyword">Location</span><span class="token punctuation">:</span> <span class="token header-value">http://www.baidu.com(服务端需要客户端访问的页面路径) </span></span>
+<span class="token header"><span class="token header-name keyword">Server</span><span class="token punctuation">:</span> <span class="token header-value">apache tomcat(服务端的Web服务端名)</span></span>
+<span class="token header"><span class="token header-name keyword">Content-Encoding</span><span class="token punctuation">:</span> <span class="token header-value">gzip(服务端能够发送压缩编码类型) </span></span>
+<span class="token header"><span class="token header-name keyword">Content-Length</span><span class="token punctuation">:</span> <span class="token header-value">80(服务端发送的压缩数据的长度) </span></span>
+<span class="token header"><span class="token header-name keyword">Content-Language</span><span class="token punctuation">:</span> <span class="token header-value">zh-cn(服务端发送的语言类型) </span></span>
+<span class="token header"><span class="token header-name keyword">Content-Type</span><span class="token punctuation">:</span> <span class="token header-value">text/html; charset=GB2312(服务端发送的类型及采用的编码方式)</span></span>
+<span class="token header"><span class="token header-name keyword">Last-Modified</span><span class="token punctuation">:</span> <span class="token header-value">Tue, 11 Jul 2000 18:23:51 GMT(服务端对该资源最后修改的时间)</span></span>
+<span class="token header"><span class="token header-name keyword">Refresh</span><span class="token punctuation">:</span> <span class="token header-value">1;url=http://www.it315.org(服务端要求客户端1秒钟后, 刷新, 然后访问指定的页面路径)</span></span>
+<span class="token header"><span class="token header-name keyword">Content-Disposition</span><span class="token punctuation">:</span> <span class="token header-value">attachment; filename=aaa.zip(服务端要求客户端以下载文件的方式打开该文件)</span></span>
+<span class="token header"><span class="token header-name keyword">Transfer-Encoding</span><span class="token punctuation">:</span> <span class="token header-value">chunked(分块传递数据到客户端）  </span></span>
+<span class="token header"><span class="token header-name keyword">Set-Cookie</span><span class="token punctuation">:</span> <span class="token header-value">SS=Q0=5Lb_nQ; path=/search(服务端发送到客户端的暂存数据)</span></span>
+<span class="token header"><span class="token header-name keyword">Expires</span><span class="token punctuation">:</span> <span class="token header-value">-1//3种(服务端禁止客户端缓存页面数据)</span></span>
+<span class="token header"><span class="token header-name keyword">Cache-Control</span><span class="token punctuation">:</span> <span class="token header-value">no-cache(服务端禁止客户端缓存页面数据)  </span></span>
+<span class="token header"><span class="token header-name keyword">Pragma</span><span class="token punctuation">:</span> <span class="token header-value">no-cache(服务端禁止客户端缓存页面数据)   </span></span>
+<span class="token header"><span class="token header-name keyword">Connection</span><span class="token punctuation">:</span> <span class="token header-value">close(1.0)/(1.1)Keep-Alive(维护客户端和服务端的连接关系)  </span></span>
+<span class="token header"><span class="token header-name keyword">Date</span><span class="token punctuation">:</span> <span class="token header-value">Tue, 11 Jul 2000 18:23:51 GMT(服务端响应客户端的时间)</span></span>
+<span class="token header"><span class="token header-name keyword">Access-Control-Allow-Origin</span><span class="token punctuation">:</span> <span class="token header-value">http:www.baidu.com (指定允许其他域名访问)</span></span>
+<span class="token header"><span class="token header-name keyword">Access-Control-Allow-Credentials</span><span class="token punctuation">:</span> <span class="token header-value">true (是否允许后续请求携带认证信息(cookies),该值只能是true,否则不返回)</span></span>
+</code></pre> <div class="line-numbers-wrapper"><span class="line-number">1</span><br><span class="line-number">2</span><br><span class="line-number">3</span><br><span class="line-number">4</span><br><span class="line-number">5</span><br><span class="line-number">6</span><br><span class="line-number">7</span><br><span class="line-number">8</span><br><span class="line-number">9</span><br><span class="line-number">10</span><br><span class="line-number">11</span><br><span class="line-number">12</span><br><span class="line-number">13</span><br><span class="line-number">14</span><br><span class="line-number">15</span><br><span class="line-number">16</span><br><span class="line-number">17</span><br><span class="line-number">18</span><br><span class="line-number">19</span><br></div></div></li></ul></li></ul> <h2 id="原生js发送ajax请求"><a href="#原生js发送ajax请求" class="header-anchor">#</a> 原生JS发送ajax请求</h2> <h3 id="xmlhttprequest-对象"><a href="#xmlhttprequest-对象" class="header-anchor">#</a> <a href="https://www.ruanyifeng.com/blog/2012/09/xmlhttprequest_level_2.html" target="_blank" rel="noopener noreferrer">XMLHttpRequest<span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a> 对象</h3> <div class="language- line-numbers-mode"><pre class="language-text"><code>XMLHttpRequest对象 用于在后台与服务器交换数据
+直接new XMLHttpRequest()就可以创建
+</code></pre> <div class="line-numbers-wrapper"><span class="line-number">1</span><br><span class="line-number">2</span><br></div></div><h3 id="open"><a href="#open" class="header-anchor">#</a> open()</h3> <div class="language- line-numbers-mode"><pre class="language-text"><code>创建请求
+语法: open(method,url,async)
+
+参数:
+    method: 请求的类型: GET 或 POST
+    url:    服务器url地址
+    async:  true（异步）或 false（同步）
+
+请求类型是 GET 的可以在url里设置params参数, 而POST则需要使用send()方法传递参数
+xhr.open('GET', 'http://127.0.0.1:8000/server?a=100&amp;b=200&amp;c=300');
+</code></pre> <div class="line-numbers-wrapper"><span class="line-number">1</span><br><span class="line-number">2</span><br><span class="line-number">3</span><br><span class="line-number">4</span><br><span class="line-number">5</span><br><span class="line-number">6</span><br><span class="line-number">7</span><br><span class="line-number">8</span><br><span class="line-number">9</span><br><span class="line-number">10</span><br></div></div><h3 id="send"><a href="#send" class="header-anchor">#</a> send()</h3> <div class="language- line-numbers-mode"><pre class="language-text"><code>发送请求
+语法: send(body)
+    参数:
+    body: POST 请求携带的请求体参数
+    xhr.send('a=100&amp;b=200&amp;c=300');
+</code></pre> <div class="line-numbers-wrapper"><span class="line-number">1</span><br><span class="line-number">2</span><br><span class="line-number">3</span><br><span class="line-number">4</span><br><span class="line-number">5</span><br></div></div><ul><li>GET 和 POST 的区别:</li></ul> <div class="language- line-numbers-mode"><pre class="language-text"><code>与 POST 相比, GET 更简单也更快, 并且在大部分情况下都能用
+	然而, 在以下情况中, 请使用 POST 请求
+</code></pre> <div class="line-numbers-wrapper"><span class="line-number">1</span><br><span class="line-number">2</span><br></div></div><ul><li>无法使用缓存文件（更新服务器上的文件或数据库）</li> <li>向服务器发送大量数据（<code>POST</code> 没有数据量限制）</li> <li>发送包含未知字符的用户输入时, <code>POST</code> 比 <code>GET</code> 更稳定也更可靠</li></ul> <h3 id="xmlhttprequest-对象的事件或方法"><a href="#xmlhttprequest-对象的事件或方法" class="header-anchor">#</a> XMLHttpRequest 对象的事件或方法</h3> <ul><li><p><code>setRequestHeader()</code></p> <div class="language- line-numbers-mode"><pre class="language-text"><code>设置请求头信息, 参数是名值对结构的字符串(不能写中文)
+</code></pre> <div class="line-numbers-wrapper"><span class="line-number">1</span><br></div></div></li> <li><p><code>getAllResponseHeaders()</code></p> <div class="language- line-numbers-mode"><pre class="language-text"><code>获取响应头信息
+</code></pre> <div class="line-numbers-wrapper"><span class="line-number">1</span><br></div></div></li> <li><p><code>abort()</code></p> <div class="language- line-numbers-mode"><pre class="language-text"><code>终止ajax请求
+</code></pre> <div class="line-numbers-wrapper"><span class="line-number">1</span><br></div></div></li></ul> <h4 id="ontimeout事件"><a href="#ontimeout事件" class="header-anchor">#</a> ontimeout事件</h4> <div class="language- line-numbers-mode"><pre class="language-text"><code>请求超时事件, 当指定超时时间, 请求超时后触发
+</code></pre> <div class="line-numbers-wrapper"><span class="line-number">1</span><br></div></div><h4 id="onerror事件"><a href="#onerror事件" class="header-anchor">#</a> onerror事件</h4> <div class="language- line-numbers-mode"><pre class="language-text"><code>网络异常事件, 网络异常后触发
+</code></pre> <div class="line-numbers-wrapper"><span class="line-number">1</span><br></div></div><h4 id="onreadystatechange-事件"><a href="#onreadystatechange-事件" class="header-anchor">#</a> onreadystatechange 事件</h4> <div class="language- line-numbers-mode"><pre class="language-text"><code>请求被发送到服务器时, 我们需要执行一些基于响应的任务
+
+当请求被发送到服务器时, 我们需要执行一些基于响应的任务
+每当 readyState 改变时, 就会触发 onreadystatechange 事件
+
+readyState 属性存有 XMLHttpRequest 的状态信息, 从 0 到 4 发生变化
+    0: 请求未初始化
+    1: 服务器连接已建立
+    2: 请求已接收
+    3: 请求处理中
+    4: 请求已完成, 且响应已就绪
+
+status(响应状态码)属性, 响应状态码 2开头 的都是表示成功      	
+    200 表示 &quot;OK&quot;
+    404 表示 找不到
+    403 表示 访问被禁止
+    401 表示 未授权
+    500 表示 内部错误
+    
+所以在处理服务器响应时是要先进行判断是否 获取了所有的请求 请求状态是否成功
+</code></pre> <div class="line-numbers-wrapper"><span class="line-number">1</span><br><span class="line-number">2</span><br><span class="line-number">3</span><br><span class="line-number">4</span><br><span class="line-number">5</span><br><span class="line-number">6</span><br><span class="line-number">7</span><br><span class="line-number">8</span><br><span class="line-number">9</span><br><span class="line-number">10</span><br><span class="line-number">11</span><br><span class="line-number">12</span><br><span class="line-number">13</span><br><span class="line-number">14</span><br><span class="line-number">15</span><br><span class="line-number">16</span><br><span class="line-number">17</span><br><span class="line-number">18</span><br><span class="line-number">19</span><br><span class="line-number">20</span><br></div></div><ul><li><p><code>statusText属性</code></p> <div class="language- line-numbers-mode"><pre class="language-text"><code>响应状态字符串, 如: 200表示OK
+</code></pre> <div class="line-numbers-wrapper"><span class="line-number">1</span><br></div></div></li> <li><p><code>responseText属性</code></p> <div class="language- line-numbers-mode"><pre class="language-text"><code>永远获取的是字符串形式的响应体, 如果响应体不是字符串则会乱码
+</code></pre> <div class="line-numbers-wrapper"><span class="line-number">1</span><br></div></div></li> <li><p><code>response属性</code></p> <div class="language- line-numbers-mode"><pre class="language-text"><code>获取响应体信息(服务器返回的数据), 指定了responseType的类型时, 会直接获取到转换后的对象
+</code></pre> <div class="line-numbers-wrapper"><span class="line-number">1</span><br></div></div></li> <li><p><code>responseType属性</code></p> <div class="language- line-numbers-mode"><pre class="language-text"><code>设置响应体数据类型, 可以设置为 'json' 这样响应体数据会自动进行json数据类型转换
+</code></pre> <div class="line-numbers-wrapper"><span class="line-number">1</span><br></div></div></li> <li><p><code>timeout属性</code></p> <div class="language- line-numbers-mode"><pre class="language-text"><code>设置请求超时时间(毫秒)
+</code></pre> <div class="line-numbers-wrapper"><span class="line-number">1</span><br></div></div></li> <li><p>原生<code>ajax</code>请求示例:</p> <div class="language-js line-numbers-mode"><pre class="language-js"><code><span class="token comment">// 创建 XMLHttpRequest 对象</span>
+<span class="token keyword">const</span> xhr <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">XMLHttpRequest</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token comment">// 是否正在发送AJAX请求的标识变量</span>
+<span class="token comment">// let isSending = false; </span>
+<span class="token comment">// 超时设置 2s</span>
+xhr<span class="token punctuation">.</span>timeout <span class="token operator">=</span> <span class="token number">2000</span><span class="token punctuation">;</span>
+<span class="token comment">// 超时回调</span>
+xhr<span class="token punctuation">.</span><span class="token function-variable function">ontimeout</span> <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{</span>
+    <span class="token function">alert</span><span class="token punctuation">(</span><span class="token string">'网络超时, 请稍后重试!'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">;</span>
+<span class="token comment">// 网络错误回调</span>
+xhr<span class="token punctuation">.</span><span class="token function-variable function">onerror</span> <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{</span>
+    <span class="token function">alert</span><span class="token punctuation">(</span><span class="token string">'你的网络似乎出现了一些问题!'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">;</span>
+<span class="token comment">// 判断标识变量</span>
+<span class="token keyword">if</span> <span class="token punctuation">(</span>isSending<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token comment">// 如果正在发送, 则取消该请求</span>
+    xhr<span class="token punctuation">.</span><span class="token function">abort</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+<span class="token comment">// 创建 GET 请求, url为 data.json</span>
+xhr<span class="token punctuation">.</span><span class="token function">open</span><span class="token punctuation">(</span><span class="token string">'GET'</span><span class="token punctuation">,</span> <span class="token string">'data.json'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token comment">// 发送请求</span>
+xhr<span class="token punctuation">.</span><span class="token function">send</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token comment">// 修改标识变量的值</span>
+isSending <span class="token operator">=</span> <span class="token boolean">true</span><span class="token punctuation">;</span>
+<span class="token comment">// onreadystatechange 事件</span>
+xhr<span class="token punctuation">.</span><span class="token function-variable function">onreadystatechange</span> <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{</span>
+    
+    <span class="token comment">// 已获取了所有的请求把标识变量重置</span>
+    <span class="token comment">// if (xhr.readyState === 4) {</span>
+    <span class="token comment">//    // 修改标识变量</span>
+    <span class="token comment">//    isSending = false;</span>
+    <span class="token comment">// }</span>
+    
+    <span class="token comment">// 已获取了所有的请求</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>xhr<span class="token punctuation">.</span>readyState <span class="token operator">===</span> <span class="token number">4</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+        <span class="token comment">// 请求状态成功</span>
+        <span class="token keyword">if</span><span class="token punctuation">(</span>xhr<span class="token punctuation">.</span>status <span class="token operator">===</span> <span class="token number">200</span><span class="token punctuation">)</span><span class="token punctuation">{</span>
+            console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>xhr<span class="token punctuation">.</span>response<span class="token punctuation">)</span><span class="token punctuation">;</span>      <span class="token comment">// 响应体</span>
+            console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>xhr<span class="token punctuation">.</span>status<span class="token punctuation">)</span><span class="token punctuation">;</span>        <span class="token comment">// 状态码</span>
+            console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>xhr<span class="token punctuation">.</span>statusText<span class="token punctuation">)</span><span class="token punctuation">;</span>    <span class="token comment">// 响应状态字符串</span>
+            console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>xhr<span class="token punctuation">.</span><span class="token function">getAllResponseHeaders</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 所有的响应头</span>
+         <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span><span class="token punctuation">;</span>
+</code></pre> <div class="line-numbers-wrapper"><span class="line-number">1</span><br><span class="line-number">2</span><br><span class="line-number">3</span><br><span class="line-number">4</span><br><span class="line-number">5</span><br><span class="line-number">6</span><br><span class="line-number">7</span><br><span class="line-number">8</span><br><span class="line-number">9</span><br><span class="line-number">10</span><br><span class="line-number">11</span><br><span class="line-number">12</span><br><span class="line-number">13</span><br><span class="line-number">14</span><br><span class="line-number">15</span><br><span class="line-number">16</span><br><span class="line-number">17</span><br><span class="line-number">18</span><br><span class="line-number">19</span><br><span class="line-number">20</span><br><span class="line-number">21</span><br><span class="line-number">22</span><br><span class="line-number">23</span><br><span class="line-number">24</span><br><span class="line-number">25</span><br><span class="line-number">26</span><br><span class="line-number">27</span><br><span class="line-number">28</span><br><span class="line-number">29</span><br><span class="line-number">30</span><br><span class="line-number">31</span><br><span class="line-number">32</span><br><span class="line-number">33</span><br><span class="line-number">34</span><br><span class="line-number">35</span><br><span class="line-number">36</span><br><span class="line-number">37</span><br><span class="line-number">38</span><br><span class="line-number">39</span><br><span class="line-number">40</span><br><span class="line-number">41</span><br><span class="line-number">42</span><br><span class="line-number">43</span><br><span class="line-number">44</span><br><span class="line-number">45</span><br></div></div></li></ul> <h4 id="progress-事件"><a href="#progress-事件" class="header-anchor">#</a> progress 事件</h4> <p>请求发送时触发</p> <h3 id="formdata对象"><a href="#formdata对象" class="header-anchor">#</a> formData对象</h3> <div class="language- line-numbers-mode"><pre class="language-text"><code>formData对象的主要用途有两个: 
+  - 将form表单元素的name与value进行组合, 实现表单数据的序列化, 从而减少表单元素的拼接, 提高效率
+  - 异步上传文件
+</code></pre> <div class="line-numbers-wrapper"><span class="line-number">1</span><br><span class="line-number">2</span><br><span class="line-number">3</span><br></div></div><ul><li><p>通过<code>get(key)</code>与<code>getAll(key)</code>来获取相对应的值</p></li> <li><p>通过<code>append(key,value)</code>在数据末尾追加数据</p></li> <li><p>通过<code>set(key, value)</code>来设置修改数据</p> <div class="language- extra-class"><pre><code>key 的值不存在, 会添加一条数据
+key 的值存在, 会修改对应的 value 值
+</code></pre></div></li> <li><p>通过<code>has(key)</code>来判断是否存在对应的<code>key</code>值</p></li> <li><p>通过<code>delete(key)</code>可以删除对应<code>key</code>的数据</p></li></ul> <div class="language-js line-numbers-mode"><pre class="language-js"><code><span class="token comment">//通过formData构造函数创建一个空对象</span>
+<span class="token keyword">const</span> formData <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">FormData</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">//可以通过append()方法来追加数据</span>
+formData<span class="token punctuation">.</span><span class="token function">append</span><span class="token punctuation">(</span><span class="token string">&quot;name&quot;</span><span class="token punctuation">,</span><span class="token string">&quot;zhangsan&quot;</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">//通过set方法对值进行设置</span>
+formData<span class="token punctuation">.</span><span class="token function">set</span><span class="token punctuation">(</span><span class="token string">&quot;name&quot;</span><span class="token punctuation">,</span><span class="token string">&quot;zhangsan&quot;</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">//通过get方法对值进行读取</span>
+console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>formData<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span><span class="token string">&quot;name&quot;</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// zhangsan</span>
+
+<span class="token comment">// 获取key为age的第一个值</span>
+formData<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span><span class="token string">&quot;age&quot;</span><span class="token punctuation">)</span><span class="token punctuation">;</span> 
+
+<span class="token comment">// 获取key为age的所有值, 返回值为数组类型</span>
+formData<span class="token punctuation">.</span><span class="token function">getAll</span><span class="token punctuation">(</span><span class="token string">&quot;age&quot;</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">//通过append() 方法在末尾追加 key 为 name 值为 zhangsan 的数据</span>
+formData<span class="token punctuation">.</span><span class="token function">append</span><span class="token punctuation">(</span><span class="token string">&quot;name&quot;</span><span class="token punctuation">,</span><span class="token string">&quot;zhangsan&quot;</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">//判断是否包含 key 为 name 的数据</span>
+console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>formData<span class="token punctuation">.</span><span class="token function">has</span><span class="token punctuation">(</span><span class="token string">&quot;name&quot;</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">//true</span>
+
+<span class="token comment">//删除 key 为 name 的值</span>
+formData<span class="token punctuation">.</span><span class="token function">delete</span><span class="token punctuation">(</span><span class="token string">&quot;name&quot;</span><span class="token punctuation">)</span><span class="token punctuation">;</span>    
+
+<span class="token comment">// 遍历 formData 里的每个值</span>
+<span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">var</span> <span class="token punctuation">[</span>key<span class="token punctuation">,</span> value<span class="token punctuation">]</span> <span class="token keyword">of</span> formData<span class="token punctuation">.</span><span class="token function">entries</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+	console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">&quot;key:&quot;</span><span class="token punctuation">,</span> key<span class="token punctuation">)</span><span class="token punctuation">;</span>
+	console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">&quot;value:&quot;</span><span class="token punctuation">,</span> value<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">&quot;------------------&quot;</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> <div class="line-numbers-wrapper"><span class="line-number">1</span><br><span class="line-number">2</span><br><span class="line-number">3</span><br><span class="line-number">4</span><br><span class="line-number">5</span><br><span class="line-number">6</span><br><span class="line-number">7</span><br><span class="line-number">8</span><br><span class="line-number">9</span><br><span class="line-number">10</span><br><span class="line-number">11</span><br><span class="line-number">12</span><br><span class="line-number">13</span><br><span class="line-number">14</span><br><span class="line-number">15</span><br><span class="line-number">16</span><br><span class="line-number">17</span><br><span class="line-number">18</span><br><span class="line-number">19</span><br><span class="line-number">20</span><br><span class="line-number">21</span><br><span class="line-number">22</span><br><span class="line-number">23</span><br><span class="line-number">24</span><br><span class="line-number">25</span><br><span class="line-number">26</span><br><span class="line-number">27</span><br><span class="line-number">28</span><br><span class="line-number">29</span><br><span class="line-number">30</span><br><span class="line-number">31</span><br><span class="line-number">32</span><br><span class="line-number">33</span><br></div></div><p>前端文件上传简单示例:</p> <div class="language-js line-numbers-mode"><pre class="language-js"><code><span class="token operator">&lt;</span>input type<span class="token operator">=</span><span class="token string">&quot;file&quot;</span> id<span class="token operator">=</span><span class="token string">&quot;file&quot;</span><span class="token operator">&gt;</span>
+<span class="token operator">&lt;</span>br <span class="token operator">/</span><span class="token operator">&gt;</span>
+<span class="token operator">&lt;</span>br <span class="token operator">/</span><span class="token operator">&gt;</span>
+<span class="token operator">&lt;</span>button id<span class="token operator">=</span><span class="token string">&quot;btn&quot;</span><span class="token operator">&gt;</span>上传<span class="token operator">&lt;</span><span class="token operator">/</span>button<span class="token operator">&gt;</span>
+<span class="token operator">&lt;</span>script<span class="token operator">&gt;</span>
+<span class="token keyword">const</span> file <span class="token operator">=</span> document<span class="token punctuation">.</span><span class="token function">getElementById</span><span class="token punctuation">(</span><span class="token string">'file'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">const</span> btn <span class="token operator">=</span> document<span class="token punctuation">.</span><span class="token function">getElementById</span><span class="token punctuation">(</span><span class="token string">'btn'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token keyword">const</span> <span class="token function-variable function">http</span> <span class="token operator">=</span> <span class="token keyword">async</span> <span class="token punctuation">(</span><span class="token parameter">url<span class="token punctuation">,</span> options</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{</span>
+    <span class="token keyword">const</span> opt <span class="token operator">=</span> Object<span class="token punctuation">.</span><span class="token function">assign</span><span class="token punctuation">(</span><span class="token punctuation">{</span>
+        <span class="token literal-property property">method</span><span class="token operator">:</span> <span class="token string">'GET'</span>
+    <span class="token punctuation">}</span><span class="token punctuation">,</span> options<span class="token punctuation">)</span>
+    console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>opt<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">return</span> <span class="token keyword">new</span> <span class="token class-name">Promise</span><span class="token punctuation">(</span><span class="token keyword">async</span> <span class="token punctuation">(</span><span class="token parameter">resolve<span class="token punctuation">,</span> reject</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{</span>
+        <span class="token keyword">try</span> <span class="token punctuation">{</span>
+            <span class="token keyword">const</span> response <span class="token operator">=</span> <span class="token keyword">await</span> <span class="token function">fetch</span><span class="token punctuation">(</span>url<span class="token punctuation">,</span> opt<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">const</span> data <span class="token operator">=</span> <span class="token keyword">await</span> response<span class="token punctuation">.</span><span class="token function">json</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token function">resolve</span><span class="token punctuation">(</span>data<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span> <span class="token keyword">catch</span> <span class="token punctuation">(</span>error<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+            <span class="token function">reject</span><span class="token punctuation">(</span>error<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span><span class="token punctuation">)</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">let</span> formData <span class="token operator">=</span> <span class="token keyword">null</span><span class="token punctuation">;</span>
+file<span class="token punctuation">.</span><span class="token function">addEventListener</span><span class="token punctuation">(</span><span class="token string">'change'</span><span class="token punctuation">,</span> <span class="token parameter">e</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{</span>
+    <span class="token comment">// input元素(type=&quot;file&quot;) 添加文件会触发 change 事件</span>
+    <span class="token comment">// 该元素的 files数组属性里会添加对应的文件对象</span>
+    console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>file<span class="token punctuation">.</span>files<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 创建 formData数据类型</span>
+    formData <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">FormData</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token comment">// 添加文件数据</span>
+    formData<span class="token punctuation">.</span><span class="token function">append</span><span class="token punctuation">(</span><span class="token string">&quot;file&quot;</span><span class="token punctuation">,</span> file<span class="token punctuation">.</span>files<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>formData<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span>
+
+btn<span class="token punctuation">.</span><span class="token function">addEventListener</span><span class="token punctuation">(</span><span class="token string">'click'</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span>formData<span class="token punctuation">)</span> <span class="token keyword">return</span><span class="token punctuation">;</span>
+    <span class="token function">http</span><span class="token punctuation">(</span><span class="token string">'http://localhost:8888/test/fileUpload'</span><span class="token punctuation">,</span> <span class="token punctuation">{</span>
+        <span class="token literal-property property">method</span><span class="token operator">:</span> <span class="token string">'post'</span><span class="token punctuation">,</span>
+        <span class="token comment">// 指定数据类型是二进制</span>
+        <span class="token literal-property property">headers</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+            <span class="token string-property property">&quot;Content-Type&quot;</span><span class="token operator">:</span> <span class="token string">&quot;multipart/form-data&quot;</span>
+        <span class="token punctuation">}</span><span class="token punctuation">,</span>
+        <span class="token literal-property property">body</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+            formData
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">then</span><span class="token punctuation">(</span><span class="token parameter">res</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{</span>
+        console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>res<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span><span class="token punctuation">)</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span>
+
+<span class="token operator">&lt;</span><span class="token operator">/</span>script<span class="token operator">&gt;</span>
+</code></pre> <div class="line-numbers-wrapper"><span class="line-number">1</span><br><span class="line-number">2</span><br><span class="line-number">3</span><br><span class="line-number">4</span><br><span class="line-number">5</span><br><span class="line-number">6</span><br><span class="line-number">7</span><br><span class="line-number">8</span><br><span class="line-number">9</span><br><span class="line-number">10</span><br><span class="line-number">11</span><br><span class="line-number">12</span><br><span class="line-number">13</span><br><span class="line-number">14</span><br><span class="line-number">15</span><br><span class="line-number">16</span><br><span class="line-number">17</span><br><span class="line-number">18</span><br><span class="line-number">19</span><br><span class="line-number">20</span><br><span class="line-number">21</span><br><span class="line-number">22</span><br><span class="line-number">23</span><br><span class="line-number">24</span><br><span class="line-number">25</span><br><span class="line-number">26</span><br><span class="line-number">27</span><br><span class="line-number">28</span><br><span class="line-number">29</span><br><span class="line-number">30</span><br><span class="line-number">31</span><br><span class="line-number">32</span><br><span class="line-number">33</span><br><span class="line-number">34</span><br><span class="line-number">35</span><br><span class="line-number">36</span><br><span class="line-number">37</span><br><span class="line-number">38</span><br><span class="line-number">39</span><br><span class="line-number">40</span><br><span class="line-number">41</span><br><span class="line-number">42</span><br><span class="line-number">43</span><br><span class="line-number">44</span><br><span class="line-number">45</span><br><span class="line-number">46</span><br><span class="line-number">47</span><br><span class="line-number">48</span><br><span class="line-number">49</span><br><span class="line-number">50</span><br><span class="line-number">51</span><br><span class="line-number">52</span><br><span class="line-number">53</span><br><span class="line-number">54</span><br></div></div><blockquote><p>可以将 <code>formData</code> 对象作为<code>POST</code>请求<code>body</code>参数上传文件(请求头需要指定为<code>&quot;Content-Type&quot;: &quot;multipart/form-data&quot;</code>)</p></blockquote> <blockquote><p>还可以直接通过 <code>new formData(表单DOM)</code>直接创建也是有效的</p></blockquote> <h3 id="jquery-发送-ajax请求"><a href="#jquery-发送-ajax请求" class="header-anchor">#</a> JQuery 发送 AJAX请求</h3> <p><code>$.get()</code></p> <div class="language-js line-numbers-mode"><pre class="language-js"><code> <span class="token comment">// $.get(</span>
+ $<span class="token punctuation">.</span><span class="token function">post</span><span class="token punctuation">(</span>
+     <span class="token string">'http://127.0.0.1:8000/jquery-server'</span><span class="token punctuation">,</span> <span class="token comment">// url地址</span>
+     <span class="token punctuation">{</span><span class="token literal-property property">a</span><span class="token operator">:</span><span class="token number">100</span><span class="token punctuation">,</span><span class="token literal-property property">b</span><span class="token operator">:</span><span class="token number">200</span><span class="token punctuation">}</span><span class="token punctuation">,</span> <span class="token comment">// 携带的参数</span>
+     <span class="token keyword">function</span><span class="token punctuation">(</span><span class="token parameter">data</span><span class="token punctuation">)</span><span class="token punctuation">{</span> <span class="token comment">// 回调</span>
+         console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>data<span class="token punctuation">)</span><span class="token punctuation">;</span>
+     <span class="token punctuation">}</span><span class="token punctuation">,</span>
+     <span class="token string">'json'</span> <span class="token comment">// 响应体结果自动转换</span>
+ <span class="token punctuation">)</span>
+</code></pre> <div class="line-numbers-wrapper"><span class="line-number">1</span><br><span class="line-number">2</span><br><span class="line-number">3</span><br><span class="line-number">4</span><br><span class="line-number">5</span><br><span class="line-number">6</span><br><span class="line-number">7</span><br><span class="line-number">8</span><br><span class="line-number">9</span><br></div></div><blockquote><p><code>$.get()</code> 和 <code>$.post()</code> 使用方法一模一样</p></blockquote> <p><code>$.ajax()</code> 通用发送请求</p> <div class="language-js line-numbers-mode"><pre class="language-js"><code>$<span class="token punctuation">.</span><span class="token function">ajax</span><span class="token punctuation">(</span><span class="token punctuation">{</span>
+    <span class="token comment">// 请求地址</span>
+    <span class="token literal-property property">url</span><span class="token operator">:</span> <span class="token string">'http://127.0.0.1:8000/jquery-server'</span><span class="token punctuation">,</span>
+    <span class="token comment">// 参数</span>
+    <span class="token literal-property property">data</span><span class="token operator">:</span> <span class="token punctuation">{</span> <span class="token literal-property property">a</span><span class="token operator">:</span> <span class="token number">100</span><span class="token punctuation">,</span> <span class="token literal-property property">b</span><span class="token operator">:</span> <span class="token number">200</span> <span class="token punctuation">}</span><span class="token punctuation">,</span>
+    <span class="token comment">// 请求方法</span>
+    <span class="token literal-property property">type</span><span class="token operator">:</span> <span class="token string">'GET'</span><span class="token punctuation">,</span>
+    <span class="token comment">// 响应体结果自动转换</span>
+    <span class="token literal-property property">dataType</span><span class="token operator">:</span> <span class="token string">'json'</span><span class="token punctuation">,</span>
+    <span class="token comment">// 成功的回调</span>
+    <span class="token function-variable function">success</span><span class="token operator">:</span> <span class="token keyword">function</span><span class="token punctuation">(</span><span class="token parameter">data</span><span class="token punctuation">)</span><span class="token punctuation">{</span>
+        console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>data<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span><span class="token punctuation">,</span>
+    <span class="token comment">// 超时时间</span>
+    <span class="token literal-property property">timeout</span><span class="token operator">:</span> <span class="token number">2000</span><span class="token punctuation">,</span>
+    <span class="token comment">// 失败的回调</span>
+    <span class="token function-variable function">error</span><span class="token operator">:</span> <span class="token keyword">function</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">{</span>
+        console<span class="token punctuation">.</span><span class="token function">error</span><span class="token punctuation">(</span><span class="token string">'出错了'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span><span class="token punctuation">,</span>
+    <span class="token comment">// 请求头信息</span>
+    <span class="token literal-property property">headers</span><span class="token operator">:</span><span class="token punctuation">{</span>
+        <span class="token literal-property property">c</span><span class="token operator">:</span> <span class="token number">300</span><span class="token punctuation">,</span>
+        <span class="token literal-property property">d</span><span class="token operator">:</span> <span class="token number">400</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span>
+</code></pre> <div class="line-numbers-wrapper"><span class="line-number">1</span><br><span class="line-number">2</span><br><span class="line-number">3</span><br><span class="line-number">4</span><br><span class="line-number">5</span><br><span class="line-number">6</span><br><span class="line-number">7</span><br><span class="line-number">8</span><br><span class="line-number">9</span><br><span class="line-number">10</span><br><span class="line-number">11</span><br><span class="line-number">12</span><br><span class="line-number">13</span><br><span class="line-number">14</span><br><span class="line-number">15</span><br><span class="line-number">16</span><br><span class="line-number">17</span><br><span class="line-number">18</span><br><span class="line-number">19</span><br><span class="line-number">20</span><br><span class="line-number">21</span><br><span class="line-number">22</span><br><span class="line-number">23</span><br><span class="line-number">24</span><br><span class="line-number">25</span><br></div></div><h3 id="fetch-发送-ajax请求"><a href="#fetch-发送-ajax请求" class="header-anchor">#</a> <a href="https://www.ruanyifeng.com/blog/2020/12/fetch-tutorial.html" target="_blank" rel="noopener noreferrer">fetch<span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a> 发送 AJAX请求</h3> <p><code>fetch</code>: 原生js函数, 不再使用 <code>XmlHttpRequest</code> 对象发送 <code>ajax</code> 请求</p> <p><code>fetch</code>请求成功以后, 得到的是一个 <a href="https://developer.mozilla.org/en-US/docs/Web/API/Response" target="_blank" rel="noopener noreferrer">Response 对象<span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a>, 它对应服务器的 HTTP 回应</p> <blockquote><p>也就是说<code>fetch</code> 请求返回的响应体包着两层 <code>Promise</code> 对象, 需要<code>then</code>或者<code>await</code>两次才能拿到数据</p></blockquote> <p>完整写法</p> <div class="language-js line-numbers-mode"><pre class="language-js"><code><span class="token comment">// 请求控制器</span>
+<span class="token keyword">const</span> controller <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">AbortController</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token function">fetch</span><span class="token punctuation">(</span><span class="token string">'http://127.0.0.1:8000/fetch-server?a=100&amp;b=200'</span><span class="token punctuation">,</span> <span class="token punctuation">{</span> <span class="token comment">// fetch 的 get/head请求 需要需要将参数拼接到 url 后面</span>
+    <span class="token comment">// 请求方法</span>
+    <span class="token literal-property property">method</span><span class="token operator">:</span> <span class="token string">'POST'</span><span class="token punctuation">,</span>
+    <span class="token comment">// 请求头</span>
+    <span class="token literal-property property">headers</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+        <span class="token literal-property property">name</span><span class="token operator">:</span> <span class="token string">'zhang san'</span><span class="token punctuation">,</span>
+        <span class="token literal-property property">age</span><span class="token operator">:</span> <span class="token number">18</span>
+    <span class="token punctuation">}</span><span class="token punctuation">,</span>
+    <span class="token comment">// 请求体</span>
+    <span class="token comment">// body: 'username=admin&amp;password=admin'</span>
+    <span class="token literal-property property">body</span><span class="token operator">:</span> <span class="token constant">JSON</span><span class="token punctuation">.</span><span class="token function">stringify</span><span class="token punctuation">(</span><span class="token punctuation">{</span><span class="token literal-property property">username</span><span class="token operator">:</span> <span class="token string">'admin'</span><span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+    <span class="token comment">// 设置 signal 属性后, controller.abort(); 将会中断请求</span>
+    <span class="token literal-property property">signal</span><span class="token operator">:</span> controller<span class="token punctuation">.</span>signal 
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">then</span><span class="token punctuation">(</span><span class="token parameter">response</span><span class="token operator">=&gt;</span><span class="token punctuation">{</span>
+    console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">'联系服务器成功了'</span><span class="token punctuation">,</span> response<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    
+    <span class="token keyword">return</span> response<span class="token punctuation">.</span><span class="token function">json</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>  <span class="token comment">// 将响应体转换为 JSON 格式</span>
+    <span class="token comment">// return response.text(); // 将响应体转换为文本格式</span>
+    <span class="token comment">// return response.arrayBuffer(); // 将响应体转换为 arrayBuffer 格式</span>
+    <span class="token comment">// return response.blob(); // 将响应体转换为 blob 格式</span>
+    <span class="token comment">// return response.formData(); // 将响应体转换为 formData 格式</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">then</span><span class="token punctuation">(</span><span class="token parameter">response</span><span class="token operator">=&gt;</span><span class="token punctuation">{</span>
+    console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">'获取数据成功了'</span><span class="token punctuation">,</span> response<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">catch</span><span class="token punctuation">(</span><span class="token parameter">error</span><span class="token operator">=&gt;</span><span class="token punctuation">{</span>
+    console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">'请求出错'</span><span class="token punctuation">,</span> error<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span>
+</code></pre> <div class="line-numbers-wrapper"><span class="line-number">1</span><br><span class="line-number">2</span><br><span class="line-number">3</span><br><span class="line-number">4</span><br><span class="line-number">5</span><br><span class="line-number">6</span><br><span class="line-number">7</span><br><span class="line-number">8</span><br><span class="line-number">9</span><br><span class="line-number">10</span><br><span class="line-number">11</span><br><span class="line-number">12</span><br><span class="line-number">13</span><br><span class="line-number">14</span><br><span class="line-number">15</span><br><span class="line-number">16</span><br><span class="line-number">17</span><br><span class="line-number">18</span><br><span class="line-number">19</span><br><span class="line-number">20</span><br><span class="line-number">21</span><br><span class="line-number">22</span><br><span class="line-number">23</span><br><span class="line-number">24</span><br><span class="line-number">25</span><br><span class="line-number">26</span><br><span class="line-number">27</span><br><span class="line-number">28</span><br><span class="line-number">29</span><br></div></div><h4 id="fetch-的标头属性"><a href="#fetch-的标头属性" class="header-anchor">#</a> fetch 的标头属性:</h4> <p><strong>Response.ok</strong></p> <p><code>Response.ok</code>属性返回一个布尔值, 表示请求是否成功, <code>true</code>对应 HTTP 请求的状态码 200 到 299, <code>false</code>对应其他的状态码</p> <p><strong>Response.status</strong></p> <p><code>Response.status</code>属性返回一个数字, 表示 HTTP 回应的状态码（例如200, 表示成功请求）</p> <p><strong>Response.statusText</strong></p> <p><code>Response.statusText</code>属性返回一个字符串, 表示 HTTP 回应的状态信息（例如请求成功以后, 服务器返回&quot;OK&quot;）</p> <p><strong>Response.url</strong></p> <p><code>Response.url</code>属性返回请求的 URL, 如果 URL 存在跳转, 该属性返回的是最终 URL</p> <p><strong>Response.type</strong></p> <p><code>Response.type</code>属性返回请求的类型可能的值如下:</p> <ul><li><code>basic</code>: 普通请求, 即同源请求</li> <li><code>cors</code>: 跨域请求</li> <li><code>error</code>: 网络错误, 主要用于 Service Worker</li> <li><code>opaque</code>: 如果<code>fetch()</code>请求的<code>type</code>属性设为<code>no-cors</code>, 就会返回这个值, 详见请求部分表示发出的是简单的跨域请求, 类似<code>&lt;form&gt;</code>表单的那种跨域请求</li> <li><code>opaqueredirect</code>: 如果<code>fetch()</code>请求的<code>redirect</code>属性设为<code>manual</code>, 就会返回这个值, 详见请求部分</li></ul> <p><strong>Response.redirected</strong></p> <p><code>Response.redirected</code>属性返回一个布尔值, 表示请求是否发生过跳转</p> <h4 id="通过标头属性判断请求是否成功"><a href="#通过标头属性判断请求是否成功" class="header-anchor">#</a> 通过标头属性判断请求是否成功</h4> <div class="language-js line-numbers-mode"><pre class="language-js"><code><span class="token keyword">async</span> <span class="token keyword">function</span> <span class="token function">fetchText</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token keyword">const</span> response <span class="token operator">=</span> <span class="token keyword">await</span> <span class="token function">fetch</span><span class="token punctuation">(</span><span class="token string">'/readme.txt'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>response<span class="token punctuation">.</span>status <span class="token operator">&gt;=</span> <span class="token number">200</span> <span class="token operator">&amp;&amp;</span> response<span class="token punctuation">.</span>status <span class="token operator">&lt;</span> <span class="token number">300</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+        <span class="token keyword">return</span> <span class="token keyword">await</span> response<span class="token punctuation">.</span><span class="token function">text</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{</span>
+        <span class="token keyword">throw</span> <span class="token keyword">new</span> <span class="token class-name">Error</span><span class="token punctuation">(</span>response<span class="token punctuation">.</span>statusText<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre> <div class="line-numbers-wrapper"><span class="line-number">1</span><br><span class="line-number">2</span><br><span class="line-number">3</span><br><span class="line-number">4</span><br><span class="line-number">5</span><br><span class="line-number">6</span><br><span class="line-number">7</span><br><span class="line-number">8</span><br></div></div><p>使用 <code>async</code> + <code>await</code></p> <div class="language-js line-numbers-mode"><pre class="language-js"><code><span class="token keyword">const</span> <span class="token function-variable function">http</span> <span class="token operator">=</span> <span class="token keyword">async</span> <span class="token punctuation">(</span><span class="token parameter">url<span class="token punctuation">,</span> options</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{</span>
+    <span class="token keyword">const</span> opt <span class="token operator">=</span> Object<span class="token punctuation">.</span><span class="token function">assign</span><span class="token punctuation">(</span><span class="token punctuation">{</span>
+        <span class="token literal-property property">method</span><span class="token operator">:</span> <span class="token string">'GET'</span><span class="token punctuation">,</span>
+        <span class="token literal-property property">headers</span><span class="token operator">:</span><span class="token punctuation">{</span>
+            <span class="token string-property property">&quot;content-type&quot;</span><span class="token operator">:</span> <span class="token string">&quot;application/json&quot;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span><span class="token punctuation">,</span> options<span class="token punctuation">)</span>
+    <span class="token keyword">return</span> <span class="token keyword">new</span> <span class="token class-name">Promise</span><span class="token punctuation">(</span><span class="token keyword">async</span> <span class="token punctuation">(</span><span class="token parameter">resolve<span class="token punctuation">,</span> reject</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{</span>
+        <span class="token keyword">try</span> <span class="token punctuation">{</span>
+            <span class="token keyword">const</span> response <span class="token operator">=</span> <span class="token keyword">await</span> <span class="token function">fetch</span><span class="token punctuation">(</span>url<span class="token punctuation">,</span> opt<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">const</span> data <span class="token operator">=</span> <span class="token keyword">await</span> response<span class="token punctuation">.</span><span class="token function">json</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token function">resolve</span><span class="token punctuation">(</span>data<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span> <span class="token keyword">catch</span> <span class="token punctuation">(</span>error<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+            <span class="token function">reject</span><span class="token punctuation">(</span>error<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span><span class="token punctuation">)</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// 发送请求</span>
+<span class="token function">http</span><span class="token punctuation">(</span><span class="token string">'http://127.0.0.1:8000/fetch-server'</span><span class="token punctuation">)</span>
+  <span class="token punctuation">.</span><span class="token function">then</span><span class="token punctuation">(</span><span class="token parameter">data</span><span class="token operator">=&gt;</span><span class="token punctuation">{</span>
+    console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>data<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">catch</span><span class="token punctuation">(</span><span class="token parameter">err</span><span class="token operator">=&gt;</span><span class="token punctuation">{</span>
+    console<span class="token punctuation">.</span><span class="token function">error</span><span class="token punctuation">(</span>err<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span>
+</code></pre> <div class="line-numbers-wrapper"><span class="line-number">1</span><br><span class="line-number">2</span><br><span class="line-number">3</span><br><span class="line-number">4</span><br><span class="line-number">5</span><br><span class="line-number">6</span><br><span class="line-number">7</span><br><span class="line-number">8</span><br><span class="line-number">9</span><br><span class="line-number">10</span><br><span class="line-number">11</span><br><span class="line-number">12</span><br><span class="line-number">13</span><br><span class="line-number">14</span><br><span class="line-number">15</span><br><span class="line-number">16</span><br><span class="line-number">17</span><br><span class="line-number">18</span><br><span class="line-number">19</span><br><span class="line-number">20</span><br><span class="line-number">21</span><br><span class="line-number">22</span><br><span class="line-number">23</span><br><span class="line-number">24</span><br><span class="line-number">25</span><br></div></div></div></section> <footer class="page-edit"><!----> <div class="last-updated"><span class="prefix">Last Updated: </span> <span class="time">2023/1/14 10:40:01</span></div></footer> <!----> <div class="comments-wrapper"><!----></div></main></div> <!----></div> <ul class="sub-sidebar sub-sidebar-wrapper" style="width:12rem;" data-v-bac73764 data-v-c0d124fa><li class="level-2" data-v-bac73764><a href="/note-sites/guide/JavaScript/AJAX.html#ajax的介绍和特点" class="sidebar-link reco-side-ajax的介绍和特点" data-v-bac73764>AJAX的介绍和特点</a></li><li class="level-2" data-v-bac73764><a href="/note-sites/guide/JavaScript/AJAX.html#同步和异步" class="sidebar-link reco-side-同步和异步" data-v-bac73764>同步和异步</a></li><li class="level-3" data-v-bac73764><a href="/note-sites/guide/JavaScript/AJAX.html#阻塞与线程" class="sidebar-link reco-side-阻塞与线程" data-v-bac73764>阻塞与线程</a></li><li class="level-3" data-v-bac73764><a href="/note-sites/guide/JavaScript/AJAX.html#消息队列和事件循环" class="sidebar-link reco-side-消息队列和事件循环" data-v-bac73764>消息队列和事件循环</a></li><li class="level-3" data-v-bac73764><a href="/note-sites/guide/JavaScript/AJAX.html#异步任务的分类" class="sidebar-link reco-side-异步任务的分类" data-v-bac73764>异步任务的分类</a></li><li class="level-2" data-v-bac73764><a href="/note-sites/guide/JavaScript/AJAX.html#同源策略" class="sidebar-link reco-side-同源策略" data-v-bac73764>同源策略</a></li><li class="level-2" data-v-bac73764><a href="/note-sites/guide/JavaScript/AJAX.html#http" class="sidebar-link reco-side-http" data-v-bac73764>HTTP</a></li><li class="level-3" data-v-bac73764><a href="/note-sites/guide/JavaScript/AJAX.html#请求报文" class="sidebar-link reco-side-请求报文" data-v-bac73764>请求报文</a></li><li class="level-3" data-v-bac73764><a href="/note-sites/guide/JavaScript/AJAX.html#响应报文" class="sidebar-link reco-side-响应报文" data-v-bac73764>响应报文</a></li><li class="level-2" data-v-bac73764><a href="/note-sites/guide/JavaScript/AJAX.html#原生js发送ajax请求" class="sidebar-link reco-side-原生js发送ajax请求" data-v-bac73764>原生JS发送ajax请求</a></li><li class="level-3" data-v-bac73764><a href="/note-sites/guide/JavaScript/AJAX.html#xmlhttprequest-对象" class="sidebar-link reco-side-xmlhttprequest-对象" data-v-bac73764>XMLHttpRequest 对象</a></li><li class="level-3" data-v-bac73764><a href="/note-sites/guide/JavaScript/AJAX.html#open" class="sidebar-link reco-side-open" data-v-bac73764>open()</a></li><li class="level-3" data-v-bac73764><a href="/note-sites/guide/JavaScript/AJAX.html#send" class="sidebar-link reco-side-send" data-v-bac73764>send()</a></li><li class="level-3" data-v-bac73764><a href="/note-sites/guide/JavaScript/AJAX.html#xmlhttprequest-对象的事件或方法" class="sidebar-link reco-side-xmlhttprequest-对象的事件或方法" data-v-bac73764>XMLHttpRequest 对象的事件或方法</a></li><li class="level-3" data-v-bac73764><a href="/note-sites/guide/JavaScript/AJAX.html#formdata对象" class="sidebar-link reco-side-formdata对象" data-v-bac73764>formData对象</a></li><li class="level-3" data-v-bac73764><a href="/note-sites/guide/JavaScript/AJAX.html#jquery-发送-ajax请求" class="sidebar-link reco-side-jquery-发送-ajax请求" data-v-bac73764>JQuery 发送 AJAX请求</a></li><li class="level-3" data-v-bac73764><a href="/note-sites/guide/JavaScript/AJAX.html#fetch-发送-ajax请求" class="sidebar-link reco-side-fetch-发送-ajax请求" data-v-bac73764>fetch 发送 AJAX请求</a></li></ul></div></div></div><div class="global-ui"><div class="back-to-ceiling" style="right:1rem;bottom:6rem;width:2.5rem;height:2.5rem;border-radius:.25rem;line-height:2.5rem;display:none;" data-v-c6073ba8 data-v-c6073ba8><svg t="1574745035067" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="5404" class="icon" data-v-c6073ba8><path d="M526.60727968 10.90185116a27.675 27.675 0 0 0-29.21455937 0c-131.36607665 82.28402758-218.69155461 228.01873535-218.69155402 394.07834331a462.20625001 462.20625001 0 0 0 5.36959153 69.94390903c1.00431239 6.55289093-0.34802892 13.13561351-3.76865779 18.80351572-32.63518765 54.11355614-51.75690182 118.55860487-51.7569018 187.94566865a371.06718723 371.06718723 0 0 0 11.50484808 91.98906777c6.53300375 25.50556257 41.68394495 28.14064038 52.69160883 4.22606766 17.37162448-37.73630017 42.14135425-72.50938081 72.80769204-103.21549295 2.18761121 3.04276886 4.15646224 6.24463696 6.40373557 9.22774369a1871.4375 1871.4375 0 0 0 140.04691725 5.34970492 1866.36093723 1866.36093723 0 0 0 140.04691723-5.34970492c2.24727335-2.98310674 4.21612437-6.18497483 6.3937923-9.2178004 30.66633723 30.70611158 55.4360664 65.4791928 72.80769147 103.21549355 11.00766384 23.91457269 46.15860503 21.27949489 52.69160879-4.22606768a371.15156223 371.15156223 0 0 0 11.514792-91.99901164c0-69.36717486-19.13165746-133.82216804-51.75690182-187.92578088-3.42062944-5.66790279-4.76302748-12.26056868-3.76865837-18.80351632a462.20625001 462.20625001 0 0 0 5.36959269-69.943909c-0.00994388-166.08943902-87.32547796-311.81420293-218.6915546-394.09823051zM605.93803103 357.87693858a93.93749974 93.93749974 0 1 1-187.89594924 6.1e-7 93.93749974 93.93749974 0 0 1 187.89594924-6.1e-7z" p-id="5405" data-v-c6073ba8></path><path d="M429.50777625 765.63860547C429.50777625 803.39355007 466.44236686 1000.39046097 512.00932183 1000.39046097c45.56695499 0 82.4922232-197.00623328 82.5015456-234.7518555 0-37.75494459-36.9345906-68.35043303-82.4922232-68.34111062-45.57627738-0.00932239-82.52019037 30.59548842-82.51086798 68.34111062z" p-id="5406" data-v-c6073ba8></path></svg></div></div></div>
+    <script src="/note-sites/assets/js/app.933c6aa6.js" defer></script><script src="/note-sites/assets/js/5.72fb1f51.js" defer></script><script src="/note-sites/assets/js/1.9e97c91a.js" defer></script><script src="/note-sites/assets/js/34.7a5ff1fa.js" defer></script>
+  </body>
+</html>

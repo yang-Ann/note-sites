@@ -1,0 +1,24 @@
+{
+  "name": "note-sites",
+  "version": "1.0.0",
+  "description": "An 的个人学习笔记",
+  "main": "index.js",
+  "engines": {
+    "node": "> 14.18"
+  },
+  "scripts": {
+    "dev": "vuepress dev docs",
+    "build": "vuepress build docs",
+    "active": "cd gitee-active && npm run start:ts",
+    "deploy": "npm run build && npm run active"
+  },
+  "keywords": [
+    "notes"
+  ],
+  "author": "an <331536495@qq.com> (https://ann-yang.gitee.io/note-sites/)",
+  "license": "ISC",
+  "devDependencies": {
+    "vuepress": "^1.9.7",
+    "vuepress-theme-reco": "^1.6.11"
+  }
+}

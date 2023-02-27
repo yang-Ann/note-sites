@@ -1,0 +1,79 @@
+
+
+
+/*
+隐藏作者 日期 分类
+.page .page-title {
+   display: none;
+}
+*/
+
+/* 隐藏 h1标题 */
+.page .page-title + .theme-reco-content h1 {
+    display: none;
+}
+
+
+
+/* 兼容 v-pre + 标签分类的样式偏移问题 */
+.page .theme-reco-content h2{
+    margin-top: -1.5rem;
+    padding-top: 3.6rem;
+    margin-bottom: 1rem;
+}
+
+h3, h4, h5 {
+    font-weight: bold !important;
+}
+
+h2::before {
+    position: absolute;
+    left: 0;
+    top: 1.7rem;
+    display: block;
+    height: 1.8rem;
+    content: '';
+    border-left: 5px solid #3eaf7c;
+}
+
+#An-table-of-title {
+    margin-top: 28px;
+}
+
+/* 左侧目录样式 */
+#An-table-of-contents {
+    width: 22vw;
+    height: 88vh;
+    /* background-color: #e5e9f2; */
+    z-index: 9999;
+    position: fixed;
+    left: 1vh;
+    top: 8vh;
+    overflow: auto;
+    padding: 0 10px 10px 20px;
+}
+
+/* 隐藏目录 */
+div#app div.theme-container .table-of-contents {
+    display: none;
+}
+
+
+#An-btn-wrap {
+    position: fixed;
+    top: 0px;
+    left: 8vw;
+    z-index: 9999;
+}
+
+.An-btn {
+    cursor: pointer;
+    background: #3eaf7c;
+    color: white;
+    outline: none;
+    border: none;
+    padding: 10px 16px;
+    margin: 10px 6px;
+    border-radius: 4px;
+    /* box-shadow: rgb(0 0 0 / 30%) 1px 1px 10px; */
+}
