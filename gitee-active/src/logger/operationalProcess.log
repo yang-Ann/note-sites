@@ -1,5 +1,19 @@
-2023-03-04 22:37:50 launch browser
-2023-03-04 22:37:50 发生错误, 请查看 F:\project\note-sites\gitee-active\src\logger\errorStack.log
+2023-03-04 23:12:50 launch browser
+2023-03-04 23:12:51 newContext
+2023-03-04 23:12:51 newPage
+2023-03-04 23:12:51 goto https://gitee.com/login
+2023-03-04 23:12:55 fill 13725402770 into the "手机／邮箱／个人空间地址"
+2023-03-04 23:12:56 fill ************* into the "手机／邮箱／个人空间地址"
+2023-03-04 23:12:56 click "登 录"
+2023-03-04 23:12:57 waitForTimeout 1000 ms
+2023-03-04 23:12:58 goto https://gitee.com/Ann-yang/note-sites/pages
+2023-03-04 23:12:59 click "服务"
+2023-03-04 23:13:00 click "Logo en Gitee Pages"
+2023-03-04 23:13:01 click "更新"
+2023-03-04 23:13:01 Dialog message: 确定重新部署 Gitee Pages 吗?
+2023-03-04 23:13:01 等待部署完成 url 重新出现: body > div.site-content > div.ui.container > div > div.pages_message > div > p > a
+2023-03-04 23:13:01 已完成部署, 关闭浏览器
+2023-03-04 23:13:01 总用时: 11141.00ms
 
 
 
