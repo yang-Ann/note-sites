@@ -829,6 +829,8 @@ rm -rf package-lock.json # rm -rf yarn.lock
 
 在`workspace`中`pnpm`安装依赖如下:
 
+>  在 [workspace](https://pnpm.io/zh/workspaces)内, `pnpm install` 会下载项目所有依赖, 如果想禁用这个行为, `.npmrc`配置 [`recursive-install = false`](https://pnpm.io/zh/npmrc#recursive-install)
+
 ##### 全局的公共依赖包
 
 全局的公共依赖包, 是安装到根目录中的, 如: `rollup`, `typescript`, `vue`等
@@ -853,6 +855,9 @@ pnpm add rollup -D --filter pkg1
 
 # 安装依赖到 pkg1 的生产依赖中
 pnpm add chalk -S --filter pkg1
+
+# 删除 pkg1 的依赖
+pnpm remove chalk --filter pkg1 
 ```
 
 >   注意`--filter` 参数跟着的是模块的 `package.json` 里的 `name` 字段, **而不是**模块目录名

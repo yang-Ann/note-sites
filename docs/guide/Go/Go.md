@@ -35,8 +35,12 @@ tags:
 -   如果碰到下载卡住了, 可以更换国内代理:
 
     ```sh
-    # 停止下载
+    # 查看 go 的所有配置
+    go env
+    
+    # 使用 go mod 模式
     go env -w GO111MODULE=on
+    
     # 更换国内代理
     go env -w GOPROXY=https://goproxy.cn,direct
     ```
@@ -70,10 +74,10 @@ go run main.go
 go run .
 
 # 生成可执行文件
-go build main.go
+go build
 
 # 重命名生成的包文件
-go build -o start_app_name.exe main.go
+go build -o newMain.exe
 
 # 将编译结果移动到`$GOPATH/bin`目录下面
 go install main.go
@@ -215,7 +219,7 @@ func main() {
 
 | 类型     | 关键字                                                       | 说明                                                         |
 | -------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
-| 字符串   | `string`                                                     | 使用`双引号`(**会转义字符**)或`反引号`(**不会转义字符**)括起来定义, 不能用`单引号`定义 |
+| 字符串   | `string`                                                     | 使用`双引号`(**会转义字符**)或`反引号`(**不会转义字符, 支持换行**)括起来定义, 不能用`单引号`定义 |
 | 布尔     | `bool`                                                       | 只有 `true` 和 `false`                                       |
 | 整型     | `int8`,`uint8`<br/>`int16`,`uint16`<br/>`int32`,`uint32`<br/>`int64`,`uint64` | `intxx`开头表示**无符号整型**, `uintxx`开头表示**有符号整型** |
 | 特殊整型 | `int`(**i32**),`uint`(**i64**)                               | 具体长度取决于 CPU 位数, 默认的整数类型是`int`               |
@@ -289,16 +293,43 @@ func main() {
 package main
 
 func main() {
-	const a = 1
-	const b = 2
+	// 声明变量
+	var (
+		a = 1
+		b = 2
+	)
 
+	// 声明常量
 	const (
 		c = 3
 		d = 4
 	)
 
+	// 还可以这样
 	const e, f = 5, 6
+
+	// 短声明
+	j, h := 7, 8
 }
+```
+
+### 变量必须要使用
+
+定义的变量必须要被使用, 不然代码无法编译通过, 常量没有限制
+
+### 忽略变量
+
+`Go`中使用`_`可以忽略任何的变量
+
+```go
+package main
+
+func main() {
+	var a = 1
+
+	_ = a // 没有这行代码, 则会报 a 没有被使用的错误
+}
+
 ```
 
 ### 零值
@@ -417,6 +448,83 @@ func main() {
 }
 ```
 
+### switch里使用表达式
+
+```go
+package main
+
+import (
+	"fmt"
+)
+
+func main() {
+	n := 1
+
+	switch n * 10 { // 这里可以写运行表达式
+	case 1:
+		fmt.Println("n = 1")
+	case 10, 20, 30: // 这里可以写多个值, 是或的关系
+		fmt.Println("n = 10 | 20 | 30")
+	case 0:
+		fmt.Println("n = 0")
+	}
+}
+```
+
+### 省略 expr 表达式
+
+```go
+package main
+
+import (
+	"fmt"
+)
+
+func main() {
+	n := 1
+
+	switch { // 这里没有写表达式
+	case n == 1:
+		fmt.Println("n = 1")
+	case n == 10 || n == 20 || n == 30: // 这里可以写表达式
+		fmt.Println("n = 10 | 20 | 30")
+	}
+}
+```
+
+### 类型断言
+
+`switch` 可以 `.(type)` 来实现类型断言, 判断某个值是否为某个数据类型
+
+`````go
+package main
+
+import (
+	"fmt"
+)
+
+func main() {
+	var n interface{}
+
+	n = 1
+
+	switch n.(type) {
+	case nil:
+		fmt.Println("n 是 nil 类型")
+	case int:
+		fmt.Println("n 是 int 类型")
+	case float64:
+		fmt.Println("n 是 float64 类型")
+	case bool:
+		fmt.Println("n 是 bool 类型")
+	case string:
+		fmt.Println("n 是 string 类型")
+	default:
+		fmt.Println("n 不是基本数据类型")
+	}
+}
+`````
+
 ## 循环
 
 `Go`使用`for`关键字执行循环, 后面可以跟一个表达式, 注意无法在`for`中使用`var`关键字:
@@ -467,7 +575,7 @@ func main() {
 }
 ```
 
-## 导入包
+## go mod
 
 `Go`中使用`import`关键字可以导入包, 可以从标准库或者自定义的包中导入, 语法就是`import 包名`, 例如:
 
@@ -523,6 +631,8 @@ import (
     import (
     	"learn-go/hello" // 以模块名开头, 根据目录就可以进行导入
     	"learn-go/abcd/ok" // 多级目录, 对应目录层级即可
+      
+      "github.com/fatih/color" // 第三方包, 可点击跳转到 pkg.go.dev
     )
     
     func main() {
@@ -534,12 +644,17 @@ import (
 
 ### go mod 常用命令
 
+go的包都是存放在[pkg.go.dev](https://pkg.go.dev/)
+
 ```sh
 # 生成 go.mod 文件
 go mod init projectName
 
-# 安装指定的包
+# 安装指定的包(安装到 go.mod)
 go get github.com/fatih/color
+
+# 全局安装命令
+go install github.com/akavel/rsrc@latest
 
 # 整理现有的依赖(可以自动下载和清理依赖)
 go mod tidy
@@ -600,11 +715,15 @@ func main() {
 
 	// 正常声明变量
 	var x = 1
-	
+
 	// 短声明
 	y := 2
 
-	fmt.Printf("x = %v, y = %v", x, y) // x = 1, y = 2
+	// 声明多个值
+	a, b := 3, 4
+
+	fmt.Printf("x = %v, y = %v\n", x, y) // x = 1, y = 2
+	fmt.Println(a, b)                    // 3 4
 }
 ```
 
@@ -721,8 +840,8 @@ func main() {
 
 字符串分为:
 
--   字符串字面值(*string iteral*): **会转义字符, 不支持换行**
--   原始字符串(*raw string iteral*): **不会转义字符, 支持换行**
+-   字符串字面值(*string iteral*): **会转义字符, 不支持换行**, 使用**双引号**声明
+-   原始字符串(*raw string iteral*): **不会转义字符, 支持换行**, 使用**反引号**声明
 
 ```go
 package main
@@ -731,10 +850,12 @@ import "fmt"
 
 func main() {
 	// 字符串字面值(会转义字符)
-	s := "\thello\nworld"
+	s := "\t hello \n world"
 
 	// 原始字符串(不会转义字符)
-	msg := `\thello\nworld`
+	msg := `\t hello \n 
+	world
+	支持换行`
 
 	fmt.Println(s)
 	fmt.Println(msg)
@@ -760,13 +881,15 @@ func main() {
 }
 ```
 
+但是可以通过重新赋值进行修改
+
 ### 处理utf8
 
 处理`utf8`可以使用`"unicode/utf8"`包
 
 ### fmt.Sprintf
 
-`fmt.Sprintf`类似于`fmt.Printf`只不过是返回字符串:
+`fmt.Sprintf`类似于`fmt.Printf`只不过是用于拼接字符串, 同样支持各种格式化动词:
 
 ```go
 package main
@@ -780,6 +903,47 @@ func main() {
 	s := fmt.Sprintf("1 * 2 = %v", x*2)
 
 	fmt.Println(s) // 1 * 2 = 2
+}
+```
+
+### 计算字符串长度
+
+字符串不同编码是可以有不同的计算方式
+
+#### ASCII
+
+直接使用`len()`方法即可, 需要注意的是**中文算三个字符**
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+	s1 := "hello"
+	s2 := "你好"
+	fmt.Println(len(s1)) // 5
+	fmt.Println(len(s2)) // 6
+}
+```
+
+#### 中文算一个长度
+
+如果需要把中文和英文一样的计算方式可以使用`unicode/utf8`包的`RuneCountInString`方法
+
+```go
+package main
+
+import (
+	"fmt"
+	"unicode/utf8"
+)
+
+func main() {
+	s1 := "hello"
+	s2 := "你好"
+	fmt.Println(utf8.RuneCountInString(s1)) // 5
+	fmt.Println(utf8.RuneCountInString(s2)) // 2
 }
 ```
 
@@ -804,7 +968,8 @@ func main() {
 }
 ```
 
--   `strings.ToUpper`和`strings.ToLower`转换大小写
+-   `strings.ToUpper()`和`strings.ToLower()`转换大小写
+-   `strings.Repeat()`重复字符串
 -   `strings.Join()`拼接字符串
 
 ```go
@@ -826,7 +991,7 @@ func main() {
 }
 ```
 
--   使用切片截取字符串
+-   使用切片(`Slice`)截取字符串
 
 ```go
 package main
@@ -860,6 +1025,38 @@ func main() {
 ```
 
 >   还有`TrimFunc()`,`TrimLift()`,`TrimRight()`等方法也是类似
+
+### 遍历字符串
+
+遍历字符串可以使用`range` 或者`for`循环, 无论是那种循环, 得到的值都是`Unicode`编码的, 需要使用`string()`或者`%c`转换成字符串
+
+```go
+package main
+
+import (
+	"fmt"
+	"strings"
+)
+
+func main() {
+	s1 := "hello"
+
+	// range 遍历 (Unicode)
+	for _, v := range s1 {
+		fmt.Printf("unicode: %v, char: %c, string: %s\n", v, v, string(v))
+	}
+
+	fmt.Println(strings.Repeat("-", 30))
+
+	// for 循环 + 索引访问(ASCII)
+	for i := 0; i < len(s1); i++ {
+		v := s1[i]
+		fmt.Printf("unicode: %v, char: %c, string: %s\n", v, v, string(v))
+	}
+}
+```
+
+
 
 ## 内置函数
 
@@ -1012,6 +1209,11 @@ var add = func(a, b int) int {
 func() {
   fmt.Println("iife")
 }()
+
+// 也可以传递参数
+func(msg string) {
+  fmt.Println("iife", msg)
+}("hello")
 ```
 
 ### 函数默认导出
@@ -1114,6 +1316,15 @@ func test(args ...any) {
 	for _, item := range args {
 		fmt.Println("item: ", item)
 	}
+}
+```
+
+### 函数调用传递多个值
+
+```go
+func MyPrintln(args ...string) {
+	// 这样 ... 是在变量名的后面
+	fmt.Println(args...)
 }
 ```
 
@@ -1258,7 +1469,7 @@ func (m MyInt) test(a int, b float64) {
 
 ## 数组
 
-数组是一种固定长度且有序的元素集合, **数组声明了但是没有赋值就是这个类型的零值, 数组的长度也是类型的一部分**:
+数组是一种**固定长度且有序的元素集合**, 数组声明了但是没有赋值就是这个类型的零值, 数组的**长度也是类型的一部分**, 数组的类型表示为 `[2]string`, `[5]int`, 基本使用如下
 
 ```go
 package main
@@ -1424,7 +1635,7 @@ func main() {
 
 ## Slice(切片)
 
-假设有一个数组`colors`,那么`colors[0:4]`就是一个 `Slice`, 它取出数组的前四个元素, 切片数组不会导致数组被修改, 它只是创建一个指向数组的窗口或视图, 这种视图就是`Slice`类型, `Slice`使用的是半开区间, 包括开始索引但不包括结束索引:
+假设有一个数组`colors`,那么`colors[0:4]`就是一个 `Slice`, 它取出数组的前四个元素, 切片数组不会导致数组被修改, 它只是创建一个指向数组的窗口或视图, 这种视图就是`Slice`类型, `Slice`使用的是半开区间, 包括开始索引但不包括结束索引: 
 
 ```go
 package main
@@ -1502,6 +1713,8 @@ func main() {
 ### Slice作为函数参数
 
 `Slice`作为函数参数是会影响原先的数组的:
+
+>   切片的数据类型为是不带长度的数组, 如: `[]string`, `[]int`
 
 ```go
 package main
@@ -1639,7 +1852,11 @@ func sliceInfo(list []int) {
 }
 ```
 
-## map
+### 切片实现常见数据结构和基础算法
+
+Go 内置的 `append()` 和 `copy()` 两个函数非常强大，通过配合 `slice` 组合操作, 可以实现大多数 `容器类` 数据结构和基础算法，例如 `栈`, `队列` 的常规操作
+
+## map(字典)
 
 `Go`中的`map`跟其他的语言是差不多的意思, 键值对格式的数据结构, `map`需要声明键值对的类型, 形如`map[string] int`: 
 
@@ -1670,6 +1887,8 @@ func main() {
 	fmt.Println(o[k]) // 3
 }
 ```
+
+>   `map`类型不是并发安全的
 
 ### 逗号和ok写法
 
@@ -1792,7 +2011,7 @@ func main() {
 }
 ```
 
-## struct
+## struct(结构体)
 
 `Go`中也有结构体类型, 使用`struct`关键字声明, 大写开头的字段是默认导出的: 
 
@@ -1849,8 +2068,8 @@ func main() {
 
 复合字面量初始化`struct`有两种写法
 
--   通过成对的字段和值进行初始化
--   按字段定义的顺序进行初始化
+-   通过**键值对**进行初始化
+-   按字段**定义的顺序**进行初始化
 
 ```go
 package main
@@ -1870,7 +2089,7 @@ func main() {
 	}
 	fmt.Printf("p1: %v\n", p1) // p1: {张三 18}
 
-	// 字段定义的顺序
+  // 注意: 这里是按照字段定义的顺序进行初始化的
 	p2 := Persion{"李四", 28}
 	fmt.Printf("p2: %+v\n", p2) // p2: {name:李四 age:28}
 
@@ -1909,53 +2128,7 @@ func main() {
 }
 ```
 
-### 将struct编码为JSON
-
-可以使用`encoding/json`包中的`Marshal`函数来将`struct`中的数据转换为`JSON`格式(**只有被导出的字段才可以转换**):
-
-```go
-package main
-
-import (
-	"encoding/json"
-	"fmt"
-	"os"
-)
-
-// 字段都是大写(表示是被导出的)
-type Persion struct {
-	Name string
-	Age  int
-}
-
-func main() {
-	p := Persion{
-		Name: "张三",
-		Age:  18,
-	}
-
-	bytes, err := json.Marshal(p)
-
-	if err != nil {
-		fmt.Println("转换发生了错误: ", err.Error())
-		os.Exit(1)
-	}
-
-	fmt.Println("json: ", string(bytes)) // json:  {"Name":"张三","Age":18}
-}
-```
-
-如果想格式化的字段重命名的话, 就需要特地的标签注明
-
-```go
-// 自定义json化的字段名
-type Persion struct {
-	Name string `json:"aaa"`
-	Age  int    `json:"bbb"`
-}
-```
-
-### 将方法关联到struct
+#### 将方法关联到struct
 
 `Go`中没有`Class`, 但是可以使用`struct`模拟出来:
 
@@ -1988,8 +2161,6 @@ func (p Persion) fmtInfo() {
 }
 ```
 
-因为`Go`没有构造函数的概念, 所以以`new`或者`new`开头加一个类型的函数, 可以理解为是某个类型的构造函数
-
 ### New函数
 
 有一些用于构造的函数名称就是`New`, 例如: `errors`包里的`New`函数
@@ -2012,6 +2183,8 @@ func test(e error) {
 	fmt.Println(e.Error())
 }
 ```
+
+>   因为`Go`没有构造函数的概念, 所以以`new`或者`new`开头加一个类型的函数, 可以理解为是某个类型的构造函数
 
 ## 组合和转发
 
@@ -2205,9 +2378,9 @@ func (i UserInfo2) showUserInfo() {
 
 ## 接口
 
-在`Go`中声明接口也是使用`interface`关键字
+在`Go`中声明接口也是使用`interface`关键字, **Go 接口是隐式实现, ** 对于一个数据类型, 无需声明它实现了哪些接口, 只需要实现接口必需的方法即可
 
->    `interface{}`可以用来表示任何的类型
+>    `interface{}`也可以用来表示任何的类型
 
 ### 接口变量
 
@@ -2223,6 +2396,7 @@ func main() {
 	var t interface {
 		// 需要一个 add 方法
 		add(a, b int) int
+    // 其它方法...
 	}
 
 	// Obj 类型实现了 t 变量接口的类型
@@ -2252,33 +2426,84 @@ type adder interface {
 	add(a, b int) int
 }
 
-////
+// 定义结构体
 type Obj struct{}
 
 func (o Obj) add(a, b int) int {
 	return a + b
 }
 
-////
 
-// 应用在函数参数上面
+// 自定义结构体应用在函数参数上面
 func test(t adder, a, b int) {
-	fmt.Println(t.add(a, b))
+  sum := t.add(a, b)
+	fmt.Println("a + b = ", sum)
 }
 
-////
 
 func main() {
 
 	// 应用在类型上面
 	var t adder = Obj{}
-	fmt.Println(t.add(1, 2)) // 3
+	fmt.Println(t.add(1, 2)) // a + b = 3
 
-	test(t, 3, 4) // 7
+	test(t, 3, 4) // a + b = 7
 }
 ```
 
 >   接口可以和`struct 嵌入`特性一起使用
+
+### 判断是否实现接口
+
+`Go`中没有类似`implements`, `typeof`, `instanceof`类似的操作符来判断一个结构体的类型, 这时需要使用到类型断言, 语法如下:
+
+```go
+// 判断 obj 是否实现了接口 MyImpl
+if _, ok := obj.(MyImpl); ok {
+  fmt.Println("obj 实现了 MyImpl 接口")
+} else {
+  fmt.Println("obj 没有实现 MyImpl 接口")
+}
+```
+
+基本使用:
+
+```go
+package main
+
+import (
+	"fmt"
+)
+
+func main() {
+
+	// 要定义为接口类型
+	var me interface{}
+
+	me = MyError{
+		msg: "自定义错误",
+	}
+
+	// 判断是否实现了某个类型
+	if _, ok := me.(MyError); ok {
+		fmt.Println("me变量实现了 error 接口")
+	} else {
+		fmt.Println("me变量没有实现 error 接口")
+	}
+}
+
+// 自定义错误结构体
+type MyError struct {
+	msg string
+}
+
+// 实现 Error 方法(对应的是 error 接口)
+func (e MyError) Error() string {
+	return e.msg
+}
+```
+
+
 
 ## 指针
 
@@ -2689,23 +2914,104 @@ func main() {
 
 >   虽然空的`Slice`和`nil`并不相等, 但是也需要等效的处理
 
-## IO
+## 文件操作
 
-IO操作可以使用[`io`](https://pkg.go.dev/io@go1.20)标准库
+### 基本操作
 
-### 读取全部文件
+-   `os.Create()`: 创建文件
+
+-   `os.Remove()`: 删除文件
+-   `os.Mkdir("/tmp/1", 0755)`: 创建**一级**目录
+-   `os.MkdirAll("/tmp/1/2/3", 0755)`: 创建**多级**目录
+-   `os.RemoveAll()`: 删除目录
+
+-   `os.Stat()`+`os.IsExist()`: 判断文件(目录)是否存在
+
+    ```go
+    package main
+    
+    import (
+    	"fmt"
+    	"os"
+    )
+    
+    func main() {
+    	if f, err := os.Stat("./test.txt"); os.IsExist(err) {
+    		fmt.Println("文件不存在", err.Error())
+    	} else {
+    		fmt.Println("文件是否为目录: ", f.IsDir())
+    	}
+    }
+    ```
+
+-   `os.IsPermission()`: 检查是否拥有权限
+
+    ```go
+    package main
+    
+    import (
+    	"fmt"
+    	"os"
+    )
+    
+    func main() {
+    
+    	content, err := os.ReadFile("/root/passwd")
+    	if err != nil && os.IsPermission(err) {
+    		fmt.Println(err.Error())
+    	} else {
+    		fmt.Println(string(content))
+    	}
+    }
+    ```
+
+### 目录遍历
+
+目录遍历使用`path/filepath` 包, `filepath.Walk()` 方法非常强大:
 
 ```go
 package main
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io/fs"
+	"path/filepath"
+)
+
+func main() {
+	filepath.Walk("./", func(path string, info fs.FileInfo, err error) error {
+		var typ string
+		if info.IsDir() {
+			typ = "目录"
+		} else {
+			typ = "文件"
+		}
+		fmt.Printf("[%s]: %s\n", typ, path)
+		return nil
+	})
+}
+```
+
+>   还有`filepath.WalkDir`方法用法是一样的, `filepath.WalkDir`不遵循符号链接, 它总是使用斜杠(`/`)分隔路径
+
+### 写入和读取
+
+IO操作可以使用[`io`](https://pkg.go.dev/io@go1.20)标准库
+
+#### 读取
+
+##### 读取全部文件
+
+```go
+package main
+
+import (
+	"fmt"
 	"os"
 )
 
 func main() {
-	context, err := ioutil.ReadFile("../main.go")
+	context, err := os.ReadFile("./main.go")
 	if err != nil {
 		fmt.Println(err.Error())
 		os.Exit(0)
@@ -2715,7 +3021,44 @@ func main() {
 }
 ```
 
-### 逐行读取
+##### 获取文件句柄后读取
+
+`OpenFile(文件地址, 权限, 模式)`可以获取文件句柄
+
+-   权限可见[os常量](https://pkg.go.dev/os#pkg-constants)
+
+-   模式见官方文档[文件模式](https://pkg.go.dev/io/fs#FileMode), 对应的Linux里面的权限常见的模式如下:
+    -   `0755`: 即用户具有读/写/执行权限，组用户和其它用户具有读写权限；
+    -   `0644`: 即用户具有读写权限，组用户和其它用户具有只读权限
+
+
+```go
+package main
+
+import (
+	"fmt"
+	"os"
+)
+
+func main() {
+	file, err := os.OpenFile("./main.go", os.O_RDWR, 0755)
+	if err != nil {
+		panic(err)
+	}
+
+	defer file.Close()
+
+	bytes := make([]byte, 1024) // 切片长度就代表每次读取的长度
+	n, err := file.Read(bytes)  // n 就是读取到的长度
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("读取了%v个长度的字节数据\n", n)
+	fmt.Printf("读取的字节数据: %v\n", string(bytes))
+}
+```
+
+##### 逐行读取
 
 使用[`bufio`](https://pkg.go.dev/bufio@go1.20)包的`NewScanner`函数可以开启一个扫描器
 
@@ -2729,16 +3072,16 @@ import (
 )
 
 func main() {
-	file_obj, err := os.Open("../main.go")
+	file, err := os.Open("../main.go")
 	if err != nil {
 		fmt.Println(err.Error())
-    return
+		return
 	}
 
-	defer file_obj.Close()
+	defer file.Close()
 
 	// 创建扫描器
-	file_scanner := bufio.NewScanner(file_obj)
+	file_scanner := bufio.NewScanner(file)
 
 	for file_scanner.Scan() {
 		line := file_scanner.Text()
@@ -2747,13 +3090,27 @@ func main() {
 }
 ```
 
-### 写入文件
+#### 写入
 
-`OpenFile(文件地址, 权限, 模式)`
+##### 直接写入
 
--   权限可见[os常量](https://pkg.go.dev/os#pkg-constants)
+```go
+package main
 
--   模式见官方文档[文件模式](https://pkg.go.dev/io/fs#FileMode)
+import (
+	"os"
+)
+
+func main() {
+	err := os.WriteFile("./test.txt", []byte("hello world"), 0755)
+
+	if err != nil {
+		panic(err)
+	}
+}
+```
+
+##### 获取文件句柄后写入
 
 ```go
 package main
@@ -2801,9 +3158,36 @@ func main() {
 }
 ```
 
+##### 追加文件
+
+```go
+package main
+
+import (
+  "fmt"
+  "os"
+)
+
+func main() {
+  // 追加文件
+  file_obj, err := os.OpenFile(filePath, os.O_WRONLY|os.O_APPEND, 0666)
+  if err != nil {
+    colorLog.LogError("没有读取到 " + filePath + " 文件")
+  }
+  defer file_obj.Close()
+
+  count, err = file_obj.WriteString("world")
+  if err != nil {
+    fmt.Println(err.Error())
+    return
+  }
+  fmt.Printf("写入了长度为 %v 的字符串数据\n", count)
+}
+```
+
 >   清空文件可以使用`Truncate()`方法
 
-### 多次写入(缓冲区)
+##### 多次写入(缓冲区)
 
 使用 [`bufio`](https://pkg.go.dev/bufio@go1.20) 里的 `Writer` 结构体去操作，它会开辟一个缓冲区，默认大小为 `4096` 字节。在数据没有被刷入磁盘之前，所写入的数据都会暂时保存到缓冲区里
 
@@ -2853,6 +3237,120 @@ func main() {
 	writer.Flush()
 }
 ```
+
+## 路径操作
+
+使用`path/filepath`包来完成:
+
+```go
+package main
+
+import (
+	"fmt"
+	"os"
+	"path/filepath"
+)
+
+func main() {
+	p := "./main.go"
+	mainPath, err := filepath.Abs(p)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+
+	fmt.Println("main.go 绝对路径: ", mainPath)
+	fmt.Println("文件名称: ", filepath.Base(mainPath))
+	fmt.Println("文件所在目录: ", filepath.Dir(mainPath))
+	fmt.Println("文件扩展名: ", filepath.Ext(mainPath))
+
+	fmt.Println("构建路径: ", filepath.Join("./temp", "code", "test", "main.go"))
+	fmt.Println("构建路径(支持上一级): ", filepath.Join("./temp", "code", "../", "main.go"))
+
+	__fileName := os.Args[0]
+	fmt.Println("当前执行文件地址: ", __fileName)
+	fmt.Println("当前执行文件目录: ", filepath.Dir(__fileName))
+}
+```
+
+## init函数
+
+`init `函数是一个特殊的函数, 一般称为**初始化函数, 不能被调用** 在每个文件里面，当程序启动或者文件被作为包引用的时候, `init()` 函数就会**自动执行, 一般用来做一些包的初始化操作**
+
+`init() 函数`没有参数，也没有返回值
+
+```go
+func init() {
+   // ...
+}
+```
+
+`init`函数常用于包变量初始化: 
+
+```go
+package main
+
+import "fmt"
+
+var (
+    pageIndex int
+    pageSize  int
+)
+
+func init() {
+    pageIndex = 1
+    pageSize = 20
+}
+
+func main() {
+  fmt.Printf("pageIndex: %d\n", pageIndex) // 1
+  fmt.Printf("pageSize: %d\n", pageSize) // 20
+}
+```
+
+## defer
+
+使用`defer`关键字, 可以让`deferred`动作在函数或者方法返回前执行, 常用于做一些收尾的动作, 如: 释放资源, 关闭文件句柄:
+
+```go
+package main
+
+import (
+	"fmt"
+	"os"
+)
+
+func main() {
+	fileName, fileContent := "./test.txt", "hello world"
+
+	// 创建文件
+	file, err := os.Create(fileName)
+	if err != nil {
+		fmt.Println(err.Error())
+		os.Exit(1)
+	}
+
+	// 写入内容到文件中
+	_, err = fmt.Fprintln(file, fileContent)
+	if err != nil {
+		fmt.Println(err.Error())
+		os.Exit(1)
+	}
+
+	// 可以直接指定一个语句
+	defer fmt.Println("main 函数执行完毕")
+
+	// 也可以指定为一个匿名函数
+	defer func() {
+		// 关闭文件
+		err := file.Close()
+		if err != nil {
+			panic(err)
+		}
+	}()
+}
+```
+
+>   `defer`并不是专门做错误处理的, 而是用来消除必须时刻惦记执行资源释放的负担
 
 ## 错误处理
 
@@ -2920,51 +3418,6 @@ func test(isError bool) (int, error) {
 	}
 }
 ```
-
-### defer
-
-使用`defer`关键字, 可以让`deferred`动作在函数或者方法返回前执行:
-
-```go
-package main
-
-import (
-	"fmt"
-	"os"
-)
-
-func main() {
-	err := writeFile("./test.txt", "hello world")
-
-	if err != nil {
-		fmt.Println(err.Error())
-		os.Exit(1)
-	}
-}
-
-func writeFile(fileName string, text string) error {
-	// 创建文件
-	file, err := os.Create(fileName)
-	if err != nil {
-		return err
-	}
-
-	// 写入内容到文件中
-	_, err = fmt.Fprintln(file, text)
-	if err != nil {
-		return err
-	}
-  
-  // 当函数执行完毕时, 关闭文件
-	defer file.Close()
-  // 可以指定多次
-	defer fmt.Println("函数执行完毕")
-
-	return nil
-}
-```
-
->   `defer`并不是专门做错误处理的, 而是用来消除必须时刻惦记执行资源释放的负担
 
 ### 自定义错误处理
 
@@ -3077,7 +3530,15 @@ func main() {
 
 ## goroutine
 
-`goroutine`也叫**协程**, 是`Go`中的一个特点, `Go`中`goroutine`虽然跟其他语句的协程, 进程, 和线程都不一样, `Go`的`goroutine`创建效率非常的高, 是处理**并发**的一大利器,`Go`可以很简单的将顺序式代码修改为并发式代码, 只需要添加在函数或者方法的调用前, 添加`go`关键字即可:
+`goroutine`也叫**协程**, 是`Go`中的一个特点, `Go`的`goroutine`创建效率非常的高, 可以简单的理解为一个`后台运行`的`超轻量的线程`, 是处理**并发**的一大利器
+
+### main 函数就是 一个 goroutine
+
+当一个程序启动时, 只有一个 `goroutine` 调用 `main` 函数，称为`主 goroutine`, 当 `main` 函数返回时, 所有 `goroutine` 都会终止 (不论其是否运行完成与否), 然后程序退出
+
+### 启动 goroutine
+
+启动`goroutine`的语法很简单只需要在函数调用前添加`go`关键字即可
 
 ```go
 package main
@@ -3088,14 +3549,21 @@ import (
 )
 
 func main() {
-  // 添加 go 关键字进行调用(会起一个独立的任务进行运行)
+	// 添加 go 关键字进行调用(会起一个独立的任务进行运行)
 	go sleepHi()
+
+	// 也可以是一个匿名函数
+	go func() {
+		fmt.Println("匿名函数的 goroutine")
+	}()
+
+	// 让 主goroutine 等待 2s
 	time.Sleep(time.Second * 2)
 }
 
 func sleepHi() {
 	time.Sleep(time.Second)
-	fmt.Println("hello")
+	fmt.Println("sleepHi函数的 goroutine")
 }
 ```
 
@@ -3113,7 +3581,7 @@ import (
 
 func main() {
 	for i := 0; i < 5; i++ {
-    // 5个`goroutine`的顺序无法确定
+    // 5个 goroutine 的顺序是无法确定
 		go sleepHi(i)
 	}
 	time.Sleep(time.Second * 2)
@@ -3125,11 +3593,131 @@ func sleepHi(index int) {
 }
 ```
 
-### channel(通道)
+### 获取并发线程数量
 
-`channel`可以在多个`goroutine`之间安全的传值, `channel`可以使用在变量, 参数, 结构体字段等地方
+`runtime.GOMAXPROCS()` 函数可以获得并发的线程数量, 在 CPU 核大于 1 个的情况下，系统会尽可能调度等于核心数的线程并行运行
 
-#### 创建channel
+```go
+package main
+
+import (
+	"fmt"
+	"runtime"
+)
+
+func main() {
+	GOMAXPROCS := runtime.GOMAXPROCS(0)
+	fmt.Println("当前线程的数量是: ", GOMAXPROCS)
+}
+```
+
+## mutex(互斥锁)
+
+对于任一共享资源, 同一时间保证只有一个操作者, 这种方法称为 `互斥机制`
+
+`Go`中的互斥锁, 可以从`sync.Mutex`实例中获得, 它的 `Lock` 方法用于获取锁, `Unlock` 方法用于释放锁, 在 `Lock`和 `Unlock` 之间的代码, 可以读取和修改共享资源, 这部分区域称为`临界区`, 如下: 
+
+```go
+package main
+
+import (
+	"sync"
+)
+
+// 声明全局变量, 是一个 sync.Mutex 类型
+var mu sync.Mutex
+
+func main() {
+	// 获取锁
+	mu.Lock()
+  
+  // 在这个区域的操作是 mu 这个互斥锁的临界区(安全区域)
+	
+	// 释放锁
+	defer mu.Unlock()
+}
+```
+
+### 错误的并发
+
+`map`类型的值不是并发不安全, 下面的代码同时启动 100 个 `goroutine` 同时修改 `map` 的值, 代码执行会报错: 
+
+```go
+package main
+
+import (
+	"fmt"
+	"time"
+)
+
+func main() {
+	m := make(map[int]bool)
+
+	// 启动 100 个 goroutine 同时修改 map 的值
+	for i := 0; i < 100; i++ {
+		go func(k int) {
+
+			m[k] = true // 设置值
+
+		}(i) // 索引作为参数传递
+	}
+
+	time.Sleep(1 * time.Second)
+	fmt.Println("map 的最终值为: ", m)
+}
+
+/* 报错信息
+fatal error: concurrent map writes
+fatal error: concurrent map writes
+
+goroutine 7 [running]:
+main.main.func1(0x1)
+        F:/study/learn-go/main/main.go:14 +0x2c
+created by main.main
+        F:/study/learn-go/main/main.go:13 +0x34
+*/
+```
+
+### 正确的并发操作
+
+一种简单的方案是在并发临界区域进行加互斥锁操作, **互斥锁保证了同一时刻 只有一个 `goroutine` 获得锁，其他 `goroutine` 全部处于等待状态**，这样就把并发写入变成了串行写入, 就可以消除报错问题, 如下:
+
+```go
+package main
+
+import (
+	"fmt"
+	"sync"
+	"time"
+)
+
+func main() {
+	// 声明一个 Mutex
+	var mu sync.Mutex
+	m := make(map[int]bool)
+
+	for i := 0; i < 100; i++ {
+		go func(k int) {
+			// 先获取锁(只会有一个 goroutine 可以拿到)
+			mu.Lock()
+
+      m[k] = true // 设置值
+
+			// 释放锁
+			mu.Unlock()
+		}(i)
+	}
+
+	time.Sleep(1 * time.Second)
+	fmt.Println("map 的最终值为: ", m)
+}
+```
+
+## channel(通道)
+
+`Golang`里面有一句名言就是: **不要通过共享内存来通信, 要通过通信来共享内存**, 其中的"通信"就是通过`channel`实现的, `channel`可以在多个`goroutine`之间安全的传值, `channel`可以使用在变量, 参数, 结构体字段等所有可以使用的地方
+
+### 创建channel
 
 可以使用`make`函数创建`channel`, 类型是`chan 通道要传递的类型`
 
@@ -3157,32 +3745,45 @@ func test(c chan int) {
 
 使用左箭头操作符`<-`可以往`channel`里发送和接收值: 
 
-**向`channel`发送值**
-
-发送操作会等待直到另外一个`goroutine`对其进行接收数据为止
-
 ```go
-c := make(chan int)
+package main
 
-// 把 10 发送到 c 这个通道中
-c <- 10
+import (
+	"fmt"
+	"time"
+)
+
+func main() {
+	c := make(chan int)
+
+  // 后台持续等待接收值
+	go func() {
+		// 从 c 这个通道中读取值到 data 变量中
+		data := <-c
+		fmt.Println("获取到通道的值: ", data)
+
+		// 也可以从第二个返回值中判断通道是否已经关闭
+		if data, ok := <-c; ok {
+			fmt.Println("获取到通道的值: ", data)
+		} else {
+			fmt.Println("通道已经关闭了")
+		}
+	}()
+
+	// 向 channel 发送 1 这个值
+	c <- 1
+
+  // 关闭通道
+	close(c)
+
+	time.Sleep(time.Second)
+}
 ```
 
->   发送期间的`goroutine`无法执行其他的操作
+注意点: 
 
-**从`channel`中接收值**
-
-执行接收操作的`goroutine`也会等待直到另外一个`goroutine`对其发送完毕数据为止
-
-```go
-c := make(chan int)
-
-// 从 c 这个通道中读取值到 data 变量中
-data := <- c
-
-// 也可以从第二个返回值中判断通道是否已经关闭
-data, ok := <- c
-```
+-   向`channel`发送值, 发送操作会等待直到另外一个`goroutine`对其进行接收数据为止, 发送期间的`goroutine`无法执行其他的操作
+-   从`channel`中接收值, 执行接收操作的`goroutine`也会等待直到另外一个`goroutine`对其发送完毕数据为止
 
 #### 一个`channel`可以给多个`goroutine`使用
 
@@ -3199,7 +3800,7 @@ func main() {
 
 	// 执行 5次 goroutine
 	for i := 0; i < 5; i++ {
-		go sleep(i, c)
+		go send(i, c)
 	}
 
 	// 读取 5次channel的值
@@ -3210,7 +3811,7 @@ func main() {
 	time.Sleep(time.Second * 2)
 }
 
-func sleep(index int, c chan int) {
+func send(index int, c chan int) {
 	time.Sleep(time.Second)
 
 	// 向 channel 发送值
@@ -3221,64 +3822,6 @@ func sleep(index int, c chan int) {
 #### time.After
 
 `time.After`函数是标准库内置的函数它返回一个通道(计算器通道), 该通道在指定时间后会接收到一个值(发送该值的`goroutine`是`Go`运行时的一部分)
-
-#### 使用select处理多个通道
-
-`select`语句用于等待不同类型的值, `select`和`switch`有点像
-
--   `select`语句包含的每个`case`都持有一个通道, 用来发送或接收数据
-
--   `select`会等待直到某个`case`分支的操作就绪, 然后就会执行该`case`分支
-
-    
-
-```go
-package main
-
-import (
-	"fmt"
-	"math/rand"
-	"time"
-)
-
-func main() {
-	c := make(chan int)
-
-	// 执行 5次 goroutine
-	for i := 0; i < 5; i++ {
-		go sleep(i, c)
-	}
-
-	// 定时器 channel(3s后返回值)
-	timeout := time.After(time.Second * 3)
-
-	// 读取 5次channel的值
-	for i := 0; i < 5; i++ {
-
-		select {
-		case date := <-timeout: // 3s之后走这个 channel
-			fmt.Println("定时器返回了值退出程序: ", date)
-			return
-		case goFnId := <-c: // 否则走这个 channel
-			fmt.Println("接收到的channel值: ", goFnId)
-		}
-	}
-}
-
-func sleep(index int, c chan int) {
-	// 0 ~ 5s 随机睡眠时间
-	randTime := time.Duration(rand.Intn(5000)) * time.Millisecond
-
-	time.Sleep(randTime)
-
-	// 向 channel 发送值
-	c <- index
-}
-```
-
->   注意: 即使已经停止等待`goroutine`，但只要`main`函数还没结束, 仍在运行的`goroutine`将会继续占用内存
-
->   `select`语法在不包含任何`case`的情况下将会永远等下去
 
 #### nil通道
 
@@ -3315,26 +3858,81 @@ func main() {
 
 当一个或多个`goroutine`因为某些永远无法发生的事情被阻塞时, 这种情况被称为**死锁**, 
 
-而出现死锁的程序通常会崩溃或挂起, 如下代码就会导致**死锁**:
+而出现死锁的程序通常会崩溃或挂起, 如下的几个例子都会导致**死锁**:
+
+**没有发送者**
 
 ```go
 package main
 
 func main() {
 	c := make(chan int)
-	<-c // 这里会导致死锁
+	<-c // 这里会导致死锁, 因为没有人给 c 发送值, c 会一直等待着接收值
 }
 ```
 
-### 关闭的goroutine
+**主 `goroutine`直接发送, 没有其他`goroutine`接收值**
 
-`Go`允许在没有值可供发送的情况下通过`close`函数关闭通道, 
+```go
+package main
+
+func main() {
+	c := make(chan int)
+	c <- 1 // 这里会一直阻塞, 等待接收值, 没人往里面写入值, 代码就不会继续往下执行
+
+	<-c
+}
+```
+
+**主 `goroutine`直接接收, 没有其他`goroutine`发送值**
+
+```go
+package main
+
+func main() {
+	c := make(chan int)
+	<-c // 这里会一直阻塞, 等待其他的 goroutine 接收, 会导致死锁, 代码就不会继续往下执行
+
+	c <- 1
+}
+```
+
+#### 正确写法
+
+正确的写法是在`channel`发送或者接收操作之前, 必须要有对应的`goroutine`来对应匹配操作(**发送则需要有接收, 接收则需要有发送**), 这样才不会出现阻塞和死锁问题, 如下:
+
+```go
+package main
+
+import (
+	"fmt"
+	"time"
+)
+
+func main() {
+	c := make(chan int)
+
+	go func() {
+		// 这里会发生阻塞, 但是在其他 goroutine 中只要有写入值就不会发生死锁
+		data := <-c
+		fmt.Println("接收到通道的值为:", data)
+	}()
+
+	c <- 1 // 主 goroutine 发送值
+
+	time.Sleep(time.Second)
+}
+```
+
+### 检测通道是否关闭
+
+`Go`允许在没有值可供发送的情况下通过`close()`函数关闭通道, 
 
 通道被关闭后无法写入任何值,如果尝试写入将引发 *panic*
 
 尝试读取被关闭的通道会获得与通道类型对应的零值
 
->   注意: 如果循环里读取一个已关闭的通道，并没检查通道是否关闭,那么该循环可能会一直运转下去, 耗费大量 CPU时间, 可以先判断通道是否已经关闭`data, ok := <- c`在做操作
+>   注意: 如果循环里读取一个已关闭的通道，并没检查通道是否关闭, 那么该循环可能会一直运转下去, 耗费大量 CPU时间, 可以先判断通道是否已经关闭`data, ok := <- c`在做操作
 
 ```go
 package main
@@ -3352,14 +3950,16 @@ func main() {
 
 	go func() {
 		data, ok := <-c
+
 		if !ok {
 			fmt.Println("通道已经关闭了")
 			return
 		}
+
 		fmt.Println("读取到通道的值: ", data)
 	}()
 
-	// c <- 1
+	c <- 1
 
 	time.Sleep(time.Second)
 }
@@ -3397,28 +3997,330 @@ func main() {
 }
 ```
 
-### mutex(互斥锁)
+### 方向通道
 
-`Go`中的互斥锁, 可以从`sync`包中获得:
+通道默认值支持发送和接收的, 也可以手动声明为**仅接收**或者**仅发送**, 如下:
+
+```go
+package main
+
+func main() {
+	// 默认可接收和可发送
+	ch1 := make(chan string)
+
+	// 仅接收(只能接收)
+	ch2 := make(<-chan string)
+
+	// 仅发送(只能发送)
+	ch3 := make(chan<- string)
+}
+```
+
+通道方向一般是使用在函数的参数上面:
 
 ```go
 package main
 
 import (
-	"sync"
+	"fmt"
+	"time"
 )
 
-// 声明全局变量, 是一个 sync.Mutex 类型
-var mu sync.Mutex
+func main() {
+	ch1 := make(chan string)
+	ch2 := make(chan string)
+
+	go ping(ch1)
+
+	go func() {
+		pc := <-ch1
+		fmt.Println("ping:", pc)
+
+		ch2 <- pc + " hello"
+	}()
+
+	go pone(ch2)
+
+	time.Sleep(time.Second)
+}
+
+// 参数声明为通道只能写入
+func ping(pc chan<- string) {
+	// <-pc // Error 不能从通道里面读取值
+
+	pc <- "ping"
+}
+
+// 参数声明为只能读取通道
+func pone(po <-chan string) {
+	// po <- "pone" // Error 不能往通道里面写入
+
+	s := <-po
+	fmt.Println("pone:", s)
+}
+```
+
+结果如下:
+
+```go
+ping: ping
+pone: ping hello
+```
+
+#### 通道转换
+
+双向通道可以转换为单向通道, 但是单向通道无法转换为双向通道
+
+### 非缓冲通道和缓冲通道
+
+调用 `make()` 函数来初始化一个通道, `make()` 函数的第二个参数为通道长度, 如果未指定或指定为 0，则该通道为非缓冲通道 (**阻塞通道**), 否则该通道为缓冲通道 (**非阻塞通道**)
+
+```go
+ch1 := make(chan string)     // 非缓冲通道
+ch2 := make(chan string, 0)  // 非缓冲通道
+ch3 := make(chan string, 10) // 缓冲通道, 容量为 10
+```
+
+#### 阻塞(非缓冲)通道
+
+非阻塞通道进行发送操作将会被阻塞, 直到另一个 `goroutine` 在对应的通道上面完成接收操作，两个 `goroutine` 才可以继续执行, 如下图所示: 
+
+![image-20230304175914346](./images/image-20230304175914346.png) 
+
+代码示例: 
+
+```go
+package main
+
+import (
+	"fmt"
+	"time"
+)
 
 func main() {
-	// 获取锁
-	mu.Lock()
+	ch1 := make(chan string) // 非缓冲通道
 
-	// 释放锁
-	defer mu.Unlock()
+	go func() {
+		ch1 <- "hello"
+	}()
 
-	// 其他的操作
+	data := <-ch1 // 非缓冲通道这里会一直阻塞, 直到接收到消息
+	fmt.Println("data:", data)
+
+	time.Sleep(time.Second)
+}
+```
+
+#### 缓冲通道
+
+-   如果通道已满 (元素数量达到容量), 发送操作将会阻塞，直到另一个 `goroutine` 在对应的通道上面完成接收操作, 两个 `goroutine` 才可以继续执行
+-   如果通道未满, 发送操作不会阻塞
+
+![image-20230304180013994](./images/image-20230304180013994.png) 
+
+代码示例:
+
+```go
+package main
+
+import (
+	"fmt"
+	"time"
+)
+
+func main() {
+	ch1 := make(chan string, 2) // 缓冲通道
+
+	ch1 <- "hello" // 缓冲通道这里不会直接阻塞(没有超过最大的缓冲数量)
+	ch1 <- "world"
+	// ch1 <- "abcd" // 这里会发生阻塞, 导致死锁
+
+	fmt.Println(<-ch1)
+	fmt.Println(<-ch1)
+
+	time.Sleep(time.Second)
+}
+```
+
+## select
+
+`select`语句可以可以用来等待多个不同类型的`channel`(`select`和`switch`有点像)
+
+-   `select`语句包含的每个`case`都持有一个通道, 用来发送或接收数据
+
+-   `select`会等待直到某个`case`分支的操作就绪, 然后就会执行该`case`分支
+
+语法如下:
+
+```go
+select {
+case <- ch1: // 匹配 ch1 的通道
+// 匹配 ch1 的通道时执行的代码
+case v2 := <- ch2: // 匹配 ch2 的通道, 并把接收到的值赋值到 v2
+// 匹配 ch2 的通道时执行的代码
+default:
+// 当上面所有的通道都不满足时, 执行这个分支的代码
+}
+```
+
+基本使用: 
+
+```go
+package main
+
+import (
+	"fmt"
+	"math/rand"
+	"time"
+)
+
+func main() {
+	c := make(chan int)
+
+	// 执行 5次 goroutine
+	for i := 0; i < 5; i++ {
+		go send(i, c)
+	}
+
+	// 定时器 channel(3s后返回值)
+	timeout := time.After(time.Second * 3)
+
+	// 读取 5次channel的值
+	for i := 0; i < 5; i++ {
+    
+		select {
+		case date := <-timeout: // 3s之后走这个 channel
+			fmt.Println("定时器返回了值退出程序: ", date)
+			return
+		case goFnId := <-c: // send 函数时间到了则走这个 channel
+			fmt.Println("接收到的channel值: ", goFnId)
+		}
+	}
+}
+
+func send(index int, c chan int) {
+	// 0 ~ 5s 随机睡眠时间
+	randTime := time.Duration(rand.Intn(5000)) * time.Millisecond
+
+	time.Sleep(randTime)
+
+	// 向 channel 发送值
+	c <- index
+}
+```
+
+>   注意: 即使已经停止等待`goroutine`，但只要`main`函数还没结束, 仍在运行的`goroutine`将会继续占用内存
+
+>   `select`语法在不包含任何`case`的情况下将会永远等下去
+
+### select执行顺序
+
+`select`语句的执行顺序:
+
+-    当同时存在**多个满足条件**的通道时, **随机选择**一个执行
+
+-   如果没有满足条件的通道时，检测是否存在 `default` 分支
+
+-   -   如果存在则执行
+    -   否则阻塞等待
+
+通常情况下, 把含有 `default`分支的 `select` 操作称为 `无阻塞通道操作`
+
+#### select随机执行一个
+
+```go
+package main
+
+import (
+	"fmt"
+	"time"
+)
+
+func main() {
+	ch1 := make(chan int)
+	ch2 := make(chan bool)
+	ch3 := make(chan string)
+
+	go func() {
+		ch1 <- 1
+	}()
+
+	go func() {
+		ch2 <- true
+	}()
+
+	go func() {
+		ch3 <- "hello"
+	}()
+
+	// 等待1s, 上面所有的 goroutine 都满足条件
+	time.Sleep(time.Second)
+
+	// 每次执行都会输出不同的值
+	select {
+	case i := <-ch1:
+		fmt.Println("ch1: ", i)
+	case b := <-ch2:
+		fmt.Println("ch2: ", b)
+	case s := <-ch3:
+		fmt.Println("ch3: ", s)
+	}
+
+	// 关闭通道
+	close(ch1)
+	close(ch2)
+	close(ch3)
+}
+```
+
+#### 无阻塞通道操作
+
+通过给`select`语句添加`default`分支, 则可以实现无阻塞通道操作: 
+
+```go
+package main
+
+import (
+	"fmt"
+	"time"
+)
+
+func main() {
+	ch1 := make(chan int)
+	ch2 := make(chan bool)
+	ch3 := make(chan string)
+
+	go func() {
+		time.Sleep(time.Second)
+		ch1 <- 1
+	}()
+
+	go func() {
+		time.Sleep(time.Second)
+		ch2 <- true
+	}()
+
+	go func() {
+		time.Sleep(time.Second)
+		ch3 <- "hello"
+	}()
+
+	// 上面的每个 gorutine 都在休眠中, 则会执行 default 分支的代码
+	select {
+	case i := <-ch1:
+		fmt.Println("ch1: ", i)
+	case b := <-ch2:
+		fmt.Println("ch2: ", b)
+	case s := <-ch3:
+		fmt.Println("ch3: ", s)
+	default:
+		fmt.Println("default")
+	}
+
+	// 关闭通道
+	close(ch1)
+	close(ch2)
+	close(ch3)
 }
 ```
 
@@ -3437,13 +4339,17 @@ func main() {
 func worker() {
 	for {
 		select {
-		// 在这里等待 channel
+			// 在这里可以无限的等待 channel
 		}
 	}
 }
 ```
 
-简单使用工作进程:
+### 超时控制
+
+说到超时控制就要提到`time.After()`方法了, `time.After()`方法是`Go`编译器提供的一个用于定时返回通道值的方法, `time.After()` 接受一个时长参数，然后会**等待这个时长**, 等待时间到后, 将等待完成时所处时间点写入到`channel`中并返回这个只读`channel`
+
+超时控制可以利用`time.After()` 和 `channel` 实现, 如下: 
 
 ```go
 package main
@@ -3454,32 +4360,185 @@ import (
 )
 
 func main() {
-	// 以 goroutine 方式启动
-	go worker()
+	// 业务使用的通道
+	ch := make(chan int)
 
-	// 运行 30s
-	time.Sleep(time.Second * 30)
-}
-
-func worker() {
-	n := 0
-	next := time.After(time.Second)
+	go func() {
+    time.Sleep(5 * time.Second) // 模拟耗时操作, 这里要大于 time.After() 的值
+		ch <- 1
+	}()
 
 	for {
 		select {
-		case <-next:
-
-			// 更新值
-			n++
-
-			// 1s 打印一次值
-			fmt.Println(n)
-
-			// 更新定时器通道
-			next = time.After(time.Second)
+		case n := <-ch:
+			fmt.Println("代码正常执行: ", n)
+			return
+		case <-time.After(2 * time.Second): // 2s 系统自动发一次值, 即表示2s超时
+			fmt.Println("超时了")
+			return
 		}
 	}
 }
+```
+
+### 定时器
+
+定时器可以使用`time.NewTicker`方法+`channel`模拟即可
+
+```go
+package main
+
+import (
+	"fmt"
+	"time"
+)
+
+func main() {
+  // 一秒执行一次
+	ticker := time.NewTicker(time.Second)
+  
+  // 停止定时器
+	defer ticker.Stop()
+
+	// 是否完成
+	done := make(chan bool)
+
+	go func() {
+		time.Sleep(5 * time.Second) // 模拟耗时操作
+		done <- true
+	}()
+
+	for {
+		select {
+		case <-done:
+			fmt.Println("已完成")
+			return // 完成则退出
+		case <-ticker.C:
+			fmt.Println(time.Now().Format("2006-01-02 15:04:05")) // 定时打印当前时间
+		}
+	}
+}
+```
+
+## 同步原语
+
+在前面使用`goroutine`的例子中为了, 让多个`goroutine`可以在`主 goroutine`结束之前都执行完, 会使用`time.Sleep()` 来`主 goroutine`睡眠等待, 
+
+这样的方式存除了实现不优雅之外, 最大的问题在于: `time.Sleep()` 接受的是一个硬编码的时间参数, 这就要求我们实现必须要指定一个时间可以让每个`goroutine`都执行完成, 这在大多数场景下是没办法做到的
+
+如果主进程能够知道每个 `goroutine` 是何时结束的，并且在结束之后发一个通知给主进程， 那么问题就可以完美解决了。Go 提供的 `sync.WaitGroup` 就是针对这种场景的解决方案
+
+### sync.WaitGroup
+
+`sync.WaitGroup`实例提供了三个方法: `Add()` ,`Done()` 和`Wait()`
+
+-   `Add()` 和 `Done()` 方法必须配对使用, `Wait()` 方法必须在程序退出前调用
+-   `Add()`, `Done()`, `Wait()` 三者必须同属一个作用域
+
+基本使用如下:
+
+```go
+package main
+
+import (
+	"fmt"
+	"sync"
+	"time"
+)
+
+func main() {
+	defer fmt.Println("主线程执行结束")
+
+	// 声明 sync.WaitGroup 实例
+	var wg sync.WaitGroup
+
+	// 参数 为 3, 正好对应了 3 个 goroutine (可以多次调用, 每次调用都会加上值)
+	wg.Add(3)
+
+	go func() {
+		time.Sleep(time.Second * 1)
+		fmt.Println("执行 goroutine1")
+		defer wg.Done() // 通知主线程, 这个 goroutine 执行完了
+	}()
+
+	go func() {
+		time.Sleep(time.Second * 2)
+		fmt.Println("执行 goroutine2")
+		defer wg.Done() // 通知主线程, 这个 goroutine 执行完了
+	}()
+
+	go func() {
+		time.Sleep(time.Second * 3)
+		fmt.Println("执行 goroutine3")
+		defer wg.Done() // 通知主线程, 这个 goroutine 执行完了
+	}()
+
+	// 等待所有 goroutine 全部执行完
+	wg.Wait()
+}
+```
+
+运行结果如下:
+
+```go
+➜ go run main.go
+执行 goroutine1
+执行 goroutine2
+执行 goroutine3
+主线程执行结束
+```
+
+## build指定图标
+
+`go`在执行`build`时生成的可执行文件是默认是不带图标, 设置自定义图标的步骤如下:
+
+1.   安装`rsrc`
+
+```sh
+go install github.com/akavel/rsrc@latest
+```
+
+2.   在`main.go`的同级目录下创建`main.manifes`
+
+```xml
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
+    <assemblyIdentity version="1.0.0.0" processorArchitecture="*" name="SomeFunkyNameHere" type="win32"/>
+    <dependency>
+        <dependentAssembly>
+            <assemblyIdentity type="win32" name="Microsoft.Windows.Common-Controls" version="6.0.0.0" processorArchitecture="*" publicKeyToken="6595b64144ccf1df" language="*"/>
+        </dependentAssembly>
+    </dependency>
+    <application xmlns="urn:schemas-microsoft-com:asm.v3">
+        <windowsSettings>
+            <dpiAwareness xmlns="http://schemas.microsoft.com/SMI/2016/WindowsSettings">PerMonitorV2, PerMonitor</dpiAwareness>
+            <dpiAware xmlns="http://schemas.microsoft.com/SMI/2005/WindowsSettings">True</dpiAware>
+        </windowsSettings>
+    </application>
+</assembly>
+```
+
+3.   生成`ico`图标(网上有很多可以图片直接生成的[网站](https://ico.nyaasu.top/)), 将生成的`main.ico`图标放到`main.go`同级目录中
+
+4.   生成`main.syso`, 命令如下: 
+
+```sh
+# 使用 main.manifest 配置, 将 main.ico 生成 main.syso
+rsrc -manifest main.manifest -ico main.ico -o main.syso
+```
+
+>   `main.syso`生成后, 如果不修改ico图标, 不需要再执行上面的命令, 只要`main.syso`与`main.go`在同级目录即可, 如果修改ico图标了则需要再次生成
+
+5.   打包Go二进制
+
+```sh
+# 打包
+go build
+# 打包并重命名
+go build -o test.exe
+
+# 执行时去掉cmd窗口
+go build -ldflags="-H windowsgui  -w -s"
 ```
 
 ## 常用标准库
@@ -3496,13 +4555,139 @@ package main
 import "log"
 
 func main() {
-	log.Println("test") // 2023/02/12 10:05:15 test
+	log.Println("这是一个日志1") // 2023/02/12 10:05:15 这是一个日志1
+
+	// 设置前缀
+	log.SetPrefix("[前缀]")
+	log.Println("这是一个日志2") // [前缀]2023/02/12 10:05:15 这是一个日志2
+  
+  log.Fatal("发生了错误") // 打印输出后, 调用 os.Exit(1)
+}
+```
+
+#### 将日志写入到文件中
+
+```go
+package main
+
+import (
+	"fmt"
+	"log"
+	"os"
+)
+
+func main() {
+	file, err := os.Create("./test.log")
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	
+  // 将输出指向文件
+	log.SetOutput(file)
+
+	log.SetPrefix("[前缀]")
+	log.Println("写入到文件的日志1")
+	log.Println("写入到文件的日志2")
 }
 ```
 
 ### time
 
-[`time`](https://pkg.go.dev/time@go1.20)是获取时间相关的函数
+[`time`](https://pkg.go.dev/time@go1.20)是获取时间相关的函数, 基本使用如下: 
+
+```go
+package main
+
+import (
+	"fmt"
+	"time"
+)
+
+func main() {
+	// 注意这个 YMDhms 的值(2006-01-02 15:04:05)是写死的,
+	// 对应的格式为: yyyy-MM-DD hh:mm:ss, 表示 Go 诞生的日期
+	const YMDhms string = "2006-01-02 15:04:05"
+	now := time.Now()
+
+	f := now.Format(YMDhms)
+	fmt.Println(f) // 2023-03-01 23:25:02
+
+	// 对应 yyyy-MM-DD
+	f = now.Format("2006-01-02")
+	fmt.Println(f) // 2023-03-01
+
+	// 年月日时分秒
+	fmt.Println(now.Year())
+	fmt.Println(now.Month())
+	fmt.Println(now.Day())
+	fmt.Println(now.Hour())
+	fmt.Println(now.Minute())
+	fmt.Println(now.Second())
+
+	fmt.Println(now.Unix())      // 秒
+	fmt.Println(now.UnixMilli()) // 毫秒
+	fmt.Println(now.UnixMicro()) // 微妙
+	fmt.Println(now.UnixNano())  // 纳秒
+}
+```
+
+#### 时间戳获取和解析
+
+```go
+package main
+
+import (
+	"fmt"
+	"time"
+)
+
+func main() {
+	const YMDhms string = "2006-01-02 15:04:05"
+
+	var timestamp int64 = 1677930774156
+	t := time.UnixMilli(timestamp) // 对应毫秒
+	// t := time.Unix(timestamp, 0) // 对应秒
+	fmt.Println(t.Format(YMDhms)) // 2023-03-04 19:52:54
+}
+```
+
+#### 时间计算和比较
+
+```go
+package main
+
+import (
+	"fmt"
+	"time"
+)
+
+func main() {
+	const YMDhms string = "2006-01-02 15:04:05"
+	now := time.Now()
+
+	fmt.Println(now.Format(YMDhms)) // 2023-03-01 23:25:02
+  
+  // 时间计算
+	fmt.Println(
+		"减去2个小时",
+		now.Add(-2*time.Hour).Format(YMDhms),
+	) // 减去2个小时 2023-03-01 23:25:02
+
+	fmt.Println(
+		"加上2个小时",
+		now.Add(2*time.Hour).Format(YMDhms),
+	) // 加上2个小时 2023-03-01 23:25:02
+
+	// 时间比较
+	fmt.Println("比较时间之前: ", now.Add(2*time.Hour).After(now))
+	fmt.Println("比较时间之前: ", now.After(now.Add(2*time.Hour)))
+
+	fmt.Println("比较时间之后: ", now.Add(-2*time.Hour).Before(now))
+	fmt.Println("比较时间之后: ", now.Before(now.Add(-2*time.Hour)))
+}
+```
+
+#### 计算程序执行时间
 
 ```go
 package main
@@ -3527,7 +4712,7 @@ func main() {
 
 ### os
 
-[`os`](https://pkg.go.dev/os@go1.20)是获取和系统相关的
+[`os`](https://pkg.go.dev/os@go1.20)是获取和系统相关的, 比如: `os.Stdout`标准输入, `os.Stdin`标准输出, `os.Stderr`标准错误
 
 ```go
 package main
@@ -3535,14 +4720,632 @@ package main
 import (
 	"fmt"
 	"os"
+	"path/filepath"
+	"strings"
 )
 
 func main() {
 	fmt.Println("命令行参数: ", os.Args)
+	__fileName := os.Args[0]
+	fmt.Println("当前执行的文件地址: ", __fileName)
+	fmt.Println("当前执行的文件名: ", filepath.Base(__fileName))
+	fmt.Println("当前执行的目录名: ", filepath.Dir(__fileName))
 	fmt.Println("path 环境变量: ", os.Getenv("path"))
+	fmt.Println("系统分割符: ", string(os.PathSeparator))
+	os.Setenv("abcd", "测试的环境变量") // 程序结束后, 环境变量就失效
+	fmt.Println("进程id: ", os.Getpid())
+	fmt.Println("父进程id: ", os.Getppid())
+	fmt.Println("父进程id: ", getEnvs())
+  fmt.Println("所有的环境变量: ", getEnvs())
 
 	// 退出程序
 	os.Exit(1)
 }
+
+// 获取所有的环境变量
+func getEnvs() map[string]string {
+	envs := os.Environ()
+	m := make(map[string]string)
+	for _, e := range envs {
+		parts := strings.SplitN(e, "=", 2)
+		if len(parts) == 2 {
+			m[string(parts[0])] = string(parts[1])
+		} else {
+			fmt.Println("异常的环境变量: ", parts)
+		}
+	}
+	return m
+}
+```
+
+### os/exec
+
+[`os/exec`](https://pkg.go.dev/os/exec)可以用来执行系统命令, 如下: 
+
+```go
+package main
+
+import (
+	"fmt"
+	"os"
+	"os/exec"
+)
+
+func main() {
+	// 基本的 shell 命令
+	cmd := exec.Command("go", "version")
+	data, err := cmd.Output()
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	fmt.Println(string(data))
+
+	// 长时间命令
+	cmd = exec.Command("ping", "www.baidu.com")
+	cmd.Stdout = os.Stdin
+	cmd.Run() // 会阻塞等待命令完成
+}
+```
+
+#### 执行二进制文件
+
+```go
+func main() {
+  cmd := exec.Command("cmd.exe", "/c", "start ./test.exe")
+  cmd.Run()
+}
+```
+
+### JSON
+
+JSON一般都是和结构体进行互相转换的使用`encoding/json`包
+
+#### 将struct编码为JSON
+
+使用`Marshal(T)`方法来将`struct`中的数据转换为`JSON`格式(**只有被导出的字段才可以转换**):
+
+```go
+package main
+
+import (
+	"encoding/json"
+	"fmt"
+	"os"
+)
+
+// 字段都是大写(表示是被导出的)
+type Persion struct {
+	Name string
+	Age  int
+}
+
+func main() {
+	p := Persion{
+		Name: "张三",
+		Age:  18,
+	}
+
+	bytes, err := json.Marshal(p)
+
+	if err != nil {
+		fmt.Println("转换发生了错误: ", err.Error())
+		os.Exit(1)
+	}
+
+	fmt.Println("json: ", string(bytes)) // json:  {"Name":"张三","Age":18}
+}
+```
+
+如果想格式化的字段重命名的话, 就需要特地的标签注明
+
+```go
+// 自定义json化的字段名
+type Persion struct {
+	Name string `json:"name"`
+	Age  int    `json:"age"`
+}
+```
+
+#### JSON 字符串转为结构体
+
+使用`Unmarshal([]byte, &T)`方法即可, 也支持自定义字段名: 
+
+```go
+package main
+
+import (
+	"encoding/json"
+	"fmt"
+)
+
+type Persion struct {
+	Name string `json:"name"` // 也可以自定义json化的字段名
+	Age  int
+}
+
+func main() {
+	// json 字符串格式必须正确, 不然会报错
+	jsonStr := `{
+		"name": "张三",
+		"age": 18
+	}`
+
+	var p Persion
+	err := json.Unmarshal([]byte(jsonStr), &p) // 注意参数是 []byte 和 指针
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Printf("json字符串解析出的数据: %+v", p) // {Name:张三 Age:18}
+}
+```
+
+#### 输出格式化 JSON 字符串
+
+调用 `MarshalIndent(T, 前缀, 缩进符)` 方法完成
+
+```go
+package main
+
+import (
+	"encoding/json"
+	"fmt"
+)
+
+type Persion struct {
+	Name string `json:"name"`
+	Age  int    `json:"age"`
+}
+
+func main() {
+	p := Persion{
+		Name: "张三",
+		Age:  18,
+	}
+
+	// 前缀为空字符串, 缩进符为两个空格
+	jsonStr, err := json.MarshalIndent(p, "", "  ")
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println("json: ", string(jsonStr))
+}
+
+/* 输出如下:
+json:  {
+  "name": "张三",
+  "age": 18
+}
+*/
+```
+
+#### JSON忽略公开值
+
+某些场景下, 需要将结构体字段设置为**公开可导出**, 但是又不希望 JSON 序列化时输出该字段,  可以使用 `-` 符号标识:
+
+```go
+package main
+
+import (
+	"encoding/json"
+	"fmt"
+)
+
+type Persion struct {
+	Name string `json:"name"`
+	Age  int    `json:"-"` // 这个字段不会被导出
+}
+
+func main() {
+	p := Persion{
+		Name: "张三",
+		Age:  18,
+	}
+
+	jsonStr, err := json.MarshalIndent(p, "", "  ")
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println("json: ", string(jsonStr))
+}
+
+/* 输出如下:
+json:  {
+  "name": "张三"
+}
+*/
+```
+
+#### 忽略零值
+
+使用`omitempty`标志表示该属性为空时不输出到JSON, 一般是搭配值类型为指针类型即可: 
+
+```go
+package main
+
+import (
+	"encoding/json"
+	"fmt"
+)
+
+type Person struct {
+	Name string `json:"name"`
+	Age  *int   `json:"age,omitempty"` // omitempty 表示为零值则不输出到json
+}
+
+func main() {
+	age := 18
+	p1 := Person{
+		Name: "张三",
+		Age:  &age,
+	}
+
+	p2 := Person{
+		Name: "李四",
+		Age:  nil, // 这个值将不会输出到 JSON
+	}
+
+	bytes, _ := json.MarshalIndent(p1, "", "  ")
+	fmt.Printf("p1 json: %+v\n", string(bytes))
+	/* age 有值则输出
+	p1 json: {
+		"name": "张三",
+		"age": 18
+	}
+	*/
+
+	bytes, _ = json.MarshalIndent(p2, "", "  ")
+	fmt.Printf("p2 json: %+v\n", string(bytes))
+
+	/* age 没有值则不输出
+	p2 json: {
+		"name": "李四"
+	}
+	*/
+}
+```
+
+#### json业务对接技巧
+
+##### 临时忽略某个字段
+
+比如在接口中输出用户信息时, 希望过滤掉 **密码** 字段
+
+```go
+package main
+
+import (
+	"encoding/json"
+	"fmt"
+)
+
+type User struct {
+	UserName string `json:"userName"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
+func main() {
+	u := &User{
+		UserName: "root",
+		Email:    "123@qq.com",
+		Password: "123456",
+	}
+
+	data, err := json.Marshal(
+		struct { // 这里使用一个内嵌的结构体
+			User
+			Password string `json:"password,omitepty"` // 这里使用一个内嵌的字段覆盖原字段
+		}{User: *u})
+
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Printf("%s\n", data)
+  // {"userName":"root","email":"123@qq.com","password":""}
+}
+```
+
+##### 临时添加字段
+
+比如在接口中输出用户信息时, 希望添加一个 **Token** 字段
+
+```go
+package main
+
+import (
+	"encoding/json"
+	"fmt"
+)
+
+type User struct {
+	UserName string `json:"userName"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
+func main() {
+	u := &User{
+		UserName: "root",
+		Email:    "123@qq.com",
+		Password: "123456",
+	}
+
+	data, err := json.Marshal(
+		struct { // 这里使用一个内嵌的结构体
+			User
+			Password string `json:"password,omitepty"`
+			Token    string `json:"token"` // 这里新增一个字段
+		}{
+			User:  *u,
+			Token: "token", // 这里新增对应字段的数据
+		})
+
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Printf("%s\n", data)
+	// {"userName":"root","email":"123@qq.com","password":"","token":"token"}
+}
+```
+
+##### 字段字符串和数字转换
+
+接口对接时, 可能会存在双方字段名称一样, 但是类型不一样的的情况
+
+```go
+package main
+
+import (
+	"encoding/json"
+	"fmt"
+)
+
+type User struct {
+	UserName string `json:"userName"`
+	Email    string `json:"email"`
+
+	// 字段类型是 int, JSON 输出时更改为 string 类型
+	Age int `json:"age,string"`
+}
+
+func main() {
+	u := &User{
+		UserName: "root",
+		Email:    "123@qq.com",
+		Age:      18,
+	}
+
+	data, err := json.Marshal(*u)
+
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Printf("%s\n", data)
+	// {"userName":"root","email":"123@qq.com","age":"18"}
+}
+```
+
+
+
+### 正则表达式
+
+使用`regexp`包
+
+-   `regexp.MatchString()`是否匹配
+
+```go
+package main
+
+import (
+	"fmt"
+	"regexp"
+)
+
+func main() {
+	match, err := regexp.MatchString("^hello", "hello world")
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(match) // true
+
+	match, err = regexp.MatchString("d{0,4}", "1234")
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(match) // true
+
+	// 匹配中文
+	match, err = regexp.MatchString("\\x{4e00}-\\x{9fa5}", "hello world")
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(match) // false
+}
+```
+
+-   `regexp.Compile().ReplaceAll()`替换子字符串
+
+```go
+package main
+
+import (
+	"fmt"
+	"regexp"
+)
+
+func main() {
+	// 构建正则表达式
+	re, err := regexp.Compile("^hello")
+	if err != nil {
+		panic(err)
+	}
+
+	// 根据正则进行替换
+	res := re.ReplaceAll([]byte("hello world"), []byte("你好"))
+	fmt.Println(string(res)) // 你好 world
+}
+```
+
+-   `regexp.Compile().FindAllString()`匹配所有的子字符串
+
+```go
+package main
+
+import (
+	"fmt"
+	"regexp"
+)
+
+func main() {
+	// 构建正则表达式
+	re, err := regexp.Compile("h[a-z]")
+	if err != nil {
+		panic(err)
+	}
+
+	// 匹配所有的子字符串
+	res1 := re.FindAllString("hello world", -1)
+	fmt.Println(res1) // [he]
+
+	res2 := re.FindAllString("hello world hi ha h1", -1)
+	fmt.Println(res2) // [he hi ha]
+}
+```
+
+
+
+### 常见加密算法
+
+#### base64
+
+```go
+package main
+
+import (
+	"encoding/base64"
+	"fmt"
+)
+
+func main() {
+	s := "hello world"
+
+	// 加密为 base64
+	encode := base64.StdEncoding.EncodeToString([]byte(s))
+	fmt.Printf("%v 加密为 base64: %v\n", s, encode)
+	// hello world 加密为 base64: aGVsbG8gd29ybGQ=
+
+	// 解密 base64
+	decode, err := base64.StdEncoding.DecodeString(encode)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Printf("%v 解密 base64: %v\n", encode, string(decode))
+	// aGVsbG8gd29ybGQ= 解密 base64: hello world
+}
+```
+
+#### md5
+
+```go
+package main
+
+import (
+	"crypto/md5"
+	"fmt"
+)
+
+func main() {
+	s := "hello world"
+
+	h := md5.New()
+	h.Write([]byte(s))
+	res := h.Sum(nil)
+	fmt.Printf("%v 加密为 md5: %x\n", s, res) // 使用 %x 格式动词
+	// hello world 加密为 md5: 5eb63bbbe01eeed093cb22bb8f5acdc3
+}
+```
+
+#### sha256
+
+```go
+package main
+
+import (
+	"crypto/sha256"
+	"fmt"
+)
+
+func main() {
+	s := "hello world"
+
+	h := sha256.New()
+	h.Write([]byte(s))
+	res := h.Sum(nil)
+	fmt.Printf("%v 加密为 sha256: %x\n", s, res) // 使用 %x 格式动词
+	// hello world 加密为 sha256: b94d27b9934d3e08a52e52d7da7dabfac484efe37a5380ee9088f7ace2efcde9
+}
+```
+
+#### 随机数
+
+```go
+package main
+
+import (
+	"fmt"
+	"math/rand"
+	"time"
+)
+
+func main() {
+	rand.Seed(time.Now().UnixNano()) // 以当前时间的纳秒单位为种子
+
+	for i := 0; i < 5; i++ {
+		fmt.Println(rand.Int())
+	}
+}
+/** 结果(每次的结果都不一样)
+	5528252283805221096
+	8829822305440074354
+	2832370316733187903
+	46770142514361478
+	3966571905404866539
+*/
+```
+
+#### 随机生成指定区间数字
+
+```go
+package main
+
+import (
+	"fmt"
+	"math/rand"
+	"time"
+)
+
+func main() {
+	s := rand.NewSource(time.Now().UnixNano()) // 以当前时间的纳秒单位为种子
+	r := rand.New(s)
+
+	for i := 0; i < 5; i++ {
+		fmt.Println(r.Intn(10)) // 0 ~ 10
+	}
+}
+
+/** 结果(每次的结果都不一样)
+	0
+	5
+	4
+	7
+	2
+*/
 ```
 

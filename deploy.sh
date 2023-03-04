@@ -12,12 +12,17 @@ notesDir="${USERPROFILE}\\Nutstore\\1\\我的坚果云\\notes"
 guideDir="D:\\project\\note-sites\\docs"
 
 # 文件不存在则更改目录
-if [ ! -e guideDir ]; then
+if [ ! -d $guideDir ]; then
   guideDir="F:\\project\\note-sites\\docs"
 fi
 
-if [ ! -e guideDir ]; then
+if [ ! -d $guideDir ]; then
   guideDir="E:\\yjb\\note-sites\\docs"
+fi
+
+if [ ! -d $guideDir ]; then
+  echo 目录 $guideDir 不存在, 请检查
+  exit 1
 fi
 
 # 排除的文件

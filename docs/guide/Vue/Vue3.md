@@ -188,6 +188,22 @@ VITE_PUBLIC_PATH = "/"
 }
 ```
 
+##### 环境变量类型配置
+
+```ts
+interface ImportMeta {
+  readonly env: ImportMetaEnv;
+}
+
+interface ImportMetaEnv {
+  readonly VITE_MicroApp_main: string;
+  readonly VITE_VOC_CODE: string;
+  // ...
+}
+```
+
+
+
 ### 集成 vue-router, vuex, pinia
 
 #### 配置 vue-router
@@ -3702,6 +3718,50 @@ export default defineComponent({
 	}
 });
 ```
+
+### tsx技巧
+
+-   事件都变成`on`前缀事件名首字母大写, 比如: `onClick`, `onChange`
+-   属性带`-`都变成小驼峰命名, 比如: `append-to-body`则变成`appendToBody`
+
+-   tsx里是支持`v-model`指令的, 还有`v-slots`
+
+    ```tsx
+    // v-model 指令
+    <input type="text" value={msg.value} v-model={msg} />
+    
+    
+    // v-slots 指令
+    const slot1 = <div>slot1</div>
+    const slot2 = <div>slot2</div>
+    
+    const slots = {
+       slot1,
+       slot2
+    }
+    
+    return () => (
+      <div v-slots={slots}></div>
+    );
+    ```
+
+-   当需要根据变量名动态渲染组件时需要使用[`resolveComponent`](https://cn.vuejs.org/api/render-function.html#resolvecomponent)+[`h`](https://cn.vuejs.org/api/render-function.html#h)函数来手动解析组件
+
+    ```tsx
+    import { defineComponent, resolveComponent, h } from "vue";
+    import Child from "./Child";
+    
+    export default defineComponent({
+      components: { Child },
+    	setup() {
+        // 手动解析组件
+        const Child = h(resolveComponent("Child"), { msg: "hello" });
+    		return () => (
+    			<div>{Child}</div>
+    		);
+    	}
+    });
+    ```
 
 ## 插件
 
