@@ -1,8 +1,14 @@
-YYYY-02-DD 21:53:12 >>> F:\project\note-sites\gitee-active\src\logger\images\1675950792097.png
-locator.click: Target closed
-=========================== logs ===========================
-waiting for getByRole('link', { name: 'Logo en Gitee Pages' })
-============================================================
-    at file:///F:/project/note-sites/gitee-active/src/index.ts:43:71
+YYYY-03-DD 22:37:50 >>> F:\project\note-sites\gitee-active\src\logger\images\1677940670999.png
+browserType.launch: Executable doesn't exist at C:\Users\33153\AppData\Local\ms-playwright\chromium-1045\chrome-win\chrome.exe
+╔═════════════════════════════════════════════════════════════════════════╗
+║ Looks like Playwright Test or Playwright was just installed or updated. ║
+║ Please run the following command to download new browsers:              ║
+║                                                                         ║
+║     npx playwright install                                              ║
+║                                                                         ║
+║ <3 Playwright Team                                                      ║
+╚═════════════════════════════════════════════════════════════════════════╝
+    at file:///F:/project/note-sites/gitee-active/src/index.ts:19:34
+    at file:///F:/project/note-sites/gitee-active/src/index.ts:73:3
 
 
