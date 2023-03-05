@@ -41,7 +41,7 @@ tags:
     # 使用 go mod 模式
     go env -w GO111MODULE=on
     
-    # 更换国内代理
+    # go mod 更换国内代理
     go env -w GOPROXY=https://goproxy.cn,direct
     ```
 
@@ -1301,9 +1301,7 @@ func Println(a ...any) (n int, err error) {
 
 `...`表示类型的参数是可变的, `any`表示可以是任意的类型, 也可以这样写`interface{}`
 
-当`...`和`any`组合时就可以接受任意数量和任意类型的参数了
-
-基本使用: 
+当`...`和`any`组合时就可以接受任意数量和任意类型的参数了, 如下: 
 
 ```go
 package main
@@ -1333,6 +1331,22 @@ func test(args ...any) {
 func MyPrintln(args ...string) {
 	// 这样 ... 是在变量名的后面
 	fmt.Println(args...)
+}
+```
+
+### 参数默认值
+
+`Go`中没有提供参数默认值的语法, 但是可以利用可变参数模拟:
+
+```go
+// 日志输出
+func test(isError ...bool) {
+	
+	if len(isError) > 0 {
+		fmt.Println("有传递值")
+	} else {
+		fmt.Println("没有传递值")
+	}
 }
 ```
 
@@ -3413,9 +3427,31 @@ func main() {
 
 -   权限可见[os常量](https://pkg.go.dev/os#pkg-constants)
 
--   模式见官方文档[文件模式](https://pkg.go.dev/io/fs#FileMode), 对应的Linux里面的权限常见的模式如下:
-    -   `0755`: 即用户具有读/写/执行权限，组用户和其它用户具有读写权限；
-    -   `0644`: 即用户具有读写权限，组用户和其它用户具有只读权限
+    ```go
+    const (
+        O_RDONLY int = syscall.O_RDONLY // 只读模式打开文件
+        O_WRONLY int = syscall.O_WRONLY // 只写模式打开文件
+        O_RDWR   int = syscall.O_RDWR   // 读写模式打开文件
+        O_APPEND int = syscall.O_APPEND // 写操作时将数据附加到文件尾部(追加)
+        O_CREATE int = syscall.O_CREAT  // 如果不存在将创建一个新文件
+        O_EXCL   int = syscall.O_EXCL   // 和O_CREATE配合使用，文件必须不存在
+        O_SYNC   int = syscall.O_SYNC   // 打开文件用于同步I/O
+        O_TRUNC  int = syscall.O_TRUNC  // 如果可能，打开时清空文件
+    )
+    ```
+
+-   模式见官方文档[文件模式](https://pkg.go.dev/io/fs#FileMode), 
+    
+    ```go
+    读（r）：4
+    写（w）：2
+    执行（x）：1
+    ```
+    
+    -   对应的Linux里面的权限常见的模式如下:
+        -   `0755`: 即用户具有读/写/执行权限，组用户和其它用户具有读写权限；
+        -   `0644`: 即用户具有读写权限，组用户和其它用户具有只读权限
+    
 
 
 ```go
@@ -3508,7 +3544,7 @@ import (
 
 func main() {
 	// 打开文件, os.O_CREATE 表示文件不存在则新建(支持多个模式), 模式为: 0
-	file_obj, err := os.OpenFile("../test.txt", os.O_CREATE|os.O_APPEND, 0)
+	file_obj, err := os.OpenFile("../test.txt", os.O_CREATE|os.O_RDWR, 0)
 	if err != nil {
 		fmt.Println(err.Error())
 		return
@@ -4967,8 +5003,16 @@ func main() {
 	if err != nil {
 		fmt.Println(err.Error())
 	}
-	
-  // 将输出指向文件
+
+  // 释放文件
+	defer func() {
+		err := file.Close()
+		if err != nil {
+			panic(err)
+		}
+	}()
+
+	// 将输出指向文件
 	log.SetOutput(file)
 
 	log.SetPrefix("[前缀]")
