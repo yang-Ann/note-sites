@@ -128,7 +128,7 @@ func main() {
 }
 ```
 
->   `%v`表示是通用的格式化动词, 没有什么特别的含义
+>   `%v`表示是通用的格式化动词, 表示填充对应的变量, 没有什么特别的含义
 
 ### 填充空格
 
@@ -207,11 +207,19 @@ func main() {
 
 ### 其他格式动词
 
-| 动词 | 说明                                           |
-| ---- | ---------------------------------------------- |
-| `%x` | 打印十六进制, 如: `%02x`可以打印出十六进制颜色 |
-| `%b` | 打印每个 bit, 如: `%08b`可以打印出**bit**表示  |
-| `%c` | 打印字符                                       |
+```go
+%d          十进制整数
+%b					打印每个 bit
+%x, %o, %b  十六进制，八进制，二进制整数。
+%f, %g, %e  浮点数： 3.141593 3.141592653589793 3.141593e+00
+%t          布尔：true或false
+%c          字符（rune） (Unicode码点)
+%s          字符串
+%q          带双引号的字符串"abc"或带单引号的字符'c'
+%v          变量的自然形式（natural format）
+%T          变量的类型
+%%          字面上的百分号标志（无操作数）
+```
 
 >   也可以使用`log`包下的`Println`函数, 会带上当前的时间
 
@@ -1060,7 +1068,7 @@ func main() {
 
 ## 内置函数
 
-`Go`里面有一些内置的函数, 比如: `len`用于获取字符串的长度
+`Go`里面有一些[内置的函数](https://pkg.go.dev/builtin#pkg-functions), 比如: `len`用于获取字符串的长度
 
 | 函数             | 说明                                                         |
 | ---------------- | ------------------------------------------------------------ |
@@ -1635,6 +1643,34 @@ func main() {
 
 ## Slice(切片)
 
+`Slice`(*切片*)代表变长的序列, 序列中每个元素都有相同的类型, 一个`Slice`类型一般写作`[]T`，其中`T`代表`Slice`中元素的类型, `Slice`的语法和数组很像, 只是没有固定长度而已
+
+### 创建切片
+
+创建切片可以使用`make()`方法, 默认创建的切片是这个类型的零值
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+	// 创建 int 类型的切片, 长度为 3
+	s1 := make([]int, 3)
+	fmt.Println("s1 = ", s1) // s1 =  [0 0 0]
+
+	// 创建 string 类型的切片, 长度为 5
+	s2 := make([]string, 5)
+	fmt.Println("s2 = ", s2) // s2 =  [    ]
+
+	// 创建 *bool 类型的切片, 长度为 3
+	s3 := make([]*bool, 3)
+	fmt.Println("s3 = ", s3) // s3 =  [<nil> <nil> <nil>]
+}
+```
+
+### 从数组中创建切片
+
 假设有一个数组`colors`,那么`colors[0:4]`就是一个 `Slice`, 它取出数组的前四个元素, 切片数组不会导致数组被修改, 它只是创建一个指向数组的窗口或视图, 这种视图就是`Slice`类型, `Slice`使用的是半开区间, 包括开始索引但不包括结束索引: 
 
 ```go
@@ -1713,8 +1749,6 @@ func main() {
 ### Slice作为函数参数
 
 `Slice`作为函数参数是会影响原先的数组的:
-
->   切片的数据类型为是不带长度的数组, 如: `[]string`, `[]int`
 
 ```go
 package main
@@ -1799,7 +1833,9 @@ func main() {
 
 ### 切片大小和容量
 
-切片的长度可以使用`len`函数获取, 切片的容量可以使用`cap`函数获取, 切片底层会有数组来存储数据, 当不够时会自动扩容一倍的大小:
+切片的长度可以使用`len`函数获取, 切片的容量可以使用`cap`函数获取, 切片底层会有数组来存储数据
+
+`make()`函数创建切片时还可以指定第三个参数用来指定**容量的大小**, 当`Slice`的容量不足以执行`append()`操作时, `Go`会**自动扩容一倍**的大小, 然后创建新数组并复制旧数组中的内容(切片底层会有数组来存储数据), 如下: 
 
 ```go
 package main
@@ -1807,15 +1843,15 @@ package main
 import "fmt"
 
 func main() {
+	// 长度为 3, 容量 4 (不指定容量则默认等于长度)
+	v := make([]int, 3, 4)
+	sliceInfo(v) // 长度: 3, 容量: 4, 数据: [0 0 0]
 
-	v := []int{1, 2, 3}
-	sliceInfo(v) // 长度: 3, 容量: 3, 数据: [1 2 3]
+	v = append(v, 4, 5)
+	sliceInfo(v) // 长度: 5, 容量: 8, 数据: [0 0 0 4 5]
 
-	v = append(v, 4)
-	sliceInfo(v) // 长度: 4, 容量: 6, 数据: [1 2 3 4]
-
-	v = append(v, 5, 6, 7, 8)
-	sliceInfo(v) // 长度: 8, 容量: 12, 数据: [1 2 3 4 5 6 7 8]
+	v = append(v, 7, 8, 9, 10, 11)
+	sliceInfo(v) // 长度: 10, 容量: 16, 数据: [0 0 0 4 5 7 8 9 10 11]
 }
 
 func sliceInfo(list []int) {
@@ -1823,38 +1859,388 @@ func sliceInfo(list []int) {
 }
 ```
 
->   `Slice`的索引操作还可以指定第三个参数用来指定容量的大小
+>   `make()`函数还可以指定第三个参数用来指定容量的大小, 当`Slice`的容量不足以执行`append`操作时, `Go`会自动进行创建新数组并复制旧数组中的内容
 
-### make函数对Slice进行预分配
+### 循环切片
 
-当`Slice`的容量不足以执行`append`操作时, `Go`会自动进行创建新数组并复制旧数组中的内容, 但是通过`make`函数可以预先进行分配指定大小的空间:
+切片的循环可以使用`range`或者`for`循环的方式:
 
 ```go
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 func main() {
+	s1 := make([]int, 3)
+	// range 循环赋值
+	for i := range s1 {
+		s1[i] = i + 1
+	}
+	fmt.Println("s1 = ", s1)
 
-	// 创建长度为 0, 容量为 10 的 []int 切片
-	v := make([]int, 0, 10)
-	sliceInfo(v) // 长度: 0, 容量: 10, 数据: []
+	fmt.Println(strings.Repeat("-", 30))
 
-	v = append(v, 1)
-	sliceInfo(v) // 长度: 1, 容量: 10, 数据: [1]
-
-	v = append(v, 2, 3)
-	sliceInfo(v) // 长度: 3, 容量: 10, 数据: [1 2 3]
+	// for 循环
+	for i := 0; i < len(s1); i++ {
+		item := s1[i]
+		fmt.Println("item = ", item)
+	}
 }
+```
 
-func sliceInfo(list []int) {
-	fmt.Printf("长度: %v, 容量: %v, 数据: %v\n", len(list), cap(list), list)
-}
+结果如下: 
+
+```go
+➜ go run main/main.go
+s1 =  [1 2 3]
+------------------------------
+item =  1
+item =  2
+item =  3
 ```
 
 ### 切片实现常见数据结构和基础算法
 
 Go 内置的 `append()` 和 `copy()` 两个函数非常强大，通过配合 `slice` 组合操作, 可以实现大多数 `容器类` 数据结构和基础算法，例如 `栈`, `队列` 的常规操作
+
+#### 复制切片数据到另一个切片
+
+可以使用`copy ()`方法
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+	v1 := []int{1, 2, 3}
+
+	// 创建一个空的切片
+	v2 := make([]int, len(v1))
+	// 将 v1 的内容复制到 v2
+	copy(v2, v1)
+
+	fmt.Println("v1 = ", v1)
+	fmt.Println("v2 = ", v2)
+}
+
+/** 结果输出
+  ➜ go run main/main.go
+  v1 =  [1 2 3]
+  v2 =  [1 2 3] 
+*/
+```
+
+#### 删除一个元素
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+	v := []int{1, 2, 3, 4, 5}
+
+	fmt.Println(v)
+
+	// 将第三个元素删除掉(索引为2)
+	copy(v[2:], v[3:])
+
+	fmt.Println(v)
+
+	// 重新赋值
+	v = v[:len(v)-1]
+
+	fmt.Println(v)
+}
+
+/** 结果输出
+➜ go run main/main.go
+	[1 2 3 4 5]
+	[1 2 4 5 5]
+	[1 2 4 5]
+*/
+```
+
+#### 删除一段元素
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+	v := []int{1, 2, 3, 4, 5}
+
+	fmt.Println(v)
+
+	// 将索引 2, 3, 4 位置的元素删掉
+	copy(v[1:], v[4:])
+
+	fmt.Println(v)
+
+  // 注意这里是 -3(删几个元素则减去多少)
+	v = v[:len(v)-3]
+
+	fmt.Println(v)
+}
+
+/** 结果输出
+➜ go run main/main.go
+	[1 2 3 4 5]
+	[1 5 3 4 5]
+	[1 5]
+*/
+```
+
+#### 插入一个元素到指定位置
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+	v1 := []int{1, 2, 3, 4, 5}
+
+	fmt.Println("v1 = ", v1)
+
+	// 在第 3 和 4 个位置之间插入值(索引 2 和 3 中间)
+	v2 := append(v1)
+	copy(v2[4:], v2[3:])
+	v2[3] = 999 // 值为 999
+
+	fmt.Println("v2 = ", v2)
+}
+
+/** 结果输出
+➜ go run main/main.go
+	v1 =  [1 2 3 4 5]
+	v2 =  [1 2 3 999 4]
+*/
+```
+
+#### 插入一段元素到指定的位置
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+	v := []int{1, 2, 3, 4, 5}
+
+	fmt.Println(v)
+
+	newItem := []int{100, 200, 300}
+
+	// 在索引为 2的位置上插入指定的数据
+	v = append(
+		v[:2],                        // 把前面的切片保留
+		append(newItem, v[2:]...)..., // 这里插入新的切片并展开
+	)
+
+	fmt.Println(v)
+}
+
+/** 结果输出
+➜ go run main/main.go
+	[1 2 3 4 5]
+	[1 2 100 200 300 3 4 5]
+*/
+```
+
+#### 栈追加(Push)
+
+使用`append()`方法并重新赋值即可
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+	v := make([]int, 3)
+	// 指定位置赋值
+	v[0] = 1
+
+	// 追加元素
+	v = append(v, 3)
+
+	// 追加多个元素
+	v = append(v, 4, 5, 6)
+
+	fmt.Println(v) // [1 0 0 3 4 5 6]
+}
+```
+
+#### 栈弹出(Pop)
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+	v := []int{1, 2, 3, 4, 5}
+
+  // 最后一个元素
+	pop := v[len(v)-1:]
+	fmt.Println("pop = ", pop)
+
+  // 删除最后一个元素
+	v = v[:len(v)-1]
+	fmt.Println("v = ", v)
+}
+
+/** 结果输出
+➜ go run main/main.go
+	pop =  [5]
+	v =  [1 2 3 4]
+*/
+```
+
+#### 队列入栈(EnQueue)
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+	v := []int{1, 2, 3, 4, 5}
+
+	fmt.Println(v)
+
+	newItem := []int{100, 200, 300}
+
+	v = append(newItem, v...)
+	fmt.Println(v)
+}
+
+/** 结果输出
+➜ go run main/main.go
+	[1 2 3 4 5]
+	[100 200 300 1 2 3 4 5]
+*/
+```
+
+#### 队列出栈(DeQueue)
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+	v := []int{1, 2, 3, 4, 5}
+
+	unShift := v[:1]
+	fmt.Println("unShift = ", unShift)
+
+	v = v[1:]
+	fmt.Println("v = ", v)
+}
+
+/** 结果输出
+➜ go run main/main.go
+	unShift =  [1]
+	v =  [2 3 4 5]
+*/
+```
+
+#### 元素反转
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+	v := []int{1, 2, 3, 4, 5}
+
+	fmt.Println(v)
+
+	for i := len(v)/2 - 1; i >= 0; i-- {
+		opp := len(v) - 1 - i
+		v[i], v[opp] = v[opp], v[i]
+	}
+
+	fmt.Println(v)
+}
+
+/** 结果输出
+➜ go run main/main.go
+	[1 2 3 4 5]
+	[5 4 3 2 1]
+*/
+```
+
+#### 洗牌算法
+
+##### rand.Intn()
+
+```go
+package main
+
+import (
+	"fmt"
+	"math/rand"
+)
+
+func main() {
+	v := []int{1, 2, 3, 4, 5}
+
+	fmt.Println(v)
+
+	for i := len(v) - 1; i > 0; i-- {
+		ri := rand.Intn(i + 1)
+		v[i], v[ri] = v[ri], v[i]
+	}
+
+	fmt.Println(v)
+}
+
+/** 结果输出
+➜ go run main/main.go
+	[1 2 3 4 5]
+	[1 5 3 4 2]
+*/
+```
+
+##### rand.Shuffle() 实现
+
+```go
+package main
+
+import (
+	"fmt"
+	"math/rand"
+)
+
+func main() {
+	v := []int{1, 2, 3, 4, 5}
+
+	fmt.Println(v)
+
+	rand.Shuffle(len(v), func(i, j int) {
+		v[i], v[j] = v[j], v[i]
+	})
+
+	fmt.Println(v)
+}
+
+/** 结果输出
+➜ go run main/main.go
+	[1 2 3 4 5]
+	[3 1 2 5 4]
+*/
+```
+
+
 
 ## map(字典)
 
@@ -5131,7 +5517,46 @@ func main() {
 }
 ```
 
+### XML
 
+`XML`操作可以使用`encoding/xml`包, 具体方法跟`encoding/json`包是一致的, 只不过多了一个 `attr` 属性用来标识这个字段是一个属性值, 而不是一个选项
+
+```go
+package main
+
+import (
+	"encoding/xml"
+	"fmt"
+)
+
+type Person struct {
+	Version string `xml:"version,attr"` // attr 关键字将字段标记为属性
+	Name    string `xml:"name"`
+	Age     int    `xml:"age"`
+}
+
+func main() {
+	u := Person{
+		Version: "0.0.1",
+		Name:    "张三",
+		Age:     18,
+	}
+
+	xmlStr, err := xml.MarshalIndent(u, "", "    ")
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Printf("%s\n", xmlStr)
+}
+
+/* ➜ go run main/main.go
+	<Person version="0.0.1"> // 这样看这里 version 变成一个属性了
+			<name>张三</name>
+			<age>18</age>
+	</Person>
+*/
+```
 
 ### 正则表达式
 
