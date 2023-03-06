@@ -3325,24 +3325,25 @@ func main() {
 -   `os.MkdirAll("/tmp/1/2/3", 0755)`: 创建**多级**目录
 -   `os.RemoveAll()`: 删除目录
 
--   `os.Stat()`+`os.IsExist()`: 判断文件(目录)是否存在
+- `os.Stat()`+`os.IsExist()`: 判断文件(目录)是否存在
 
-    ```go
-    package main
-    
-    import (
-    	"fmt"
-    	"os"
-    )
-    
-    func main() {
-    	if f, err := os.Stat("./test.txt"); os.IsExist(err) {
-    		fmt.Println("文件不存在", err.Error())
-    	} else {
-    		fmt.Println("文件是否为目录: ", f.IsDir())
-    	}
-    }
-    ```
+  ```go
+  package main
+  
+  import (
+  	"fmt"
+  	"os"
+  )
+  
+  func main() {
+      // os.IsNotExist() 判断目录
+  	if f, err := os.Stat("./test.txt"); os.IsExist(err) {
+  		fmt.Println("文件不存在", err.Error())
+  	} else {
+  		fmt.Println("文件是否为目录: ", f.IsDir())
+  	}
+  }
+  ```
 
 -   `os.IsPermission()`: 检查是否拥有权限
 
@@ -3543,8 +3544,8 @@ import (
 )
 
 func main() {
-	// 打开文件, os.O_CREATE 表示文件不存在则新建(支持多个模式), 模式为: 0
-	file_obj, err := os.OpenFile("../test.txt", os.O_CREATE|os.O_RDWR, 0)
+	// 打开文件, os.O_CREATE 表示文件不存在则新建(支持多个模式)
+	file_obj, err := os.OpenFile("../test.txt", os.O_CREATE|os.O_RDWR, 0755)
 	if err != nil {
 		fmt.Println(err.Error())
 		return

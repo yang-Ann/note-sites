@@ -392,7 +392,7 @@ public class MainActivity extends AppCompatActivity {
 
 ```xml
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
+    <!-- 默认的 -->
     <!-- <style name="Theme.Learnandroid" parent="Theme.MaterialComponents.DayNight.DarkActionBar"> -->
     <!-- parent属性添加 .Bridge 即可 -->
     <style name="Theme.Learnandroid" parent="Theme.MaterialComponents.DayNight.DarkActionBar.Bridge">
@@ -736,13 +736,15 @@ btn.setOnClickListener(new View.OnClickListener() {
 
 ### ImageView
 
-图片标签
+图片标签, 开发中一般使用`Glide`库
 
 - **src**: 设置图片资源
 - **scaleType**: 设置图片缩放类型
 - **maxHeight**: 最大高度,  本身的`layout_width`和`layout_height`是`wrap_content`才有用
 - **maxWidth**: 同上只不是设置其最大宽度
-- **adjustViewBounds**: 调整view的界限, 使其设置的最大高度和最大宽度生效
+- **adjustViewBounds**: 调整`view`的界限, 使其设置的最大高度和最大宽度生效
+
+>   在`Java`代码中, 通过`setImageResource()`方法设置值, 参数为`R.drawable.xxx`(不含图片扩展名)
 
 ```xml
 <ImageView
@@ -765,7 +767,7 @@ btn.setOnClickListener(new View.OnClickListener() {
 - **centerlnside**: 保持宽高比缩放图片, 直到ImageView能够完全地显示图片
 - **matrix**: 不改变原图的大小, 从lmageView的**左上角**开始绘制原图, 原图超出的部分作裁剪处理
 
-> 开发中一般使用Glide库
+> 还有对应的`ImageButton`
 
 ### ProgressBar
 
@@ -2408,14 +2410,17 @@ setContentView(linearLayout);
 </application>
 ```
 
-### Activity跳转
+### Activity启动和跳转
 
 ```java
-// 从当前 Activity 跳转到 MainActivity2
-startActivity(new Intent(this, MainActivity2.class));
+// 从当前 Activity 跳转到 目标页面
+startActivity(new Intent(this, 目标页面.class));
 
 // 在回调函数中 this 会丢失则使用对应 类名.this 获取上下文
-startActivity(new Intent(Activity.this, MainActivity2.class));
+startActivity(new Intent(源页面.this, 目标页面.class));
+
+// 从当前页面返回到上一个页面(关闭当前页面)
+finish(); // 结束当前的活动页面
 ```
 
 ### Activity生命周期
