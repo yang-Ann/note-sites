@@ -1,8 +1,8 @@
 ---
 title: Go
-date: 2022-12-21
+date: 2023-3-7
 categories:
- - Go
+ - 编程语言
 tags:
  - Go
 ---

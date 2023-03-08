@@ -2,7 +2,6 @@
 title: Java
 date: 2022-5-18
 categories:
-
  - 编程语言
 tags:
  - Java
@@ -1668,6 +1667,10 @@ for (int i = 0; i < str.length(); i++) {
 - `toString()`,`indexOf()`,`lastIndexOf()`,`startsWith()`, `endsWith()`
 - ``concat()``,`split()`,`substring()`,`replace()`,  `replaceAll()`, 
 - `trim()`, `toUpperCase()`,`toLowerCase()`, `repeat()`(**jdk11**以后才有)
+
+**String.format()**
+
+C中的`sprintf`, Go中`fmt.printf`, Rust中的`format!()`
 
 **static String valueOf(value) **
 
@@ -9696,11 +9699,12 @@ System.out.println(list.stream().count()); // 3
 
 - **<R, A, R>collect(Collector collector)**: 这个收集方法返回一个Collector接口, 这个接口无法直接使用,但是有一个工具类`Collectors`提供了具体静态收集方法的实现, 常用的方法如下: 
 
-| 方法名                                                       | 说明                   |
-| ------------------------------------------------------------ | ---------------------- |
-| static \<T> Collector toList()                               | 把元素收集到List集合中 |
-| static \<T> Collector toSet()                                | 把元素收集到Set集合中  |
-| static Collector toMap(Function keyMapper,Function valueMapper) | 把元素收集到Map集合中  |
+| 方法名                                                       | 说明                               |
+| ------------------------------------------------------------ | ---------------------------------- |
+| static \<T> Collector toList()                               | 把元素收集到List集合中             |
+| static \<T> Collector toSet()                                | 把元素收集到Set集合中              |
+| static Collector toMap(Function keyMapper,Function valueMapper) | 把元素收集到Map集合中              |
+| static Collectors.joining(",")                               | 把元素使用指定的符号连接, `join()` |
 
 **基本使用: **
 
@@ -9723,6 +9727,10 @@ Stream<String> s2 = list.stream().filter(s -> s.length() == 3);
 // 将其收集到 Set 中
 Set<String> names2 = s2.collect(Collectors.toSet());
 System.out.println(names2); // [王昭君, 杨玉环]
+
+// 使用指定的符号连接
+String names3 = s2.collect(Collectors.joining(","));
+System.out.println(names3); // "王昭君,杨玉环"
 
 System.out.println("--------");
 

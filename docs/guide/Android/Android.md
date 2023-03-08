@@ -2343,7 +2343,59 @@ Android应用程序, 除了应用程序的编码, 还需要关注各种各样的
 
 xml布局文件中的`android:@+id/xxx`所有的ID会被收集到`R.id`这个类下面
 
->   当 Android 应用程序被编译，生成一个`R` 类，其中包含了所有`res`目录下资源的 ID, 你可以使用`R`类，通过`子类+资源名`或者直接使用资源 ID 来访问资源
+当 Android 应用程序被编译，生成一个`R` 类，其中包含了所有`res`目录下资源的 ID, 你可以使用`R`类，通过`子类+资源名`或者直接使用资源 ID 来访问资源
+
+```java
+// 获取 res/layout/*.xml 里面控件 android:id="@+id/btn1" 的控件对象
+Button btn1 = findViewById(R.id.btn1);
+
+// 从 res/values/string.xml 中获取 name="app_name" 的值
+String app_name = getString(R.string.app_name);
+```
+
+## 元数据获取
+
+除了资源文件`res`, 还有一些数据是配置在清单文件中的, 如: 高德地图的`key`, `token`:
+
+```xml
+<activity
+    android:name=".MainActivity"
+    android:exported="true"
+    android:launchMode="singleInstance"
+    android:label="@string/app_name"
+    android:theme="@style/Theme.Learn_androd.NoActionBar">
+    <intent-filter>
+        <action android:name="android.intent.action.MAIN" />
+        <category android:name="android.intent.category.LAUNCHER" />
+    </intent-filter>
+    
+    <!-- @string/xxx 则可以引用 res 里面对应的数据 -->
+    <meta-data android:name="wechat" android:value="元数据"/>
+</activity>
+```
+
+在Java代码中获取元数据分三步:
+- 调用`getPackageManager`方法获得当前应用的包管理器;
+- 调用包管理器的`getActivitylnfo`方法获得当前活动的信息对象;
+- 活动信息对象的`metaData`是`Bundle`包裹类型, 调用包裹对象的`getString`即可获得指定名称的参值;
+
+```java
+// 获取包管理器
+PackageManager packageManager = getPackageManager();
+try {
+    // 获取信息
+    ActivityInfo info = packageManager.getActivityInfo(
+            getComponentName(), // 要获取的组件名
+            packageManager.GET_META_DATA // 什么数据
+    );
+    Bundle bundle = info.metaData;
+    // android:name 的值获取元数据
+    String wechat = bundle.getString("wechat");
+    Log.d("test", String.format("wechat: %s", wechat));
+} catch (PackageManager.NameNotFoundException e) {
+    throw new RuntimeException(e);
+}
+```
 
 ## 动画
 
@@ -2427,24 +2479,236 @@ finish(); // 结束当前的活动页面
 
 [Activity生命周期](https://developer.android.google.cn/guide/components/activities/activity-lifecycle)
 
-`onCreate()`: 必须实现此回调, 它会在系统首次创建 Activity 时触发。Activity 会在创建后进入“**已创建**”状态常用来做初始化操作, 如: 获取控件
+-   `onCreate()`: 必须实现此回调, 它会在系统首次创建 Activity 时触发, 常用来做**初始化操作**, 如: 获取控件
 
-`onStart()`: 当 Activity 进入“**已开始**”状态时, 系统会调用此回调
+-   `onStart()`: Activity 进入**就绪**状态
 
-`onResume()`: Activity 会在进入“**已恢复**”状态时来到前台, 然后系统调用 `onResume()` 回调
+-   `onResume()`: Activity 进入**恢复**状态时, 能够于用户进行正常交互, 如: 响应事件, 运行用户输入
 
-`onPause()`: 系统将此方法视为用户将要离开您的 Activity 的第一个标志（并不意味着 Activity 会被销毁）
+-   `onPause()`: 进入**暂停活动**状态用户, 将要离开您的 Activity （并不意味着 Activity 会被销毁）
 
-`onStop()`: 如果您的 Activity 不再对用户可见, 说明其已进入“**已停止**”状态, 因此系统将调用 `onStop()` 回调
+-   `onStop()`:  进入**停止活动**状态, Activity 不再对用户可见
 
-`onRestart()`: 进入“**已停止**”状态后, Activity 要么返回与用户互动, 要么结束运行并消失。如果 Activity 返回, 系统将调用 `onRestart()`; 如果 `Activity` 结束运行, 系统将调用 `onDestroy()`
+-   `onRestart()`: 进入**重启活动**状态后, Activity 重新加载内存中页面的数据
+    -   如果 Activity 返回, 系统将调用 `onRestart()`
+    -   如果 Activity 结束运行, 系统将调用 `onDestroy()`
 
-`onDestroy()`: 销毁 Activity 之前, 系统会先调用 [`onDestroy()`](https://developer.android.google.cn/reference/android/app/Activity#onDestroy()); 系统调用此回调的原因如下：
+-   [`onDestroy()`](https://developer.android.google.cn/reference/android/app/Activity#onDestroy()): 销毁 Activity 之前, 系统会先调用 `onDestroy()`; 系统调用此回调的原因如下：
 
-1. Activity 即将结束（由于用户彻底关闭 Activity 或由于系统为 Activity 调用 [`finish()`](https://developer.android.google.cn/reference/android/app/Activity#finish())）, 或者
-2. 由于配置变更（例如设备旋转或多窗口模式）, 系统暂时销毁 Activity
+    -   Activity 即将结束（由用户彻底关闭 Activity 或由系统为 Activity 调用 [`finish()`](https://developer.android.google.cn/reference/android/app/Activity#finish())）
+
+    -   由于配置变更（例如设备旋转或多窗口模式）, 系统暂时销毁 Activity
+
+-   `onNewIntent()`: 重用已有的活动实例
+
+下面是比较直观的调用方式: 
+
+```java
+// 打开新页面的方法调用
+onCreate -> onStart -> onResume
+
+// 关闭旧页面的方法调用
+onPause -> onStop -> onDestroy
+```
+
+### 启动模式
+
+`Activity`默认是使用**栈**的存储形式的, 可以在清单文件中配置`android:launchMode`即可:
+
+```xml
+<activity android:name=".MainActivity" android:launchMode="standard"></activity>
+```
+
+清单文件中配置的启动模式主要有如下的几种: 
+
+-   `standard`(默认启动): 每启动一个Activity, 则**压入**一个Activity到栈顶, 点击返回则依次出栈
+-   `singleTop`(栈顶复用): **栈顶**是要启动的Activity, 则不压栈
+-   `singleTask`(栈内复用): 只要栈内存在已有的Activity, 则复用, 常用于程序主界面, 耗费资源的界面
+-   `singleInstance`(全局唯一): 每个Activity都存在一个特殊的栈中, 复用时则唤醒对应的Activity
+
+#### 动态设置启动模式
+
+可以在Activity跳转的时候动态的设置, 下面是常用的两个例子:
+
+##### 两个Activity之间交替跳转
+
+比如有A和B两个页面, 如果一直相互跳转, 然后有会需要返回很多次, 可以使用`Intent.FLAG_ACTIVITY_CLEAR_TOP`启动标志, 来保证活动栈中只有唯一的一个Activity:
+
+```java
+// 创建 Intent
+Intent intent = new Intent(this, MainActivity2.class);
+// 设置启动标志
+intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+// 启动
+startActivity(intent);
+```
+
+##### 登录成功之后不再返回登录页面
+
+使用`Intent.FLAG_ACTIVITY_CLEAR_TASK`和`Intent.FLAG_ACTIVITY_NEW_TASK`标志即可:
+
+```java
+// 创建 Intent
+Intent intent = new Intent(this, MainActivity2.class);
+// 设置启动标志, | 表示叠加的意思
+intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK|Intent.FLAG_ACTIVITY_NEW_TASK);
+// 启动
+startActivity(intent);
+```
 
 ## Intent
+
+[Intent](https://developer.android.google.cn/reference/android/content/Intent)(*意图*)是各个组件之间信息沟通的桥梁, 它用于在Android各个组件之间的通信, 作用如下:
+
+-   标明本次通信请求从哪里来、到哪里去、要怎么走
+-   发起方携带本次通信需要的数据内容，接收方从收到的意图中解析数据
+-   发起方若想判断接收方的处理结果，意图就要负责让接收方传回应答的数据内容
+
+Intent的组成部分:
+
+| 元素名称  | 设置方法     | 说明                                                |
+| --------- | ------------ | --------------------------------------------------- |
+| Component | setComponent | 组件, 它指定意图的来源与目标                        |
+| Action    | `setAction`  | 动作, 它指定意图的动作行为                          |
+| Data      | setData      | 即`Uri`, 它指定动作要操纵的数据路径, 常用于系统应用 |
+| Category  | addCategory  | 类别, 它指定意图的操作类别, 常用于系统应用          |
+| Type      | setType      | 数据类型, 它指定消息的数据类型                      |
+| Extras    | `putExtras`  | 扩展信息, 它指定装载的包裹信息(携带的数据)          |
+| Flags     | `setFlags`   | 标志位, 它指定活动的启动标志                        |
+
+### 显式Intent
+
+显式Intent, 直接指定来源活动与目标活动, 属于精确匹配
+
+它有三种构建方式:
+
+-   在`new Intent()`中指定
+
+    ```java
+    Intent intent = new Intent(this, 目标页面.class)
+    ```
+
+-   调用意图对象的`setClass`方法指定
+
+    ```java
+    Intent intent = new Intent();
+    intent.setClass(this, 目标页面.class);
+    ```
+
+-   调用意图对象的`setComponent`方法指定
+
+    ```java
+    Intent intent = new Intent();
+    ComponentName component = new ComponentName(this, 目标页面.class);
+    // ComponentName component = new ComponentName("MainActivity1", "com.MainActivity2.class"); // 可以根据 字符串进行解析
+    intent.setComponent(component);
+    ```
+
+### 隐式Intent
+
+没有明确指定要跳转的目标活动，只给出一个动作字符串让系统自动匹配, 属于模猢匹配, 常用于系统动作:
+
+| lntent类的系统动作常量名 | 系统动作的常量值             | 说明            |
+| ------------------------ | ---------------------------- | --------------- |
+| lntent.ACTION_MAIN              | android.intent.action.MAlIN  | App启动时的入口 |
+| lntent.ACTION_vIEw              | android.intent.action.vIEw   | 向用户显示数据  |
+| lntent.ACTION_SEND              | android.lintent.action.SEND  | 分享内容        |
+| lntent.ACTION_CALL              | android.lintent.action.CALL  | 直接拨号        |
+| lntent.ACITON_DIAL              | android.intent.action.DlAL   | 准备拨号        |
+| lntent.ACTION_SENDTO            | android.intent.action.SENDTO | 发送短信        |
+| lntent.ACTION_ANSWER            | android.intent.actionNSWER   | 接听电话        |
+
+>   如果碰到多个匹配的, 则系统会提示用户进行选择
+
+#### 跳转到拨号界面
+
+```java
+Intent intent1 = new Intent();
+// 设置 uri(默认填充的电话号码)
+Uri uri1 = Uri.parse("tel:10086");
+// 指定动作为, 准备拨号
+intent1.setAction(Intent.ACTION_DIAL);
+// 设置数据
+intent1.setData(uri1);
+startActivity(intent1);
+```
+
+#### 跳转到发短信界面
+
+```java
+Intent intent2 = new Intent();
+intent2.setAction(Intent.ACTION_SENDTO);
+// 指定收件人电话
+Uri uri2 = Uri.parse("smsto:10086");
+// 填充短信内容
+intent2.putExtra("sms_body", "短信内容");
+intent2.setData(uri2);
+startActivity(intent2);
+```
+
+#### 跳转到清单文件的中注册 Activity
+
+注意对应的Activity需要设置`android:exported="true"`, 运行被启动
+
+```java
+Intent intent3 = new Intent();
+// 对应清单文件的中注册 Activity 的 intent-filter -> action
+intent3.setAction("android.intent.action.MAIN");
+// 对应清单文件的中注册 Activity 的 intent-filter -> category
+intent3.addCategory(Intent.CATEGORY_DEFAULT);
+startActivity(intent3);
+```
+
+### 向下一个Activity传递数据
+
+`Intent`使用`Bundle`来向下一个Activity(跳转到的Activity)来传递数据, `Bundle`对象有各种各样类型的`putxxx`方法, 基本使用如下: 
+
+-   跳转时指定数据: 
+
+    ```java
+    Intent intent = new Intent(this, MainActivity2.class);
+    
+    // 创建 Bundle
+    Bundle bundle = new Bundle();
+    // 添加数据到 Bundle 中
+    bundle.putString("name", "张三");
+    bundle.putInt("age", 18);
+    // 将 Bundle 添加到意图中
+    intent.putExtras(bundle);
+    
+    // 或者可以直接添加到意图对象中
+    intent.putExtra("info", "直接添加到intent中");
+    
+    startActivity(intent);
+    ```
+
+>   意图对象的`putExtra`方法支持多种数据类型的重载
+
+-   目标Activity获取数据, 则调用`Bundle`对象的`getxxx`方法(同样有多种类型的)
+
+    ```java
+    // 获取当前页面的意图对象
+    Intent intent = getIntent();
+    // 获取 Bundle 对象
+    Bundle bundle = intent.getExtras();
+    
+    // 获取数据
+    String name = bundle.getString("name");
+    int age = bundle.getInt("age");
+    String info = bundle.getString("info", "默认值");
+    
+    Log.d("test", String.format("name: %s, age:%s, info: %s", name, age, info));
+    ```
+
+### 向上一个Activity返回数据
+
+TODO
+
+## 注册快捷方式
+
+Android7.0之后才支持
+
+![image-20230308225058032](./images/image-20230308225058032.png) 
 
 ## Service
 
