@@ -148,9 +148,9 @@ App工程分为两个层次, 一个是项目, 一个是模块,
 
 ![image-20220525165346420](./images/image-20220525165346420.png) 
 
-`super.onCreate(savedInstanceState)` 的作用：调用其父类 Activity 的 onCreate 方法来实现对界面的图画绘制工作。在实现自己定义的 Activity 子类的 onCreate 方法时一定要记得调用该方法, 以确保能够绘制界面
+`super.onCreate(savedInstanceState)` 的作用: 调用其父类 Activity 的 onCreate 方法来实现对界面的图画绘制工作。在实现自己定义的 Activity 子类的 onCreate 方法时一定要记得调用该方法, 以确保能够绘制界面
 
-`setContentView(R.layout.main)` 的作用：加载一个界面, 该方法中传入的参数是 “R.layout.main”, 其含义为 R.java 类中静态内部类 layout 的静态常量 main 的值, 而该值是一个指向 res 目录下的 layout 子目录下的 main.xml 文件的标识符, 因此代表着显示 main.xml 所定义的画面
+`setContentView(R.layout.main)` 的作用: 加载一个界面, 该方法中传入的参数是 “R.layout.main”, 其含义为 R.java 类中静态内部类 layout 的静态常量 main 的值, 而该值是一个指向 res 目录下的 layout 子目录下的 main.xml 文件的标识符, 因此代表着显示 main.xml 所定义的画面
 
 ![image-20220525165551099](./images/image-20220525165551099.png) 
 
@@ -2485,7 +2485,7 @@ finish(); // 结束当前的活动页面
 
 -   `onResume()`: Activity 进入**恢复**状态时, 能够于用户进行正常交互, 如: 响应事件, 运行用户输入
 
--   `onPause()`: 进入**暂停活动**状态用户, 将要离开您的 Activity （并不意味着 Activity 会被销毁）
+-   `onPause()`: 进入**暂停活动**状态用户, 将要离开您的 Activity (并不意味着 Activity 会被销毁)
 
 -   `onStop()`:  进入**停止活动**状态, Activity 不再对用户可见
 
@@ -2493,11 +2493,11 @@ finish(); // 结束当前的活动页面
     -   如果 Activity 返回, 系统将调用 `onRestart()`
     -   如果 Activity 结束运行, 系统将调用 `onDestroy()`
 
--   [`onDestroy()`](https://developer.android.google.cn/reference/android/app/Activity#onDestroy()): 销毁 Activity 之前, 系统会先调用 `onDestroy()`; 系统调用此回调的原因如下：
+-   [`onDestroy()`](https://developer.android.google.cn/reference/android/app/Activity#onDestroy()): 销毁 Activity 之前, 系统会先调用 `onDestroy()`; 系统调用此回调的原因如下: 
 
-    -   Activity 即将结束（由用户彻底关闭 Activity 或由系统为 Activity 调用 [`finish()`](https://developer.android.google.cn/reference/android/app/Activity#finish())）
+    -   Activity 即将结束(由用户彻底关闭 Activity 或由系统为 Activity 调用 [`finish()`](https://developer.android.google.cn/reference/android/app/Activity#finish()))
 
-    -   由于配置变更（例如设备旋转或多窗口模式）, 系统暂时销毁 Activity
+    -   由于配置变更(例如设备旋转或多窗口模式), 系统暂时销毁 Activity
 
 -   `onNewIntent()`: 重用已有的活动实例
 
@@ -2710,6 +2710,857 @@ Android7.0之后才支持
 
 ![image-20230308225058032](./images/image-20230308225058032.png) 
 
+## 数据存储
+
+### SharedPreferences
+
+`SharedPreferences`以Map的形式存储配置信息, 首选项, 类似于前端的本地存储
+
+#### 添加SharedPreferences
+
+```java
+// 模式 Context.MODE_PRIVATE: 常规, Context.MODE_APPEND: 追加
+SharedPreferences sp = getSharedPreferences("spName", Context.MODE_PRIVATE); 
+// 添加一个配置信息
+sp.edit().putString("userName", "张三").apply();
+```
+
+> sp数据默认保存到`data -> data -> 项目包名文件目录下`, 项目包名在`AndroidManifest`清单文件下`package`字段下
+
+#### 获取SharedPreferences
+
+```java
+SharedPreferences sp = getSharedPreferences("spName", Context.MODE_PRIVATE); 
+// 获取配置信息
+String value = sp.getString("userName", "默认用户");
+```
+
+### SQLite
+
+在Android平台上, 集成了一个嵌入式关系型数据库: SQLite
+
+SQLite3支持**NULL**, **INTEGER**, **REAL(浮点数字)**, **TEXT(字符串文本)**和**BLOB(二进制对象)**数据类型, 虽然它支持的类型只有五种(不支持布尔值, 会自动转换为0和1)
+
+但实际上sqlite3也接受**varchar(n)**, **char(n)**, **decimal(p,s)**等数据类型, 只不过在运算或保存时会转成对应的五种数据类型;
+
+SQLite最大的特点是可以把各种类型的数据保存到**任何字段**中, 但是主键只能是**Integer类型**
+
+Sqlite数据库一般要求主键是**_id**,当然也可以是**id**
+
+> android里面的数据库是由底层的**sqilte.c**的代码来动态生成的
+
+#### SQLiteDatabase
+
+`SQLiteDatabase`是SQlint的数据库管理类, 它体用了若干操作数据库表的API, 常用的方法如下: 
+
+-   管理类, 用于数据库层面的操作
+
+    - `openDatabase`: 打开(创建)指定路径的数据库
+    - `deleteDatabase`: 删除数据库
+
+    - `isOpen`: 判断数据库是否已打开
+
+    - `close`: 关闭数据库
+
+    - `getVersion`: 获取数据库的版本号
+
+    - `setVersion`: 设置数据库的版本号
+
+-   事务类, 用于事务层面的操作
+    - `beginTransaction`: 开始事务
+    - `setTransactionSuccessful`: 设置事务的成功标志
+    - `endTransaction`: 结束事务
+
+-   数据处理类, 用于数据表层面的操作
+    - `execSQL`: 执行拼接好的SQL控制语句
+    - `delete`: 删除符合条件的记录
+    - `update`: 更新符合条件的记录
+    - `insert`: 插入一条记录
+    - `query`: 执行查询操作，返回结果集的游标
+    - `rawQuery`: 执行拼接好的SQL查询语句，返回结果集的游标
+
+##### 创建数据库
+
+```java
+// 获取当前上下文的路径
+String path = String.valueOf(getFilesDir());
+// Context.MODE_PRIVATE: 表示模式数据库不存在则创建
+SQLiteDatabase db = openOrCreateDatabase(path + "/user_info.db", Context.MODE_PRIVATE, null);
+if (db != null) {
+    Log.d("test", "数据库创建成功: " + db.getPath());
+} else {
+    Log.d("test", "数据库创建失败了");
+}
+```
+
+在Android Studio中可以快速的查看本地的数据库, 如下: 
+
+![image-20230311230426651](./images/image-20230311230426651.png)
+
+##### 删除数据库
+
+```java
+String path = String.valueOf(getFilesDir());
+boolean result = deleteDatabase(path + "/user_info.db");
+if (result) {
+    Log.d("test", "数据库删除成功" );
+} else {
+    Log.d("test", "数据库删除失败了");
+}
+```
+
+#### SQLiteOpenHelper
+
+`SQLiteOpenHelper`是Android提供的数据库辅助工具类, 用于指导开发者进行SQLite的合理使用
+
+- `SQLiteOpenHelper`的具体使用步骤如下:
+    - 新建一个继承自`SQLiteOpenHelper`的数据库操作类(一般是单例模式), 重写`onCreate`和`onUpgrade`两个方法
+    - 封装保证数据库安全的必要方法
+    - 提低对表记寻进行增加, 删除, 修改, 查询的操作方法
+
+数据库的初始化操作如下: 
+
+```java
+package com.example.learn_androd.sqlint;
+
+import android.content.Context;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteOpenHelper;
+
+import androidx.annotation.Nullable;
+
+public class UserSQLiteOpenHelper extends SQLiteOpenHelper {
+    // 数据库名
+    private static final String DB_NAME = "user.db";
+    // 数据库表名
+    private static final String TABLE_NAME = "user_info";
+    // 数据库版本
+    private static final int DB_VERSION = 1;
+    // 数据库操作实例
+    private static UserSQLiteOpenHelper mHelper = null;
+    // 数据库实例(读操作)
+    private static SQLiteDatabase mRDB = null;
+    // 数据库实例(写操作)
+    private static SQLiteDatabase mWDB = null;
+
+    // 构造方法
+    private UserSQLiteOpenHelper(@Nullable Context context) {
+        super(context, DB_NAME, null, DB_VERSION);
+    }
+
+    // 获取数据库实例(单例模式)
+    public static synchronized UserSQLiteOpenHelper getSQLiteHelper(Context context) {
+        if (mHelper == null) {
+            mHelper = new UserSQLiteOpenHelper(context);
+        }
+        return mHelper;
+    }
+
+    // 打开数据库的读连接
+    public SQLiteDatabase openReadLink() {
+        if (mRDB == null || !mRDB.isOpen()) {
+            mRDB = mHelper.getReadableDatabase();
+        }
+        return mRDB;
+    }
+
+    // 打开数据库的写连接
+    public SQLiteDatabase openWriteLink() {
+        if (mWDB == null || !mWDB.isOpen()) {
+            mWDB = mHelper.getWritableDatabase();
+        }
+        return mWDB;
+    }
+
+    // 关闭数据库连接
+    public void closeLink() {
+        if (mWDB != null && mWDB.isOpen()) {
+            mWDB.close();
+            mWDB = null;
+        }
+        if (mRDB != null && mRDB.isOpen()) {
+            mRDB.close();
+            mRDB = null;
+        }
+    }
+
+    // 数据库初始化时调用(只会调用一次)
+    @Override
+    public void onCreate(SQLiteDatabase db) {
+      	Log.d("SQLint Helper", "onCreate");
+      
+        // 定义 sql语句, 作用是新建表, 字段 _id 为主键并且自增, name 字段(text), age字段(int)
+        String sql = "create table " + TABLE_NAME + "(_id integer primary key autoincrement, name text NOT NULL, age int NOT NULL)";
+        // 执行sql语句, 创建的数据库会在 `data -> data ->  项目名` 目录下
+        db.execSQL(sql);
+    }
+
+    // 数据库版本更新时调用
+    @Override
+    public void onUpgrade(SQLiteDatabase sqLiteDatabase, int i, int i1) {
+ 				Log.d("SQLint Helper", "onUpgrade");
+      
+      	// 增加一个 sex 字段
+        String sql = "alter table " + TABLE_NAME + " add column sex text;";
+        // 执行 sql
+        db.execSQL(sql);
+      
+        // 其他的操作 ... 
+    }
+
+    ///////////// 上面是数据库的初始化操作
+}
+```
+
+> [菜鸟教程SQL](https://www.runoob.com/sql/sql-tutorial.html)
+
+##### 新建一个用户类
+
+```java
+package com.example.learn_androd.bean;
+
+// 用户类字段对应数据表里的字段
+public class User {
+    public String name;
+    public int age;
+
+    public User() {
+    }
+
+    public User(String name, int age) {
+        this.name = name;
+        this.age = age;
+    }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "name='" + name + '\'' +
+                ", age=" + age +
+                '}';
+    }
+}
+```
+
+##### 数据库初始操作
+
+数据库的初始操作只需要在对应的生命周期中写就可以了
+
+```java
+	// ...  
+
+	// 数据库操作实例
+  private UserSQLiteOpenHelper mHelper;
+
+	@Override
+  protected void onStart() {
+      super.onStart();
+
+      // 初始化数据库操作实例
+      mHelper = UserSQLiteOpenHelper.getSQLiteHelper(this);
+      // 打开读写连接
+      mHelper.openReadLink();
+      mHelper.openWriteLink();
+  }
+
+  @Override
+  protected void onStop() {
+      super.onStop();
+
+      // 关闭连接
+      mHelper.closeLink();
+  }
+```
+
+##### 插入数据
+
+给`UserSQLiteOpenHelper`类添加一个`insert`方法如下:
+
+```java
+package com.example.learn_androd.sqlint;
+
+import android.content.ContentValues;
+import android.content.Context;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteOpenHelper;
+
+import androidx.annotation.Nullable;
+
+import com.example.learn_androd.bean.User;
+
+public class UserSQLiteOpenHelper extends SQLiteOpenHelper {
+ 		// ...
+    ///////////// 上面是数据库的初始化操作
+
+    // 插入数据操作返回行号
+    public long insert(User user) {
+        // 里面添加数据库要插入的数据
+        ContentValues values = new ContentValues();
+        values.put("name", user.name);
+        values.put("age", user.age);
+
+        // 第一个参数是: 表名
+        // 第二个参数是: 如果添加的数据为空时, 会赋值为null(不然会报错)
+        // 第三个参数是: 要插入的数据
+        return mWDB.insert(TABLE_NAME, null, values);
+    }
+}
+```
+
+代码中使用:
+
+```java
+User user = new User("张三", 18);
+// 前提是得提前初始化 mHelper 
+long n = mHelper.insert(user);
+if (n > 0) {
+    Log.d(TAG, "数据插入成功 " + n);
+} else {
+    Log.d(TAG, "数据插入失败");
+} 
+```
+
+##### 删除数据
+
+给`UserSQLiteOpenHelper`类添加一个`deleteByName`方法如下:
+
+```java
+// 根据用户名删除数据, 返回删除的数量
+public long deleteByName(String name) {
+
+    // 删除所有的数据
+    // mWDB.delete(TABLE_NAME, "1 = 1", null);
+
+    // 多个条件
+    // mWDB.delete(TABLE_NAME, "name = ? and sex = ?", new String[]{ "李四", "男" });
+
+    return mWDB.delete(TABLE_NAME, "name = ?", new String[]{ name });
+}
+```
+
+代码中使用:
+
+```java
+long n = mHelper.deleteByName("张三");
+
+if (n > 0) {
+    Log.d(TAG, "删除了 " + n + "条数据");
+} else {
+    Log.d(TAG, "没有删除数据");
+}
+```
+
+##### 更新数据
+
+给`UserSQLiteOpenHelper`类添加一个`updateByName`方法如下:
+
+```java
+// 根据用户名进行更新数据, 返回更新的数量
+public long updateByName(User user) {
+    ContentValues values = new ContentValues();
+    values.put("name", user.name);
+    values.put("age", user.age);
+    return mWDB.update(TABLE_NAME, values,"name = ?", new String[]{ user.name });
+}
+```
+
+代码中使用:
+
+```java
+private void updateByName() {
+    User user = new User("张三", 20);
+    long n = mHelper.updateByName(user);
+    if (n > 0) {
+        Log.d(TAG, "更新 " + n + "条数据");
+    } else {
+        Log.d(TAG, "没有更新数据");
+    }
+}
+```
+
+
+
+```java
+SQLiteOpenHelper helper = MySQLiteOpenHelper.getSQLiteHelper(this);
+SQLiteDatabase db = helper.getReadableDatabase();
+// 数据库打开成功
+if (db.isOpen()) {
+    // sql语句加参数, 返回一个游标
+    Cursor cursor = db.rawQuery("select * from persons", null);
+
+    // 迭代游标
+    while (cursor.moveToNext()) {
+        // 返回 _id 对应的列索引
+        int idIdx = cursor.getColumnIndex("_id");
+        int _id = cursor.getInt(idIdx);
+
+        String name = cursor.getString((int)cursor.getColumnIndex("name"));
+        System.out.printf("quert: _id: %d, name: %s \r\n", _id, name);
+    }
+    // 关闭数据库
+    db.close();
+    // 关闭游标
+    cursor.close();
+}
+```
+
+##### 查询数据
+
+给`UserSQLiteOpenHelper`类添加查询的方法, 如下: 
+
+```java
+// 查询所有的数据
+public List<User> queryAll() {
+    List<User> list = new ArrayList<>();
+
+    // 这里使用读连接, 返回一个游标(类似于JS的迭代器)
+    // 第一个参数: 表名
+    // 第二个参数: 要查询出来的字段, 如: new String[]{"name", "sex"}
+    // 第三个参数: 查询的参数, 如: new String[]{"张三", "男"}
+    // 其它参数分别对应SQL的: groupBy, having, orderBy, limit
+    Cursor cursor = mRDB.query(TABLE_NAME, null, null, null, null, null, null, null);
+		
+  	// 传递对应的条件即可查询指定的数据
+    // Cursor cursor = mRDB.query(TABLE_NAME, null, "name = ?", new String[]{"张三"}, null, null, null, null);
+  
+    // 是否存在下一行的数据
+    while (cursor.moveToNext()) {
+        User user = new User();
+
+        // 返回 name 对应的列索引
+        int nameIdx = cursor.getColumnIndex("name");
+        // 根据索引获取对应的值
+        user.name = cursor.getString(nameIdx);
+
+        int ageIdx = cursor.getColumnIndex("age");
+        user.age = cursor.getInt(ageIdx);
+
+        // 添加到集合中
+        list.add(user);
+    }
+
+    return list;
+}
+```
+
+代码中使用
+
+```java
+// 查询所有的数据
+List<User> userList = mHelper.queryAll();
+
+// 根据用户名查询
+User user = new User("张三", 20);
+List<User> userList = mHelper.queryByName(user);
+
+for (User _user: userList) {
+    Log.d(TAG, _user.toString());
+}
+```
+
+#### 事务操作
+
+事务是一组操作的集合，它是一个不可分割的工作单位，事务会把所有的操作作为一个整体一起向系统提交或撤销操作请求，所以这些操作要么同时成功，要么同时失败
+
+事务的四大特性: 
+
+-   原子性(Atomicity): 事务是不可分割的最小操作单元，要么全部成功，要么全部失败
+-   一致性(Consistency): 事务完成时，必须使所有的数据都保持一致状态
+-   隔离性(Isolation): 数据库系统提供的隔离机制，保证事务在不受外部并发操作影响的独立环境下运行
+-   持久性(Durability): 事务一旦提交或回滚，它对数据库中的数据的改变是永久的
+
+下面是事务的基本使用, 两个操作要么一起成功要么就会一起失败, 如下: 
+
+```java
+ContentValues values = new ContentValues();
+values.put("name", user.name);
+values.put("age", user.age);
+
+try {
+    // 开启事务
+    mWDB.beginTransaction();
+
+    // 执行第一个操作
+    mWDB.insert(TABLE_NAME, null, values);
+
+    // 这里模拟操作出错了
+    int i = 10 / 0;
+
+    // 执行第二个操作
+    mWDB.insert(TABLE_NAME, null, values);
+
+    // 事务执行成功
+    mWDB.setTransactionSuccessful();
+} catch (Exception e) {
+    e.printStackTrace();
+} finally {
+    // 结束实物
+    mWDB.endTransaction();
+}
+```
+
+#### 数据库升级
+
+
+
+### Room
+
+Room是对SQLite的一种抽象封装, Room提供三个注解来创建三个角色: 
+
+- `Entity`: 对应数据库中的表，可以使用`@Entity`注解将一个类变成数据库中的一张表结构。
+- `DAO`: 全称Database Access Object, 定义了对数据库中数据的读写等操作, DAO中可以使用SQL语句来操作数据库, 对应注解`@Dao`
+- `RoomDatabase`: 数据库持有类, 用于创建数据库或者连接到数据库, 内部包含DAO和Entity, 对应注解`@Datavase`
+
+```java
+@Entity
+class Students {} // 创建表
+
+@Dao
+class StudentDao {} // 对表进行增删改查
+
+@Datavase(数据表, 版本号)
+class StudentDB {} // 创建数据库
+```
+
+#### 编写三个角色
+
+添加依赖
+
+```java
+// Room 的依赖
+def room_version = "2.2.0-alpha01"
+implementation "androidx.room:room-runtime:$room_version"
+annotationProcessor "androidx.room:room-compiler:$room_version" // Room 注解解析器
+```
+
+创建表(**Entity**)
+
+```java
+import androidx.room.ColumnInfo;
+import androidx.room.Entity;
+import androidx.room.PrimaryKey;
+
+// 一张表
+@Entity
+public class Student {
+    public static final String TABLE_NAME = "Student";
+
+    // 定义为主键且主键自动增长
+    @PrimaryKey(autoGenerate = true)
+    private int id;
+
+    // 表中字段名跟类中的成员变量名不同
+    @ColumnInfo(name = "myName")
+    private String name;
+
+    // @NonNull 表示字段, 方法, 参数返回值不能为空
+    private int age;
+
+
+    public Student(String name, int age) {
+        this.name = name;
+        this.age = age;
+    }
+
+    // 省略 getter 和 setter
+}
+```
+
+创建**DAO**
+
+```java
+package com.example.qmui;
+
+import androidx.room.Dao;
+import androidx.room.Delete;
+import androidx.room.Insert;
+import androidx.room.Query;
+import androidx.room.Update;
+
+import java.util.List;
+
+@Dao
+public interface StudentDao {
+
+    // 插入
+    @Insert
+    void insertStudents(Student... students);
+
+    // 条件删除
+    @Delete
+    void deleteStudents(Student... students);
+
+    // 全部删除(这里可以写自定义sql的语句)
+    @Query("DELETE FROM " + Student.TABLE_NAME)
+    void deleteAllStudents();
+
+    // 修改
+    @Update
+    void updateStudents(Student... students);
+
+    // 全部查询
+    @Query("SELECT * FROM " + Student.TABLE_NAME)
+    List<Student> getAllStudent();
+
+    // 根据id查找
+    @Query("SELECT * FROM Student WHERE id = :id")
+    Student getStudentById(int id);
+}
+```
+
+创建数据库(**Database**)
+
+```java
+import android.content.Context;
+import androidx.room.Database;
+import androidx.room.Room;
+import androidx.room.RoomDatabase;
+
+// 数据库管理之前的表, 版本为1, 不导出文件夹(.db文件)
+@Database(entities = {Student.class}, version = 1, exportSchema = false)
+public abstract class StudentDataBase extends RoomDatabase {
+
+	// 只需声明一下即可, 暴露dao, 给用户对表增删改查
+    public abstract StudentDao getStudentDao();
+
+    // 单例模式
+    private static StudentDataBase INSTANCE;
+    public synchronized static StudentDataBase getInstance(Context context) {
+        if (INSTANCE == null) {
+            // 构建数据库
+            INSTANCE = Room.databaseBuilder
+                    (context.getApplicationContext(),StudentDataBase.class,"Room 数据库")
+                    // 数据库的操作默认是异步线程, 可以强制开启主线程也可以操作数据库(慎用)
+                    // .allowMainThreadQueries()
+                    .build();
+        }
+        return INSTANCE;
+    }
+}
+```
+
+创建一个引擎类用于提供操作数据库
+
+```java
+package com.example.qmui;
+
+import android.content.Context;
+import android.os.AsyncTask;
+
+import java.util.List;
+
+public class DBEngine {
+
+    private StudentDao studentDao;
+
+    public DBEngine(Context context) {
+        StudentDataBase studentDataBase = StudentDataBase.getInstance(context);
+        studentDao = studentDataBase.getStudentDao();
+    }
+
+    // 提供操作数据库的方法--------------------------
+    // 插入
+    public void insertStudents(Student... students) {
+        new InsertStudents(studentDao).execute(students);
+    }
+
+    // 添加删除
+    public void deleteStudents(Student... students) {
+        new DeleteStudents(studentDao).execute(students);
+    }
+
+    // 全部删除
+    public void deleteAllStudents() {
+        new DeleteAllStudents(studentDao).execute();
+    }
+
+    // 修改
+    public void UpdateStudents(Student... students) {
+        new UpdateStudents(studentDao).execute(students);
+    }
+
+    // 查询所有
+    public void getAllStudent() {
+        new GetAllStudent(studentDao).execute();
+    }
+
+    // 根据id查询
+    public void getStudentById(int id) {
+        new GetStudentById(studentDao).execute(id);
+    }
+
+
+    // 异步操作(操作数据库需要开启工作者线程)--------------------------
+
+    // 插入数据
+    private static class InsertStudents extends AsyncTask<Student, Void, Void> {
+        private StudentDao dao;
+
+        public InsertStudents(StudentDao studentDao) {
+            dao = studentDao;
+        }
+
+        @Override
+        protected Void doInBackground(Student... Students) {
+            dao.insertStudents(Students);
+            return null;
+        }
+    }
+
+    // 条件删除
+    private static class DeleteStudents extends AsyncTask<Student, Void, Void> {
+        private StudentDao dao;
+
+        public DeleteStudents(StudentDao studentDao) {
+            dao = studentDao;
+        }
+
+        @Override
+        protected Void doInBackground(Student... Students) {
+            dao.deleteStudents(Students);
+            return null;
+        }
+    }
+
+    // 全部删除
+    private static class DeleteAllStudents extends AsyncTask<Void, Void, Void> {
+        private StudentDao dao;
+
+        public DeleteAllStudents(StudentDao studentDao) {
+            dao = studentDao;
+        }
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            dao.deleteAllStudents();
+            return null;
+        }
+    }
+
+    // 修改
+    private static class UpdateStudents extends AsyncTask<Student, Void, Void> {
+        private StudentDao dao;
+
+        public UpdateStudents(StudentDao studentDao) {
+            dao = studentDao;
+        }
+
+        @Override
+        protected Void doInBackground(Student... students) {
+            dao.updateStudents(students);
+            return null;
+        }
+    }
+
+    // 全部查询
+    private static class GetAllStudent extends AsyncTask<Void, Void, Void> {
+        private StudentDao dao;
+
+        public GetAllStudent(StudentDao studentDao) {
+            dao = studentDao;
+        }
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            List<Student> allStudent = dao.getAllStudent();
+            if (allStudent.size() != 0) {
+                for (Student s : allStudent) {
+                    System.out.println(s.toString());
+                }
+            } else {
+                System.out.println("没有数据");
+            }
+            return null;
+        }
+    }
+
+    // 根据id查询
+    private static class GetStudentById extends AsyncTask<Integer, Void, Void> {
+        private StudentDao dao;
+
+        public GetStudentById(StudentDao studentDao) {
+            dao = studentDao;
+        }
+
+        @Override
+        public Void doInBackground(Integer... ids){
+            Student student = dao.getStudentById(ids[0]);
+            System.out.println(student.toString());
+            return null;
+        }
+    }
+}
+```
+
+使用
+
+```java
+package com.example.qmui;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.os.Bundle;
+import android.view.View;
+
+
+public class MainActivity extends AppCompatActivity {
+    private DBEngine db;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        db = new DBEngine(this);
+    }
+
+    // 查询
+    public void handle1(View view) {
+        db.getAllStudent();
+    }
+
+    // 删除
+    public void handle2(View view) {
+        Student student = new Student(null, 0);
+        student.setId(1);
+        // 删除id为1的数据
+        db.deleteStudents(student);
+    }
+
+    // 全部删除
+    public void handle3(View view) {
+        db.deleteAllStudents();
+    }
+
+    // 修改
+    public void handle4(View view) {
+        Student student = new Student("尼古拉斯-张三", 999);
+        // 修改id为1的数据
+        student.setId(1);
+        db.UpdateStudents(student);
+    }
+
+    // 插入
+    public void handle5(View view) {
+        Student student1 = new Student("张三", 18);
+        Student student2 = new Student("李四", 28);
+        Student student3 = new Student("王五", 38);
+        db.insertStudents(student1, student2, student3);
+    }
+
+    // 根据id查询
+    public void handle6(View view) {
+        db.getStudentById(1);
+    }
+}
+```
+
+AsyncTask类被弃用后，Android给出了两个替代的建议: 
+
+- `java.util.concurrent`包下的相关类, 如[Executor](https://links.jianshu.com/go?to=https%3A%2F%2Fdeveloper.android.com%2Freference%2Fjava%2Futil%2Fconcurrent%2FExecutor)，[ThreadPoolExecutor](https://links.jianshu.com/go?to=https%3A%2F%2Fdeveloper.android.com%2Freference%2Fjava%2Futil%2Fconcurrent%2FThreadPoolExecutor)，[FutureTask](https://links.jianshu.com/go?to=https%3A%2F%2Fdeveloper.android.com%2Freference%2Fjava%2Futil%2Fconcurrent%2FFutureTask)
+
+- **kotlin**就使用**协程 - [Coroutines](https://links.jianshu.com/go?to=https%3A%2F%2Fdeveloper.android.com%2Fkotlin%2Fcoroutines)**
+
 ## Service
 
 [服务](https://developer.android.google.cn/guide/components/services)可以在后台默默运行, 例如: 音乐播放器
@@ -2737,9 +3588,9 @@ stopService(new Intent(this, MyService.class));
 
 后台的生命周期与Activity无关, Activity销毁后台服务也依然还存在, 生命周期如下: 
 
-`onCreate()`: 首次创建服务时，系统会（在调用 `onStartCommand()` 或 `onBind()` 之前）调用此方法来执行一次性设置程序。如果服务已在运行，则不会调用此方法
+`onCreate()`: 首次创建服务时，系统会(在调用 `onStartCommand()` 或 `onBind()` 之前)调用此方法来执行一次性设置程序。如果服务已在运行，则不会调用此方法
 
-`onStartCommand()`: 当另一个组件（如 Activity）请求启动服务时，系统会通过调用 `startService()` 来调用此方法, 执行此方法时，服务即会启动并可在**后台无限期运行**
+`onStartCommand()`: 当另一个组件(如 Activity)请求启动服务时，系统会通过调用 `startService()` 来调用此方法, 执行此方法时，服务即会启动并可在**后台无限期运行**
 
 `onStart()`: 使用`onStartCommand()`代替
 
@@ -2749,7 +3600,7 @@ stopService(new Intent(this, MyService.class));
 
 前台生命周期与Activity挂钩, 也就是桥梁, Activity销毁了这些服务也就销毁了
 
-`onBind()`: 当另一个组件想要与服务绑定（例如执行 RPC）时, 系统会通过调用`bindService()`来调用此方法
+`onBind()`: 当另一个组件想要与服务绑定(例如执行 RPC)时, 系统会通过调用`bindService()`来调用此方法
 
 `onUnbind()`:  解除绑定时调用
 
@@ -3237,7 +4088,7 @@ Toast.makeText(BlankFragment1.this.getContext(), msg, Toast.LENGTH_SHORT).show()
 | Stopped        | `onStop()`                                                   |
 | Destroyed      | `onDestroyView()`: Fragment UI的销毁<br/>`onDestroy()`: Fragment的销毁<br/>`onDetach()`: 与Activity进行解绑 |
 
-```
+```java
 1.打开界面
 onCreate() -> onCreateView() -> onActivityCreated() -> onStart() -> onResume()
 
@@ -3253,7 +4104,7 @@ onPause() -> onStop() -> onDestroyView() -> onDestroy() -> onDetach()
 
 当把Fragment保存到栈内存`transform.addToBackStack(null);`时, 生命周期会有点不一样
 
-```
+```java
 1.切换Fragment时
 onPause() -> onStop() -> onDestroyView()
 
@@ -3268,26 +4119,74 @@ onDestroy() -> onDetach()
 
 网络请求框架
 
-引入依赖
+`app/build.gradle`文件的`dependencies`里面添加依赖:
 
 ```java
 implementation("com.squareup.okhttp3:okhttp:4.9.0")
 ```
 
-清单文件加入网络请求权限
+### 配置请求权限
+
+#### 分离配置文件
+
+安卓7开始默认不允许HTTP请求可以手动配置开启, 新建文件`xml/network_security_config.xml`
 
 ```xml
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.learn_android">
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <!--  默认配置, 允许HTTP -->
+    <base-config cleartextTrafficPermitted="true"></base-config>
+  
+    <!--  配置某个域名是否开启HTTP -->
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">android.bugly.qq.com</domain>
+        <domain includeSubdomains="true">155.25.62.33</domain>
+    </domain-config>
+</network-security-config>
+```
 
-    <!-- 网络请求权限 -->
+清单文件引用
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.example.qmui">
+	
+  	<!-- 网络请求权限 -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    ...
+  
+  
+  	<!-- 网络请求配置引用指定的文件 -->
+    <application android:networkSecurityConfig="@xml/network_security_config">
+    </application>
+
 </manifest>
 ```
 
-同步get请求
+#### 直接写死值
+
+或者清单文件直接写死值(不推荐)
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.example.qmui">
+		
+  	<!-- 网络请求权限 -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+  
+    <!-- 直接定义允许 HTTP -->
+    <application android:usesCleartextTraffic="true">
+    </application>
+
+</manifest>
+```
+
+### 发送请求
+
+#### 同步get请求
 
 ```java
 OkHttpClient okHttpClient = new OkHttpClient();
@@ -3315,7 +4214,7 @@ new Thread(() -> {
 }).start();
 ```
 
-异步get请求
+#### 异步get请求
 
 ```java
 OkHttpClient okHttpClient = new OkHttpClient();
@@ -3345,7 +4244,9 @@ call.enqueue(new Callback() {
 });
 ```
 
-post请求, 其他和get请求一样同步需要开启子线程
+#### post请求
+
+其他和get请求一样同步需要开启子线程
 
 ```java
 // 构建请求体数据
@@ -3366,40 +4267,11 @@ RequestBody formBody =
         RequestBody.create("{\"a\":1, \"b\":2}", MediaType.parse("application/json"));
 ```
 
-安卓7开始默认不允许http请求可以手动配置开启, 新建文件`xml/network_security_config.xml`
-
-```xml
-<?xml version="1.0" encoding="utf-8"?>
-<network-security-config>
-    <!--  默认配置，是否开启Http流量允许-->
-    <base-config cleartextTrafficPermitted="true"></base-config>
-    <!--  特例配置，配置某个域名是否开启Http流量允许-->
-    <domain-config cleartextTrafficPermitted="true">
-        <domain includeSubdomains="true">android.bugly.qq.com</domain>
-        <domain includeSubdomains="true">155.25.62.33</domain>
-    </domain-config>
-</network-security-config>
-```
-
-清单文件引用
-
-```xml
-<?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.qmui">
-	...
-    <application
-        android:networkSecurityConfig="@xml/network_security_config">
-    </application>
-
-</manifest>
-```
-
 ## Gson
 
 Gson可以完成Java对象的序列化和反序列化
 
-添加依赖
+`app/build.gradle`文件的`dependencies`里面添加依赖:
 
 ```java
 implementation("com.google.code:gson-gson:2.8.6")
@@ -3455,7 +4327,7 @@ Gson gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
 
 进一步封装了OkHttp的网络请求库
 
-清单文件引入依赖
+`app/build.gradle`文件的`dependencies`里面添加依赖:
 
 ```java
 implementation("com.squareup.retrofit2:retrofit:2.9.0")
@@ -3571,535 +4443,3 @@ implementation("com.squareup.retrofit2:adapter-rxjava3:2.9.0")
 // 安卓项目再引入一个依赖
 implementation("io.reactivex.rxjava3:rxandroid:3.0.0")
 ```
-
-## 数据存储
-
-### SP
-
-以Map的形式存储配置信息, 首选项, 类似于前端的本地存储
-
-添加SP
-
-```java
-// 模式: Context.MODE_PRIVATE: 常规, Context.MODE_APPEND: 追加
-SharedPreferences sp = getSharedPreferences("spName", Context.MODE_PRIVATE); 
-// 添加一个配置信息
-sp.edit().putString("userName", "张三").apply();
-```
-
-> sp数据默认保存到`data -> data -> 项目包名文件目录下`, 项目包名在`AndroidManifest`清单文件下`package`字段下
-
-获取SP
-
-```java
-SharedPreferences sp = getSharedPreferences("spName", Context.MODE_PRIVATE); 
-// 获取配置信息
-String value = sp.getString("userName", "默认用户");
-```
-
-### SQLite
-
-在Android平台上, 集成了一个嵌入式关系型数据库: SQLite
-
-SQLite3支持**NULL**, **INTEGER**, **REAL（浮点数字）**, **TEXT(字符串文本)**和**BLOB(二进制对象)**数据类型, 虽然它支持的类型只有五种, 
-
-但实际上sqlite3也接受**varchar(n)**, **char(n)**, **decimal(p,s)**等数据类型, 只不过在运算或保存时会转成对应的五种数据类型;
-
-SQLite最大的特点是可以把各种类型的数据保存到**任何字段**中, 但是主键只能是**Integer类型**
-
-Sqlite数据库一般要求主键是**_id**,当然也可以是**id**
-
-> android里面的数据库是由底层的**sqilte.c**的代码来动态生成的
-
-##### SQLiteOpenHelper
-
-android中所有的数据库操作方法都被封装到SQLiteOpenHelper这个抽象类下, 我们需要自己新建一个子类(单例模式)来实现它, 如下: 
-
-```java
-import android.content.Context;
-import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteOpenHelper;
-
-import androidx.annotation.Nullable;
-
-// 数据库操作一般都会是单例模式
-// 私有构造方法, 提供方法获取实例(实例唯一)
-public class MySQLiteOpenHelper extends SQLiteOpenHelper {
-
-    private static SQLiteOpenHelper mInstalce;
-
-    private MySQLiteOpenHelper(@Nullable Context context, @Nullable String name, @Nullable SQLiteDatabase.CursorFactory factory, int version) {
-        // context: 上下文, name: 数据库名称, factory: 工厂函数(可以为null), version: 数据库版本, 大于0
-        super(context, name, factory, version);
-    }
-
-    // 单例获取数据库实例
-    public static synchronized SQLiteOpenHelper getSQLiteHelper(Context context) {
-        if (mInstalce == null) {
-            mInstalce = new MySQLiteOpenHelper(context, "测试数据库", null, 1);
-        }
-        return mInstalce;
-    }
-
-    // 数据库初始化时调用(只会调用一次)
-    @Override
-    public void onCreate(SQLiteDatabase db) {
-        // 新建 persons 表, 字段 _id 为主键并且自增, name 字段数据格式为 text
-        String sql = "create table persons(_id integer primary key autoincrement, name text)";
-
-        // 执行sql语句
-        db.execSQL(sql);
-    }
-
-    // 数据库升级时调用
-    @Override
-    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-
-    }
-}
-```
-
-> [菜鸟教程SQL](https://www.runoob.com/sql/sql-tutorial.html)
-
-##### 创建数据库
-
-```java
-SQLiteOpenHelper helper = MySQLiteOpenHelper.getSQLiteHelper(this);
-// 获取数据库(读取)
-SQLiteDatabase readableDatabase = helper.getReadableDatabase();
-// 获取数据库(写入)
-// SQLiteDatabase writableDatabase = helper.getWritableDatabase();
-```
-
-> 调用上面任意两个的方法才会在`data -> data ->  项目名`目录下创建数据库(.db文件)
-
-##### 插入数据
-
-```java
-SQLiteOpenHelper helper = MySQLiteOpenHelper.getSQLiteHelper(this);
-SQLiteDatabase db = helper.getWritableDatabase();
-
-if (db.isOpen()) {
-    String sql = "insert into persons(name) values('张三')";
-    db.execSQL(sql);
-    System.out.println("插入数据成功");
-    // 关闭数据库
-    db.close();
-}
-```
-
-##### 查询数据
-
-```java
-SQLiteOpenHelper helper = MySQLiteOpenHelper.getSQLiteHelper(this);
-SQLiteDatabase db = helper.getReadableDatabase();
-// 数据库打开成功
-if (db.isOpen()) {
-    // sql语句加参数, 返回一个游标
-    Cursor cursor = db.rawQuery("select * from persons", null);
-
-    // 迭代游标
-    while (cursor.moveToNext()) {
-        // 返回 _id 对应的列索引
-        int idIdx = cursor.getColumnIndex("_id");
-        int _id = cursor.getInt(idIdx);
-
-        String name = cursor.getString((int)cursor.getColumnIndex("name"));
-        System.out.printf("quert: _id: %d, name: %s \r\n", _id, name);
-    }
-    // 关闭数据库
-    db.close();
-    // 关闭游标
-    cursor.close();
-}
-```
-
-##### 修改
-
-```java
-SQLiteOpenHelper helper = MySQLiteOpenHelper.getSQLiteHelper(this);
-SQLiteDatabase db = helper.getWritableDatabase();
-
-if (db.isOpen()) {
-    // ? 占位待填充
-    String sql = "update persons set name = ? where _id = ?";
-    // execSQL的第二个参数会依次填充 ?
-    db.execSQL(sql, new Object[]{"李四", 1});
-    System.out.println("数据修改成功");
-    db.close();
-}
-```
-
-##### 删除
-
-```java
-SQLiteOpenHelper helper = MySQLiteOpenHelper.getSQLiteHelper(this);
-SQLiteDatabase db = helper.getWritableDatabase();
-
-if (db.isOpen()) {
-    // 常用的 where 子句逻辑
-    // and: 同时满足, or: 满足其中一个条件的值, not: 满足不包含该条件的值
-    String sql = "delete from persons  where _id = ? and name = ?";
-    db.execSQL(sql, new Object[]{1, "李四"});
-    System.out.println("数据删除成功");
-    db.close();
-}
-```
-
-### Room
-
-Room是对SQLite的一种抽象封装, Room提供三个注解来创建三个角色: 
-
-- Entity: 对应数据库中的表，可以使用`@Entity`注解将一个类变成数据库中的一张表结构。
-- DAO: 全称Database Access Object, 定义了对数据库中数据的读写等操作, DAO中可以使用SQL语句来操作数据库, 对应注解`@Dao`
-- RoomDatabase: 数据库持有类, 用于创建数据库或者连接到数据库, 内部包含DAO和Entity, 对应注解`@Datavase`
-
-```java
-@Entity
-class Students {} // 创建表
-
-@Dao
-class StudentDao {} // 对表进行增删改查
-
-@Datavase(数据表, 版本号)
-class StudentDB {} // 创建数据库
-```
-
-#### 编写三个角色
-
-添加依赖
-
-```java
-// Room 的依赖
-def room_version = "2.2.0-alpha01"
-implementation "androidx.room:room-runtime:$room_version"
-annotationProcessor "androidx.room:room-compiler:$room_version" // Room 注解解析器
-```
-
-创建表(**Entity**)
-
-```java
-import androidx.room.ColumnInfo;
-import androidx.room.Entity;
-import androidx.room.PrimaryKey;
-
-// 一张表
-@Entity
-public class Student {
-    public static final String TABLE_NAME = "Student";
-
-    // 定义为主键且主键自动增长
-    @PrimaryKey(autoGenerate = true)
-    private int id;
-
-    // 表中字段名跟类中的成员变量名不同
-    @ColumnInfo(name = "myName")
-    private String name;
-
-    // @NonNull 表示字段, 方法, 参数返回值不能为空
-    private int age;
-
-
-    public Student(String name, int age) {
-        this.name = name;
-        this.age = age;
-    }
-
-    // 省略 getter 和 setter
-}
-```
-
-创建**DAO**
-
-```java
-package com.example.qmui;
-
-import androidx.room.Dao;
-import androidx.room.Delete;
-import androidx.room.Insert;
-import androidx.room.Query;
-import androidx.room.Update;
-
-import java.util.List;
-
-@Dao
-public interface StudentDao {
-
-    // 插入
-    @Insert
-    void insertStudents(Student... students);
-
-    // 条件删除
-    @Delete
-    void deleteStudents(Student... students);
-
-    // 全部删除(这里可以写自定义sql的语句)
-    @Query("DELETE FROM " + Student.TABLE_NAME)
-    void deleteAllStudents();
-
-    // 修改
-    @Update
-    void updateStudents(Student... students);
-
-    // 全部查询
-    @Query("SELECT * FROM " + Student.TABLE_NAME)
-    List<Student> getAllStudent();
-
-    // 根据id查找
-    @Query("SELECT * FROM Student WHERE id = :id")
-    Student getStudentById(int id);
-}
-```
-
-创建数据库(**Database**)
-
-```java
-import android.content.Context;
-import androidx.room.Database;
-import androidx.room.Room;
-import androidx.room.RoomDatabase;
-
-// 数据库管理之前的表, 版本为1, 不导出文件夹(.db文件)
-@Database(entities = {Student.class}, version = 1, exportSchema = false)
-public abstract class StudentDataBase extends RoomDatabase {
-
-	// 只需声明一下即可, 暴露dao, 给用户对表增删改查
-    public abstract StudentDao getStudentDao();
-
-    // 单例模式
-    private static StudentDataBase INSTANCE;
-    public synchronized static StudentDataBase getInstance(Context context) {
-        if (INSTANCE == null) {
-            // 构建数据库
-            INSTANCE = Room.databaseBuilder
-                    (context.getApplicationContext(),StudentDataBase.class,"Room 数据库")
-                    // 数据库的操作默认是异步线程, 可以强制开启主线程也可以操作数据库(慎用)
-                    // .allowMainThreadQueries()
-                    .build();
-        }
-        return INSTANCE;
-    }
-}
-```
-
-创建一个引擎类用于提供操作数据库
-
-```java
-package com.example.qmui;
-
-import android.content.Context;
-import android.os.AsyncTask;
-
-import java.util.List;
-
-public class DBEngine {
-
-    private StudentDao studentDao;
-
-    public DBEngine(Context context) {
-        StudentDataBase studentDataBase = StudentDataBase.getInstance(context);
-        studentDao = studentDataBase.getStudentDao();
-    }
-
-    // 提供操作数据库的方法--------------------------
-    // 插入
-    public void insertStudents(Student... students) {
-        new InsertStudents(studentDao).execute(students);
-    }
-
-    // 添加删除
-    public void deleteStudents(Student... students) {
-        new DeleteStudents(studentDao).execute(students);
-    }
-
-    // 全部删除
-    public void deleteAllStudents() {
-        new DeleteAllStudents(studentDao).execute();
-    }
-
-    // 修改
-    public void UpdateStudents(Student... students) {
-        new UpdateStudents(studentDao).execute(students);
-    }
-
-    // 查询所有
-    public void getAllStudent() {
-        new GetAllStudent(studentDao).execute();
-    }
-
-    // 根据id查询
-    public void getStudentById(int id) {
-        new GetStudentById(studentDao).execute(id);
-    }
-
-
-    // 异步操作(操作数据库需要开启工作者线程)--------------------------
-
-    // 插入数据
-    private static class InsertStudents extends AsyncTask<Student, Void, Void> {
-        private StudentDao dao;
-
-        public InsertStudents(StudentDao studentDao) {
-            dao = studentDao;
-        }
-
-        @Override
-        protected Void doInBackground(Student... Students) {
-            dao.insertStudents(Students);
-            return null;
-        }
-    }
-
-    // 条件删除
-    private static class DeleteStudents extends AsyncTask<Student, Void, Void> {
-        private StudentDao dao;
-
-        public DeleteStudents(StudentDao studentDao) {
-            dao = studentDao;
-        }
-
-        @Override
-        protected Void doInBackground(Student... Students) {
-            dao.deleteStudents(Students);
-            return null;
-        }
-    }
-
-    // 全部删除
-    private static class DeleteAllStudents extends AsyncTask<Void, Void, Void> {
-        private StudentDao dao;
-
-        public DeleteAllStudents(StudentDao studentDao) {
-            dao = studentDao;
-        }
-
-        @Override
-        protected Void doInBackground(Void... voids) {
-            dao.deleteAllStudents();
-            return null;
-        }
-    }
-
-    // 修改
-    private static class UpdateStudents extends AsyncTask<Student, Void, Void> {
-        private StudentDao dao;
-
-        public UpdateStudents(StudentDao studentDao) {
-            dao = studentDao;
-        }
-
-        @Override
-        protected Void doInBackground(Student... students) {
-            dao.updateStudents(students);
-            return null;
-        }
-    }
-
-    // 全部查询
-    private static class GetAllStudent extends AsyncTask<Void, Void, Void> {
-        private StudentDao dao;
-
-        public GetAllStudent(StudentDao studentDao) {
-            dao = studentDao;
-        }
-
-        @Override
-        protected Void doInBackground(Void... voids) {
-            List<Student> allStudent = dao.getAllStudent();
-            if (allStudent.size() != 0) {
-                for (Student s : allStudent) {
-                    System.out.println(s.toString());
-                }
-            } else {
-                System.out.println("没有数据");
-            }
-            return null;
-        }
-    }
-
-    // 根据id查询
-    private static class GetStudentById extends AsyncTask<Integer, Void, Void> {
-        private StudentDao dao;
-
-        public GetStudentById(StudentDao studentDao) {
-            dao = studentDao;
-        }
-
-        @Override
-        public Void doInBackground(Integer... ids){
-            Student student = dao.getStudentById(ids[0]);
-            System.out.println(student.toString());
-            return null;
-        }
-    }
-}
-```
-
-使用
-
-```java
-package com.example.qmui;
-
-import androidx.appcompat.app.AppCompatActivity;
-
-import android.os.Bundle;
-import android.view.View;
-
-
-public class MainActivity extends AppCompatActivity {
-    private DBEngine db;
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-
-        db = new DBEngine(this);
-    }
-
-    // 查询
-    public void handle1(View view) {
-        db.getAllStudent();
-    }
-
-    // 删除
-    public void handle2(View view) {
-        Student student = new Student(null, 0);
-        student.setId(1);
-        // 删除id为1的数据
-        db.deleteStudents(student);
-    }
-
-    // 全部删除
-    public void handle3(View view) {
-        db.deleteAllStudents();
-    }
-
-    // 修改
-    public void handle4(View view) {
-        Student student = new Student("尼古拉斯-张三", 999);
-        // 修改id为1的数据
-        student.setId(1);
-        db.UpdateStudents(student);
-    }
-
-    // 插入
-    public void handle5(View view) {
-        Student student1 = new Student("张三", 18);
-        Student student2 = new Student("李四", 28);
-        Student student3 = new Student("王五", 38);
-        db.insertStudents(student1, student2, student3);
-    }
-
-    // 根据id查询
-    public void handle6(View view) {
-        db.getStudentById(1);
-    }
-}
-```
-
-AsyncTask类被弃用后，Android给出了两个替代的建议：
-
-- `java.util.concurrent`包下的相关类, 如[Executor](https://links.jianshu.com/go?to=https%3A%2F%2Fdeveloper.android.com%2Freference%2Fjava%2Futil%2Fconcurrent%2FExecutor)，[ThreadPoolExecutor](https://links.jianshu.com/go?to=https%3A%2F%2Fdeveloper.android.com%2Freference%2Fjava%2Futil%2Fconcurrent%2FThreadPoolExecutor)，[FutureTask](https://links.jianshu.com/go?to=https%3A%2F%2Fdeveloper.android.com%2Freference%2Fjava%2Futil%2Fconcurrent%2FFutureTask)
-
-- **kotlin**就使用**协程 - [Coroutines](https://links.jianshu.com/go?to=https%3A%2F%2Fdeveloper.android.com%2Fkotlin%2Fcoroutines)**

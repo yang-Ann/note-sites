@@ -136,6 +136,35 @@ electron_mirror=https://npm.taobao.org/mirrors/electron/
 
 > `cnpm`**不生成 lock 文件, 也不会识别项目中的lock文件**，如果是多人开发，建议使用npm或者其他包管理工具安装插件
 
+### 其他资源镜像
+
+配置到`.npmrc`中
+
+```sh
+# https://github.com/cnpm/binary-mirror-config/blob/master/package.json#L53
+NODEJS_ORG_MIRROR="https://cdn.npmmirror.com/binaries/node"
+NVM_NODEJS_ORG_MIRROR="https://cdn.npmmirror.com/binaries/node"
+PHANTOMJS_CDNURL="https://cdn.npmmirror.com/binaries/phantomjs"
+CHROMEDRIVER_CDNURL="https://cdn.npmmirror.com/binaries/chromedriver"
+OPERADRIVER_CDNURL="https://cdn.npmmirror.com/binaries/operadriver"
+ELECTRON_MIRROR="https://cdn.npmmirror.com/binaries/electron/"
+ELECTRON_BUILDER_BINARIES_MIRROR="https://cdn.npmmirror.com/binaries/electron-builder-binaries/"
+SASS_BINARY_SITE="https://cdn.npmmirror.com/binaries/node-sass"
+SWC_BINARY_SITE="https://cdn.npmmirror.com/binaries/node-swc"
+NWJS_URLBASE="https://cdn.npmmirror.com/binaries/nwjs/v"
+PUPPETEER_DOWNLOAD_HOST="https://cdn.npmmirror.com/binaries"
+SENTRYCLI_CDNURL="https://cdn.npmmirror.com/binaries/sentry-cli"
+SAUCECTL_INSTALL_BINARY_MIRROR="https://cdn.npmmirror.com/binaries/saucectl"
+npm_config_sharp_binary_host="https://cdn.npmmirror.com/binaries/sharp"
+npm_config_sharp_libvips_binary_host="https://cdn.npmmirror.com/binaries/sharp-libvips"
+npm_config_robotjs_binary_host="https://cdn.npmmirror.com/binaries/robotj"
+
+# For Cypress >=10.6.0, https://docs.cypress.io/guides/references/changelog#10-6-0
+CYPRESS_DOWNLOAD_PATH_TEMPLATE='https://cdn.npmmirror.com/binaries/cypress/${version}/${platform}-${arch}/cypress.zip'
+```
+
+
+
 ## CMD窗口
 
 ### 常用的命令
