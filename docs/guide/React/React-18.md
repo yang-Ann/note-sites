@@ -1137,10 +1137,6 @@ function useReducer(
 
 **`useReducer`的参数有三个, 如下:** 
 
-
-
-`useReducer`接收的参数列表:
-
 -   `reducer`: 一个函数, 用于操作`state`, 第一个参数为最新的`state`, 第二个参数一般叫`active`是一个对象, 这个对象会定义一个`type`去判断执行的操作, 返回一个新的`state`
 -   `initialState`: `state`的初始值
 -   `init`:一个可选的函数, 接收`initialState`作为参数, 可以用来初始化比较复杂的`initialState`值, 返回一个新的`initialState`代替默认值
@@ -1223,3 +1219,265 @@ export default App;
 
 >   需要注意的是在**开启了严格模式**, 即使用了`React.StrictMode`标签包裹了根标签(`App`)时, 会使`dispatch`函数调用**两次**
 
+## react-redux
+
+[React-Reduc](https://redux.js.org/introduction/getting-started)状态管理, 安装依赖
+
+```sh
+yarn add @reduxjs/toolkit redux
+```
+
+定义状态`src/store/slices/counterRedux.ts`:
+
+```tsx
+import { createSlice } from "@reduxjs/toolkit";
+import type { PayloadAction } from "@reduxjs/toolkit";
+
+const counterSlice = createSlice({
+  name: "count", // 名称
+  initialState: { // 初始化状态
+    msg: "hello redux"
+  },
+  reducers: { // 修改状态的方法
+    setMsg: (state, action: PayloadAction<string>) => {
+      console.log("action: ", action);
+      state.msg = action.payload;
+    },
+  }
+});
+
+const { setMsg } = counterSlice.actions;
+
+// 暴露相关的状态和方法
+export {
+  counterSlice,
+  setMsg
+}
+```
+
+管理状态`src/store/index.ts`: 
+
+```tsx
+import { configureStore } from "@reduxjs/toolkit";
+import { counterSlice } from "@/store/slices/counterRedux";
+
+const store = configureStore({
+  reducer: { // 注册
+    counter: counterSlice.reducer
+  },
+  devTools: true
+});
+
+// 这里获取类型
+export type RootState = ReturnType<typeof store.getState>;
+
+export default store;
+```
+
+`App.tsx`使用
+
+```tsx
+import { StrictMode } from "react";
+import Count from "@/components/Count";
+
+import { Provider } from "react-redux";
+import store from "@/store/index";
+import TestRedux from "@/components/TestRedux";
+
+function App() {
+	
+	return (
+		<StrictMode>
+			{/* 使用 Provider 标签包裹所有的组件(子组件都可以使用 reduce) store 就是指定状态 */}
+			<Provider store={store}> 
+				<div style={{display: "flex"}}>
+					<Count/>
+					<TestRedux/>
+				</div>
+			</Provider>
+		</StrictMode>
+	);
+}
+
+export default App;
+```
+
+组件中使用:
+
+```tsx
+import { useSelector, useDispatch } from "react-redux";
+import { setMsg } from "@/store/slices/counterRedux";
+import type { RootState } from "@/store";
+
+const TestRedux = () => {
+  // 获取到全局状态
+  const { counter } = useSelector((state: RootState) => state);
+  // 派发操作
+  const dispath = useDispatch();
+  
+  return (
+    <div className="wrap">
+      {/* 可以直接获取全局状态 */}
+      <p>{counter.msg}</p>
+      <input 
+        type="text" 
+        value={counter.msg} 
+        // 派发操作
+        onInput={(e) => dispath(setMsg((e.target as HTMLInputElement).value))}
+      />
+    </div>
+  )
+};
+
+export default TestRedux;
+```
+
+## react-router
+
+[react-router](https://reactrouter.com/en/main)是路由操作库, 安装依赖
+
+```sh
+yarn add react-router-dom
+```
+
+声明对应的路由`src/router/index.tsx`:
+
+```tsx
+import type { RouteObject } from "react-router-dom";
+import Count from "@/components/Count";
+import TestRedux from "@/components/TestRedux";
+import NotFound from "@/components/NotFound";
+
+const routes: RouteObject[] = [
+  {
+    path: "/",
+    element: <Count />
+  },
+  {
+    path: "/count",
+    element: <Count />
+  },
+  {
+    path: "/testRedux",
+    element: <TestRedux />
+  },
+  {
+    path: "*",
+    element: <NotFound />
+  }
+];
+
+export default routes;
+```
+
+组件内使用路由:
+
+```tsx
+import routes from "@/router/index";
+import { useRoutes, useParams, useResolvedPath, Link } from "react-router-dom";
+
+const Router = () => {
+  const element = useRoutes(routes);
+  console.log("当前路由组件", element);
+
+  const params = useParams();
+  console.log("当前路由的参数: ", params);
+
+  const path = useResolvedPath(params);
+  console.log("当前路由的路径: ", path);
+  
+  return (
+    <div>{element}</div>
+    <div>
+      {/* 等价于 vue 的 router-link */}
+      <Link to="/testRedux">TestRedux</Link>
+      &nbsp;
+      <Link to="/count">Count</Link>
+    </div>
+  );
+};
+export default Router;
+```
+
+`App.tsx`定义路由:
+
+```tsx
+import { StrictMode } from "react";
+import { BrowserRouter } from "react-router-dom";
+import Router from "@/components/Router";
+
+function App() {
+  return (
+    <StrictMode>
+      {/* BrowserRouter 组件, 内部可以定义路由 */}
+      <BrowserRouter>
+        <Router />
+      </BrowserRouter>
+    </StrictMode>
+  );
+}
+
+export default App;
+```
+
+### 在非组件的环境下使用路由
+
+`Hook`是不能在非组件的环境下使用的, 比如: `axios`的拦截器中, 这时候可以自己封装一个`history`, 如下:
+
+```ts
+// src/hook/useHistory.ts
+
+import { createBrowserHistory } from "history";
+ 
+export default () => {
+  return createBrowserHistory();
+}
+```
+
+创建`customRouter`用来代替`Router`, 如下: 
+
+```tsx
+const CustomRouter = ({ history, ...props }) => {
+	const [state, setState] = useState({
+		action: history.action,
+		location: history.location
+	});
+
+	useLayoutEffect(() => history.listen(setState), [history]);
+
+	return (
+		<Router
+			{...props}
+			location={state.location}
+			navigationType={state.action}
+			navigator={history}
+		/>
+	);
+};
+```
+
+使用路由: 
+
+```tsx
+// <Router history={history}>
+<CustomRouter history={history}> 
+  {/* 路由组件... */}
+</CustomRouter>;
+{/* </Router> */}
+```
+
+非组件页面使用
+
+```ts
+import useHistory from  "@/hook/useHistory.ts";
+const history = useHistory();
+
+//token过期
+if (code === 401) {
+  // 删除 token
+
+  // 跳转到登陆页面
+  // window.location.href = "/login";
+  history.push('/')
+}
+```

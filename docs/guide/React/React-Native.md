@@ -48,12 +48,28 @@ npx react-native init projectName --template react-native-template-typescript
 [核心组件和API](https://reactnative.cn/docs/next/components-and-apis)
 
 -   文本必须放到[`Text`](https://reactnative.cn/docs/next/text)组件中, 相当于是WEB里的`span`
+
 -   文本输入使用[`TextInput`](https://reactnative.cn/docs/next/textinput)([`secureTextEntry`](https://reactnative.cn/docs/next/textinput#securetextentry)属性设置是否隐藏输入内容)
+
 -   布局使用[`View`](https://reactnative.cn/docs/next/view)组件, 相当于是WEB里的`div`
--   图片使用[`Image`](https://reactnative.cn/docs/next/image)组件
+
+-   图片使用[`Image`](https://reactnative.cn/docs/next/image)组件, `resizeMode`属性设置填充模式
+
 -   [`ScrollView`](https://reactnative.cn/docs/next/using-a-scrollview)元素用于滚动视图
+
 -   [长列表](https://reactnative.cn/docs/next/using-a-listview)使用[`FlatList`](https://reactnative.cn/docs/next/flatlist)和[`SectionList`](https://reactnative.cn/docs/next/sectionlist)
+
 -   loading使用[`ActivityIndicator`](https://reactnative.cn/docs/next/activityindicator)组件
+
+-   组件的点击事件不能只能绑定给`View`组件, 要使任何元素触发触摸/单击事件, 必须使用[`TouchableOpacity`](https://reactnative.cn/docs/next/touchableopacity), [`TouchableWithoutFeedback`](https://reactnative.cn/docs/next/touchablewithoutfeedback), [`TouchableNativeFeedback`](https://reactnative.cn/docs/touchablenativefeedback#background)或[`TouchableHighlight`](https://reactnative.cn/docs/next/touchablehighlight)其中一个组件, 进行包裹(点击时会有对应的触摸反馈), 然后绑定`onPress`事件即可:
+
+    ```tsx
+    import { View, Text, TouchableOpacity } from "react-native";
+    <TouchableOpacity onPress={() => console.log("onPress")}>
+      <View>View</View>
+      <Text>Text</Text>
+    </TouchableOpacity>
+    ```
 
 ## 样式
 
@@ -110,7 +126,7 @@ const styles = StyleSheet.create({
 
 ### 弹性(Flex)宽高
 
-在React Native中可以使用`flex`布局来让子组件动态地扩张或收缩, 一般而言我们会使用`flex: 1`来指定某个组件扩张以撑满所有剩余的空间, 子组件也可以指定`flex: n`来根据比例的平分父容器的大小
+在React Native中可以使用`flex`布局来让**子组件**动态地扩张或收缩, 一般而言我们会使用`flex: 1`来指定某个组件扩张以撑满所有剩余的空间, 子组件也可以指定`flex: n`来根据比例的平分**父容器**的大小
 
 ## 布局
 

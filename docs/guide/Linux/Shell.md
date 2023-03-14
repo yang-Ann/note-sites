@@ -116,8 +116,6 @@ cat > file.txt <<EOF
 EOF
 ```
 
-
-
 ## 打印输出
 
 ### echo

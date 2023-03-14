@@ -74,8 +74,8 @@ const pageMessageUrl = "body > div.site-content > div.ui.container > div > div.p
     writeOperInfo(`click "更新"`);
     await page.getByText("更新", { exact: true }).click();
 
-    writeOperInfo(`waitForTimeout 60000`);
-    await page.waitForTimeout(60000);
+    writeOperInfo(`waitForTimeout 80000`);
+    await page.waitForTimeout(80000);
 
     writeOperInfo(`等待部署完成 url 重新出现: ${pageMessageUrl}`);
     await page.waitForSelector(pageMessageUrl, { timeout: 30000 });

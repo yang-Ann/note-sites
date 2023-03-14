@@ -5920,13 +5920,35 @@ while (result = re.exec("123 456")) {
    ```
 
    `Array.from()`方法还可以接受第二个参数, 
-   作用类似于数组的`map`方法, 用来对每个元素进行处理, 将处理后的值放入返回的数组, 利用这个特点可轻松实现二维数组的初始化: 
+   作用类似于数组的`map`方法, 用来对每个元素进行处理, 将处理后的值放入返回的数组, 利用这个特点可轻松实现数组的快速初始化: 
+
+   ```js
+   const DATA = Array.from({ length: 10 }, (_, i) => {
+     return {
+       name: `名称${i + 1}`,
+       age: `${i + 10}`,
+     }
+   });
+   
+   console.log(DATA);
+   // 0: {name: '名称1', age: '10'}
+   // 1: {name: '名称2', age: '11'}
+   // 2: {name: '名称3', age: '12'}
+   // 3: {name: '名称4', age: '13'}
+   // 4: {name: '名称5', age: '14'}
+   // 5: {name: '名称6', age: '15'}
+   // 6: {name: '名称7', age: '16'}
+   // 7: {name: '名称8', age: '17'}
+   // 8: {name: '名称9', age: '18'}
+   // 9: {name: '名称10', age: '19'}
+   ```
+
+   二维数组的初始化: 
 
    ```js
    const WIDTH = 10;
    const HEIGHT = 10;
    
-   // 对象给定 length 属性可以模拟对应长度的数组
    const grid = Array.from({ length: WIDTH }, (_, x) => {
      return Array.from({ length: HEIGHT }, (_, y) => x * 10 + y)
    });

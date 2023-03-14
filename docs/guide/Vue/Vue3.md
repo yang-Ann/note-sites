@@ -2228,6 +2228,21 @@ export default defineComponent({
 </script>
 ```
 
+### 函数式写法
+
+模板引用`ref`还可以是函数式的写法, 更加的灵活: 
+
+```vue
+<template>
+  <!-- 函数式写法 -->
+  <div :ref="(el) => testRef = el">test DOM</div>
+
+	<!-- 收集多个ref -->
+  <div :ref="(el) => list.push(el)">list1</div>
+	<div :ref="(el) => list.push(el)">list2</div>
+</template>
+```
+
 ## emit 和 emits
 
 Vue 3 新增了一个`emits`选项，和现有的`props`选项类似, 这个选项可以用来定义一个组件可以向其父组件触发的事件
