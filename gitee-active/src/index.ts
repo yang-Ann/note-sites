@@ -19,7 +19,7 @@ let browser: Browser | null = null;
 let page: Page | null = null;
 let context: BrowserContext | null = null;
 
-const pageMessageUrl = "body > div.site-content > div.ui.container > div > div.pages_message > div > p > a";
+const pageMessageUrl = "https://ann-yang.gitee.io/note-sites";
 
 (async () => {
   try {
@@ -74,27 +74,30 @@ const pageMessageUrl = "body > div.site-content > div.ui.container > div > div.p
     writeOperInfo(`click "更新"`);
     await page.getByText("更新", { exact: true }).click();
 
-    writeOperInfo(`waitForTimeout 80000`);
-    await page.waitForTimeout(80000);
+    writeOperInfo(`waitForTimeout 1000`);
+    await page.waitForTimeout(1000);
 
     writeOperInfo(`等待部署完成 url 重新出现: ${pageMessageUrl}`);
-    await page.waitForSelector(pageMessageUrl, { timeout: 30000 });
+    await page.getByRole("link", { name: pageMessageUrl }).waitFor({
+      state: "visible",
+      timeout: 1000 * 60 * 10, // 最长等待10分钟
+    })
 
     writeOperInfo("已完成部署, 关闭浏览器");
     const numTime = Date.now() - startTime;
-    writeOperInfo(`总用时: ${numTime.toFixed(2)}ms` + "\r\n".repeat(3));
+    writeOperInfo(`总用时: ${numTime.toFixed(2)}ms`);
 
     await browser.close();
     await context.close();
 
   } catch (error: unknown) {
     if (error instanceof Error) {  
-      writeOperInfo(`发生错误, 请查看 ${errTrackPath}` + "\r\n".repeat(3));
+      writeOperInfo(`发生错误, 请查看 ${errTrackPath}`);
       // 报错图片路径
       const imgErrPath = `${imgErrDir + sep + Date.now()}.png`;
       // 记录错误栈信息
       const d = transformationTime("YYYY-MM-DD hh:mm:ss");
-      fs.writeFileSync(errTrackPath, `${d} >>> ${imgErrPath}\r\n${error.stack}${"\r\n".repeat(3)}`);
+      fs.writeFileSync(errTrackPath, `${d} >>> ${imgErrPath}\r\n${error.stack}`);
       
       // 保存网页为图片
       if (page) await page.screenshot({ path: imgErrPath });

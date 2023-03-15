@@ -73,10 +73,13 @@ const createAddBtn = () => {
 
 
 const init = () => {
-  createWrap();
-  const [addBtn, btnWrap] = createAddBtn();
-  btnWrap.appendChild(addBtn);
-  
+  if (/Android|webOS|iPhone|iPad|iPod|BlackBerry/i.test(navigator.userAgent)) {
+    console.log("移动端不添加目录按钮 -> ", navigator.userAgent);
+  } else {
+    createWrap();
+    const [addBtn, btnWrap] = createAddBtn();
+    btnWrap.appendChild(addBtn);
+  }
 }
 
 

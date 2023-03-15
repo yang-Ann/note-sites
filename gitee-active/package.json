@@ -19,7 +19,7 @@
     "play:install": "playwright install",
     "eslint": "eslint src --ext .ts",
     "test": "playwright test --debug",
-    "codegen": "playwright codegen",
+    "codegen": "playwright codegen https://gitee.com/login",
     "help": "playwright --help"
   },
   "devDependencies": {
