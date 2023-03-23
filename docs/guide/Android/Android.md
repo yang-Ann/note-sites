@@ -175,6 +175,21 @@ Android 采用`android.util.Log`工具类打印日志，它将各类日志划分
 
 Android Studio和模拟器或者手机是通过`adb`这个工具来通信的, 这个工具一般是在Android SDK目录下的`platform-tools`目录下面 
 
+## gradle
+
+[gradle](https://gradle.org/#close-notification)
+
+### gradle下载配置镜像
+
+```groovy
+gradle/gradle-wrapper.properties
+
+// 修改为国内腾讯镜像即可(https://mirrors.cloud.tencent.com/)
+distributionUrl=https\://mirrors.cloud.tencent.com/gradle/gradle-7.5-all.zip
+```
+
+
+
 ## 常用XML控件
 
 Andorid的视图层是使用`XML`编写而且是命令式编写的, 类比于前端的`JQuery`, 官方在推出声明时Ui就是
@@ -523,9 +538,7 @@ import androidx.appcompat.app.AppCompatActivity;
 // 让当前类实现 View.OnClickListener 这个接口然后重写 onClick 即可处理 onClick 事件
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     // 保存控件对象
-    private Button btn1;
-    private Button btn2;
-    private Button btn3;
+    private Button btn1, btn2, btn3;
     private TextView text;
 
     @Override

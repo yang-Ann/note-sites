@@ -11,7 +11,9 @@ tags:
 
 # React-18
 
-[React官网](https://react.docschina.org/)
+[React官网](https://react.dev/)
+
+[React官网(中)](https://react.docschina.org/)
 
 ## 命令式编写
 
@@ -378,6 +380,8 @@ function App() {
 export default App;
 ```
 
+>   `CSSModule`是可以使用`less`或者是`sass`的
+
 ## Fragments
 
 `Fragments`有点类似于: `Vue`中的`template`或者微信小程序的`block`, 实际不会渲染, 都是为了避免多层嵌套, 如下:
@@ -742,13 +746,56 @@ const Child = () => {
 export default Child;
 ```
 
+## React.memo
 
+当组件`props`和`state`发生改变时, **当前组件以及其子孙组件会重新渲染**, 但是有一些组件（纯文本组件）是不需要重新渲染的，这种不需要的组件被重新渲染会影响整体的渲染性能, 在函数式组件中使用`React.memo`, 而在类式组件中使用`PureComponent`, 如下:
 
+```tsx
+import React, { StrictMode, useState } from "react";
 
+// 子组件
+function Child() {
+  console.log("child render");
+  return <div>Child</div>;
+}
+
+// 使用 React.memo 之后的 子组件
+// eslint-disable-next-line react/display-name
+const MemoChild = React.memo(() => {
+  console.log("MemoChild render");
+  return <div>MemoChild</div>;
+});
+
+function App() {
+  const [count, setCount] = useState(0);
+  console.log("app render");
+
+  return (
+    <StrictMode>
+      {/* 更新父组件的状态 */}
+      <button onClick={() => {
+        console.log("app update count");
+        setCount(count + 1);
+      }}>count {count}</button>
+      
+      <Child/>
+      <MemoChild />
+    </StrictMode>
+  );
+}
+
+export default App;
+```
+
+观察控制台, 首次`MemoChild`会渲染, 后续的`App`组件的state更新都不会更新, 如下: 
+
+![image-20230323210310692](./images/image-20230323210310692.png) 
 
 ## Hook
 
 [React Hook掘金教程](https://juejin.cn/post/6844903985338400782)
+
+[React Hooks 使用大全](https://juejin.cn/post/7118937685653192735)
 
 React 一直都提倡使用**函数组件**, 但是有时候需要使用 `state` 或者其他一些功能时，只能使用**类组件**，因为函数组件没有实例，没有生命周期函数，只有`class` 组件才有
 
@@ -761,6 +808,8 @@ Hooks 是 React 16.8 新增的特性，它可以让你在编写函数组件中�
 -   只能在**函数内部的最外层**调用 `Hook`, 不要在循环, 条件判断或者子函数中调用
 -   只能在 React 的**函数组件**或**自定义Hook**中调用 `Hook`, 不要在其他 JavaScript 函数中调用
 -   其它注意事项见[Invalid Hook Call Warning](https://reactjs.org/warnings/invalid-hook-call-warning.html)
+
+>   可以使用官方的[Eslint](https://react.docschina.org/docs/hooks-rules.html#eslint-plugin)插件`eslint-plugin-react-hooks`来约束Hooks使用规则
 
 ### useState
 
@@ -1219,6 +1268,117 @@ export default App;
 
 >   需要注意的是在**开启了严格模式**, 即使用了`React.StrictMode`标签包裹了根标签(`App`)时, 会使`dispatch`函数调用**两次**
 
+### useContext
+
+[useContext](https://react.dev/reference/react/useContext)
+
+### useMemo
+
+`useMemo`可以在函数组件 `render` 上下文中同步执行一个函数逻辑, 这个函数的返回值可以作为一个新的状态缓存起来, 常用于缓存需要进行大量复杂计算的值, 语法如下:
+
+```tsx
+// create 为一个函数, 函数的返回值作为缓存值
+// deps 为一个数组, 存放当前 useMemo 的依赖项, 当依赖项改变时会得到新的缓存值
+// cacheSomething 返回值就是缓存的值
+const cacheSomething = useMemo(create, deps)
+```
+
+基本使用
+
+```tsx
+import { useState, useMemo } from "react";
+
+
+function App() {
+  const [count, setCount] = useState(0);
+
+  const memoCount = useMemo(() => {
+    // 经过大量计算
+    return count * 100;
+  }, [count]);
+
+  return (
+    <>
+      <p>count {count}</p>
+      <p>memoCount {memoCount}</p>
+      <button onClick={() => setCount(count + 1)}>
+        click me
+      </button>
+    </>
+  );
+}
+```
+
+让子组件减少`render`, 作用类似于`React.Memo`
+
+```tsx
+import { useState, useMemo } from "react";
+
+function App() {
+  const [count, setCount] = useState(0);
+
+  const memoChild = useMemo(() => Child(), []);
+
+  return (
+    <>
+      {/* <Child /> */}
+      {memoChild}
+      <p>count {count}</p>
+      <button onClick={() => setCount(count + 1)}>click me</button>
+    </>
+  );
+}
+
+// 子组件
+function Child() {
+  console.log("Child render")
+  return <div>Child</div>;
+}
+
+export default App;
+```
+
+### useCallback
+
+`useCallback`和`useMemo`接受到的参数是一样的, 都是在依赖项变量之后才执行函数, 返回缓存的值, 区别在于`useMemo`返回的是**函数运行的结果**，`useCallback`返回的是**函数本身**, `useCallback`经常被滥用, 其正确的应用场景是**在往子组件传入了一个函数并且子组件被`React.momo`缓存了的时候使用, 如果是普通的函数即使是被`React.momo`缓存了的子组件也会更新**: 
+
+```tsx
+import React, { StrictMode, useCallback, useState } from "react";
+
+type ChildProp = { func: (msg: string) => void };
+// 使用 React.memo 缓存的子组件
+// eslint-disable-next-line react/display-name
+const MemoChild = React.memo((prop: ChildProp) => {
+  prop.func("MemoChild render");
+  return <div>MemoChild</div>;
+});
+
+function App() {
+  const [count, setCount] = useState(0);
+  console.log("app render");
+
+  const myLog = (msg: string) => console.log(msg);
+  const ucb = useCallback(myLog, []);
+
+  return (
+    <StrictMode>
+      {/* 更新父组件的状态 */}
+      <button onClick={() => {
+        console.log("app update count");
+        setCount(count + 1);
+      }}>count {count}</button>
+      
+      <MemoChild func={ucb}/>
+
+      {/* 使用普通的函数, 也会重新渲染 */}
+      {/* <MemoChild func={myLog}/> */}
+    </StrictMode>
+  );
+}
+
+export default App;
+```
+
 ## react-redux
 
 [React-Reduc](https://redux.js.org/introduction/getting-started)状态管理, 安装依赖
@@ -1233,12 +1393,16 @@ yarn add @reduxjs/toolkit redux
 import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
 
+type CountStoreType = {
+    msg: string;
+}
+
 const counterSlice = createSlice({
   name: "count", // 名称
-  initialState: { // 初始化状态
+  initialState: (): CountStoreType => { // 初始化状态(也可以是一个对象)
     msg: "hello redux"
   },
-  reducers: { // 修改状态的方法
+  reducers: { // 修改状态的方法, PayloadAction<T>, T 的类型就是 action.payload 的类型
     setMsg: (state, action: PayloadAction<string>) => {
       console.log("action: ", action);
       state.msg = action.payload;
@@ -1268,7 +1432,7 @@ const store = configureStore({
   devTools: true
 });
 
-// 这里获取类型
+// 这里获取state的类型并暴露
 export type RootState = ReturnType<typeof store.getState>;
 
 export default store;
@@ -1310,8 +1474,8 @@ import { setMsg } from "@/store/slices/counterRedux";
 import type { RootState } from "@/store";
 
 const TestRedux = () => {
-  // 获取到全局状态
-  const { counter } = useSelector((state: RootState) => state);
+  // 获取到全局状态(useSelector的参数函数返回什么就可以拿到什么)
+  const counter = useSelector((state: RootState) => state.counter);
   // 派发操作
   const dispath = useDispatch();
   
@@ -1322,7 +1486,7 @@ const TestRedux = () => {
       <input 
         type="text" 
         value={counter.msg} 
-        // 派发操作
+        // 派发操作, 例子: dispath(setMsg("要修改的值"))
         onInput={(e) => dispath(setMsg((e.target as HTMLInputElement).value))}
       />
     </div>

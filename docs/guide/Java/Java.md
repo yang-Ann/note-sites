@@ -6411,8 +6411,8 @@ public class LearnFile01 {
 
 File类下有两个常用常量:
 
-- static final String pathSeparator: 系统相关的路径分隔符
-- static final String separator: 系统相关的默认名称分隔符
+- static final String `pathSeparator`: 系统相关的路径分隔符
+- static final String `separator`: 系统相关的默认名称分隔符
 
 ```java
 System.out.println(File.pathSeparator); // ;

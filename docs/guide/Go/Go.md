@@ -19,6 +19,8 @@ tags:
 
 [标准库(中文)](https://studygolang.com/pkgdoc)
 
+[示例教程](https://gobyexample.com/)
+
 `Go` 是 Google 开发的一种编译型、并发型，并具有垃圾回收功能的编程语言
 
 ## 环境搭建
@@ -35,17 +37,14 @@ tags:
 -   如果碰到下载卡住了, 可以更换国内代理:
 
     ```sh
-    # 查看 go 的所有配置
+    # 查看 go 的所有配置, go 的配置都是通过环境变量进行操作的
     go env
-    
-    # 使用 go mod 模式
-    go env -w GO111MODULE=on
     
     # go mod 更换国内代理
     go env -w GOPROXY=https://goproxy.cn,direct
     ```
 
-## 运行文件
+## 命令行使用
 
 新建`src/main.go`文件
 
@@ -81,6 +80,59 @@ go build -o newMain.exe
 
 # 将编译结果移动到`$GOPATH/bin`目录下面
 go install main.go
+```
+
+### build指定图标
+
+`go`在执行`build`时生成的可执行文件是默认是不带图标, 设置自定义图标的步骤如下:
+
+1.   安装`rsrc`
+
+```sh
+go install github.com/akavel/rsrc@latest
+```
+
+2.   在`main.go`的同级目录下创建`main.manifes`
+
+```xml
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
+    <assemblyIdentity version="1.0.0.0" processorArchitecture="*" name="SomeFunkyNameHere" type="win32"/>
+    <dependency>
+        <dependentAssembly>
+            <assemblyIdentity type="win32" name="Microsoft.Windows.Common-Controls" version="6.0.0.0" processorArchitecture="*" publicKeyToken="6595b64144ccf1df" language="*"/>
+        </dependentAssembly>
+    </dependency>
+    <application xmlns="urn:schemas-microsoft-com:asm.v3">
+        <windowsSettings>
+            <dpiAwareness xmlns="http://schemas.microsoft.com/SMI/2016/WindowsSettings">PerMonitorV2, PerMonitor</dpiAwareness>
+            <dpiAware xmlns="http://schemas.microsoft.com/SMI/2005/WindowsSettings">True</dpiAware>
+        </windowsSettings>
+    </application>
+</assembly>
+```
+
+3.   生成`ico`图标(网上有很多可以图片直接生成的[网站](https://ico.nyaasu.top/)), 将生成的`main.ico`图标放到`main.go`同级目录中
+
+4.   生成`main.syso`, 命令如下: 
+
+```sh
+# 使用 main.manifest 配置, 将 main.ico 生成 main.syso
+rsrc -manifest main.manifest -ico main.ico -o main.syso
+```
+
+>   `main.syso`生成后, 如果不修改ico图标, 不需要再执行上面的命令, 只要`main.syso`与`main.go`在同级目录即可, 如果修改ico图标了则需要再次生成
+
+5.   打包Go二进制
+
+```sh
+# 打包
+go build
+# 打包并重命名
+go build -o test.exe
+
+# 执行时去掉cmd窗口
+go build -ldflags="-H windowsgui  -w -s"
 ```
 
 ## 控制台打印
@@ -658,7 +710,7 @@ go的包都是存放在[pkg.go.dev](https://pkg.go.dev/)
 # 生成 go.mod 文件
 go mod init projectName
 
-# 安装指定的包(安装到 go.mod)
+# 安装指定的包到 go.mod, 注意这依赖于 git
 go get github.com/fatih/color
 
 # 全局安装命令
@@ -2586,6 +2638,33 @@ func test(e error) {
 
 >   因为`Go`没有构造函数的概念, 所以以`new`或者`new`开头加一个类型的函数, 可以理解为是某个类型的构造函数
 
+### 结构体继承
+
+Go中也有类似继承的机制
+
+```go
+// 通用结构体
+type HttpSuccess struct {
+	Code    int               `json:"code"`
+	Success bool              `json:"success"`
+	Msg     string            `json:"msg"`
+	Data    map[string]string `json:"data"`
+}
+
+
+type MenuResponse struct {
+	*HttpSuccess // 使用 *继承的机构体, 即可
+	Data []map[string]string `json:"data"` // 这个会覆盖继承的字段类型
+	MenuData []string `json:"menuData"`
+}
+
+
+successRsp := &MenuResponse{}
+successRsp.MenuData = []string{"hello", "world"}
+```
+
+>   结构体的方法也会被继承下来
+
 ## 组合和转发
 
 ### 组合
@@ -2646,7 +2725,8 @@ func main() {
 		name:    "张三",
 		age:     18,
 		address: "广东省",
-		info:    info}
+		info:    info,
+  }
 
 	// 调用转发的方法
 	u.showUserInfo() // {height:180 weight:100}
@@ -2697,7 +2777,8 @@ func main() {
 		name:     "张三",
 		age:      18,
 		address:  "广东省",
-		UserInfo: info}
+		UserInfo: info,
+  }
 
 	// 可以直接调用 UserInfo 上的方法
 	u.showUserInfo() // {height:180 weight:100}
@@ -2903,7 +2984,22 @@ func (e MyError) Error() string {
 }
 ```
 
+`writeString`函数源码例子:
 
+```go
+func writeString(w io.Writer, s string) (n int, err error) {
+    // 内部定义一个接口
+    type stringWriter interface {
+        WriteString(string) (n int, err error)
+    }
+  
+    // 判断是否"实现"这个接口
+    if sw, ok := w.(stringWriter); ok {
+        return sw.WriteString(s) // 实现则调用对应的方法
+    }
+    return w.Write([]byte(s))
+}
+```
 
 ## 指针
 
@@ -4911,58 +5007,52 @@ func main() {
 主线程执行结束
 ```
 
-## build指定图标
+## 泛型
 
-`go`在执行`build`时生成的可执行文件是默认是不带图标, 设置自定义图标的步骤如下:
+Go在`1.18`版本开始才支持泛型
 
-1.   安装`rsrc`
+### 泛型类型参数语法
 
-```sh
-go install github.com/akavel/rsrc@latest
+Go的泛型类型参数语法如下:
+
+```
+[K, T constraint1, P constraint2]
 ```
 
-2.   在`main.go`的同级目录下创建`main.manifes`
+上面定义了一个类型参数列表，列表里可以包含一个或者多个类型参数
 
-```xml
-<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
-    <assemblyIdentity version="1.0.0.0" processorArchitecture="*" name="SomeFunkyNameHere" type="win32"/>
-    <dependency>
-        <dependentAssembly>
-            <assemblyIdentity type="win32" name="Microsoft.Windows.Common-Controls" version="6.0.0.0" processorArchitecture="*" publicKeyToken="6595b64144ccf1df" language="*"/>
-        </dependentAssembly>
-    </dependency>
-    <application xmlns="urn:schemas-microsoft-com:asm.v3">
-        <windowsSettings>
-            <dpiAwareness xmlns="http://schemas.microsoft.com/SMI/2016/WindowsSettings">PerMonitorV2, PerMonitor</dpiAwareness>
-            <dpiAware xmlns="http://schemas.microsoft.com/SMI/2005/WindowsSettings">True</dpiAware>
-        </windowsSettings>
-    </application>
-</assembly>
+`K`, `T`和`P`都是参数, `constraint1`和`constraint2`是类型限制(类似于`Java`中的接口或抽象类, `Rust`的类型约束), 类型参数列表使用方括号`[]`表示
+
+### 泛型的使用
+
+先看一个求两个数的最大值的例子:
+
+```go
+func intMax(a, b int) int {
+	if a > b {
+		return a
+	} else {
+		return b
+	}
+}
 ```
 
-3.   生成`ico`图标(网上有很多可以图片直接生成的[网站](https://ico.nyaasu.top/)), 将生成的`main.ico`图标放到`main.go`同级目录中
+上面这个例子的函数只能求`int`类型的最大值, 如果要求其他类型的最大值就不行了(`Go`中没有函数重载这个特性), 这时就可以使用泛型了, 如下:
 
-4.   生成`main.syso`, 命令如下: 
+```go
+func max(T constraints.Ordered) (a, b T) T {
+	if a > b {
+		return a
+	} else {
+		return b
+	}
+}
 
-```sh
-# 使用 main.manifest 配置, 将 main.ico 生成 main.syso
-rsrc -manifest main.manifest -ico main.ico -o main.syso
+// 调用泛型函数
+m := max[int](2, 3)
 ```
 
->   `main.syso`生成后, 如果不修改ico图标, 不需要再执行上面的命令, 只要`main.syso`与`main.go`在同级目录即可, 如果修改ico图标了则需要再次生成
-
-5.   打包Go二进制
-
-```sh
-# 打包
-go build
-# 打包并重命名
-go build -o test.exe
-
-# 执行时去掉cmd窗口
-go build -ldflags="-H windowsgui  -w -s"
-```
+TODO
 
 ## 常用标准库
 
@@ -5736,8 +5826,9 @@ func main() {
 
 	h := md5.New()
 	h.Write([]byte(s))
-	res := h.Sum(nil)
-	fmt.Printf("%v 加密为 md5: %x\n", s, res) // 使用 %x 格式动词
+	has := h.Sum(nil) // 追加哈希值
+  md5Str := fmt.Sprintf("%x", has) // 使用 %x 格式动词将 []byte 转成十六进制
+	fmt.Printf("%v 加密为 md5: %s\n", s, md5Str)
 	// hello world 加密为 md5: 5eb63bbbe01eeed093cb22bb8f5acdc3
 }
 ```
@@ -5757,8 +5848,9 @@ func main() {
 
 	h := sha256.New()
 	h.Write([]byte(s))
-	res := h.Sum(nil)
-	fmt.Printf("%v 加密为 sha256: %x\n", s, res) // 使用 %x 格式动词
+	has := h.Sum(nil) // 追加哈希值
+  sha256Str := fmt.Sprintf("%x", has) // 使用 %x 格式动词将 []byte 转成十六进制
+	fmt.Printf("%v 加密为 sha256: %s\n", s, sha256Str)
 	// hello world 加密为 sha256: b94d27b9934d3e08a52e52d7da7dabfac484efe37a5380ee9088f7ace2efcde9
 }
 ```
@@ -5818,4 +5910,128 @@ func main() {
 	2
 */
 ```
+
+## 网络请求
+
+可以使用`resty`库, 基本使用如下: 
+
+```go
+package main
+
+import (
+	"encoding/json"
+	"fmt"
+	"time"
+
+	"github.com/go-resty/resty/v2"
+)
+
+const LOGIN_URL = "https://www.xjfw.top/api/sys/auth/login"
+
+// 接口请求体数据(注意字段要大写并且指定转换为 json)
+type LoginBody struct {
+	CaptchaCode string `json:"captchaCode"`
+	Password    string `json:"password"`
+	Username    string `json:"username"`
+}
+
+// 响应结构体数据(注意字段要大写并且指定转换为 json)
+type HttpSuccess struct {
+	Code    int               `json:"code"`
+	Success bool              `json:"success"`
+	Msg     string            `json:"msg"`
+	Data    map[string]string `json:"data"`
+}
+
+func main() {
+  // 创建实例
+	client := resty.New()
+
+	// 设置实例超时时间
+	client.SetTimeout(30 * time.Minute)
+
+	// 请求重试操作见: https://github.com/go-resty/resty#retries
+
+	// 设置实例代理
+	// client.SetProxy("http://proxyserver:8888")
+
+  // 成功响应数据结构体
+	successRsp := &HttpSuccess{}
+  // 失败响应数据结构体
+	errorRsp := &HttpSuccess{}
+
+	resp, err := client.R().
+
+		// 添加请求头字段
+		SetHeader("Accept", "application/json").
+		// SetHeaders(map[string]string{
+		// 	"Content-Type": "application/json",
+		// 	"User-Agent": "My custom User Agent String",
+		// }).
+
+		// 添加 Authorization 请求头字段
+		// SetAuthToken("xxx").
+
+		// 添加 cookie
+		// SetCookie(&http.Cookie{}).
+    
+        // 添加 pathParam 参数
+        // SetPathParam("bizCode", bizCode).
+    
+		// 添加 params 参数
+		// SetQueryParam("id", "1").
+		// SetQueryParams(map[string]string { "name": "张三" }).
+
+		// 添加 FormData 参数
+		// SetFormData(map[string]string{ "access_token": "xxx" }).
+
+		// 添加 body 参数
+		SetBody(LoginBody{
+			CaptchaCode: "",
+			Password:    "0ded074c4189673a9f4b4456e1f2cbcd",
+			Username:    "admin",
+		}).
+		// SetBody(`"name": "张三"`).
+
+		// 将成功响应自动转换为 json
+		SetResult(successRsp).
+
+		// 将失败响应自动转换为 json
+		SetError(errorRsp).
+
+		// 发送 post 请求, 其他的请求方法则调用其他的请求方法
+		Post(LOGIN_URL)
+
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println("StatusCode", resp.StatusCode())
+	// fmt.Println("resp.Body", string(resp.Body()))
+
+	if successRsp.Code != 200 {
+		fmt.Println(successRsp.Msg)
+	} else {
+		bytes, err := json.MarshalIndent(successRsp, "", "  ")
+		if err != nil {
+			panic(err)
+		}
+		fmt.Println(string(bytes))
+	}
+}
+```
+
+## 第三方库
+
+汇总的资源可见[awesome-go](https://github.com/avelino/awesome-go)
+
+| 包名    | 源地址引用                       | 说明                                       |
+| ------- | -------------------------------- | ------------------------------------------ |
+| Survey  | github.com/AlecAivazis/survey/v2 | 命令行交互                                 |
+| go-sh   | github.com/codeskyblue/go-sh     | 执行shell命令                              |
+| color   | github.com/fatih/color           | 终端彩色输出                               |
+| copy    | github.com/otiai10/copy          | 递归复制目录                               |
+| wails   |                                  | 桌面开发框架(类比tauri)                    |
+| resty   | github.com/go-resty/resty/v2     | http网络请求                               |
+| goquery | github.com/PuerkitoBio/goquery   | 解析网页, 可以使用JQuery语法选择指定的元素 |
 
