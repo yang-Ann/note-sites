@@ -17,7 +17,7 @@ tags:
 
 [官方教程](https://docs.npmjs.com/getting-started/)
 
-[教程](http://nodejs.cn/learn/an-introduction-to-the-npm-package-manager)
+[npm cli](https://docs.npmjs.com/cli/v9/commands/)
 
 [阮一峰教程](http://www.ruanyifeng.com/blog/2016/10/npm_scripts.html )
 
@@ -136,6 +136,8 @@ electron_mirror=https://npm.taobao.org/mirrors/electron/
 
 > `cnpm`**不生成 lock 文件, 也不会识别项目中的lock文件**，如果是多人开发，建议使用npm或者其他包管理工具安装插件
 
+>   也可以使用[`nrm`](https://www.npmjs.com/package/nrm)来管理npm镜像配置
+
 ### 其他资源镜像
 
 配置到`.npmrc`中
@@ -162,8 +164,6 @@ npm_config_robotjs_binary_host="https://cdn.npmmirror.com/binaries/robotj"
 # For Cypress >=10.6.0, https://docs.cypress.io/guides/references/changelog#10-6-0
 CYPRESS_DOWNLOAD_PATH_TEMPLATE='https://cdn.npmmirror.com/binaries/cypress/${version}/${platform}-${arch}/cypress.zip'
 ```
-
-
 
 ## CMD窗口
 
@@ -478,6 +478,7 @@ npm adduser # 添加用户帐户
 npm login # 登录
 npm logout # 登出
 npm whoami # 查看当前登录用户
+npm version patch # 自动修改版本并 commit(支持很多的参数可见 npm version -h)
 npm publish # 发布
 npm unpublish [pkg]@[version] -f # 强制撤销
 
@@ -499,6 +500,14 @@ npm access ls-packages # 查看当前用户的组织
 -   命令行执行`npm create vite`会先去找`create-vite`这个包
 -   执行`npm exec create-vite `命令
 -   执行`create-vite`包里的`create-vite `命令(由`package.json`里的`bin`字段定义)
+
+## npm init
+
+[`init`](https://docs.npmjs.com/cli/v6/commands/npm-init#examples)命令如果后面添加了参数的话, 将转换为相应的`npx`操作, 如下所示
+
+-   `npm init foo` -> `npx create-foo`
+-   `npm init @usr/foo` -> `npx @usr/create-foo`
+-   `npm init @usr` -> `npx @usr/create`
 
 ## npm 实用包
 
@@ -582,6 +591,7 @@ npm access ls-packages # 查看当前用户的组织
 | figlet          | 生成基于 ASCII 的艺术字                            |
 | progress        | 进度条                                             |
 | update-notifier | 应用更新通知                                       |
+| which-pm-runs   | 检查当前使用的包管理器                             |
 
 ## nvm
 
@@ -762,6 +772,8 @@ pnpm init # 生成 package.json
 pnpm install xxx # 安装依赖
 
 pnpm run xxx # 运行 script 命令
+
+pnpm dlx create-react-app xxx # 效果类型与 npx
 
 pnpm config list # 查看配置
 

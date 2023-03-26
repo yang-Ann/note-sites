@@ -6,14 +6,13 @@ categories:
 tags:
  - CSS
 ---
-:::v-pre
-
+[[toc]]
 
 # CSS
 
+[MDN CSS](https://developer.mozilla.org/zh-CN/docs/Web/CSS)
 
-
-[[toc]]
+[jsbin](https://jsbin.com/?html,css,output)
 
 ## css选择器
 
@@ -514,6 +513,8 @@ transform 不会影响到页面的布局
 
 ## flex(弹性布局)
 
+[MDN Flex](https://developer.mozilla.org/zh-CN/docs/Web/CSS/CSS_Flexible_Box_Layout/Basic_Concepts_of_Flexbox)
+
 ```
 flexible Box 意为 弹性布局, 用来为盒状模型提供最大的灵活性, 任何一个容器都可以指定 flex 布局
 ```
@@ -675,9 +676,13 @@ align 开头的属性都是表示辅轴的(交叉轴)
 
 - 一个元素可以同时是弹性容器和弹性元素
 
-#### 弹性元素的样式
+#### gap
 
-##### flex-basis
+```
+设置行列的间距
+```
+
+#### flex-basis
 
 ```
 指定元素在主轴上的基础长度
@@ -693,7 +698,7 @@ align 开头的属性都是表示辅轴的(交叉轴)
     - 如果传递了一个具体的数值，则以该值为准(会修改弹性元素的宽高)
 ```
 
-##### flex
+#### flex
 
 ```
 可以设置弹性元素的简写属性
@@ -711,14 +716,14 @@ flex 可以设置弹性元素所有的三个样式,有规定的顺序要求，�
             none --> flex: 0 0 auto 弹性元素没有弹性
 ```
 
-##### order
+#### order
 
 ```
 决定弹性元素的排列顺序
 要每个弹性元素都设置才会生效(手动设置排列顺序值越小越靠前)
 ```
 
-##### align-seif
+#### align-seif
 
 ```
 用来单独覆盖当前弹性元素上的 align-items 辅轴空白空间的分布
@@ -727,7 +732,237 @@ flex 可以设置弹性元素所有的三个样式,有规定的顺序要求，�
 
 ## grid(网格布局)
 
-可以见[阮一峰 CSS Grid 网格布局教程](https://www.ruanyifeng.com/blog/2019/03/grid-layout-tutorial.html)
+[阮一峰 CSS Grid 网格布局教程](https://www.ruanyifeng.com/blog/2019/03/grid-layout-tutorial.html)
+
+[MDN Grid](https://developer.mozilla.org/zh-CN/docs/Web/CSS/CSS_Grid_Layout/Basic_Concepts_of_Grid_Layout)
+
+[jsbin grid](https://jsbin.com/kuzuvowixu/edit?html,css,output)
+
+使用`display: grid;`或`display: inline-grid;`就可以开启元素的网格布局
+
+### 容器属性
+
+当元素开启了网格布局, 内部的子元素就有了行(row)和列(column)的概念, 容器是属性都是有设置行和设置列的属性
+
+### grid-template-columns和grid-template-rows
+
+容器指定了网格布局以后，接着就要划分行和列。`grid-template-columns`属性定义每一列的列宽，`grid-template-rows`属性定义每一行的行高
+
+```css
+.container {
+  /* 开启网格布局 */
+  display: grid;
+  /* 一列占3个, 每个100px */
+  grid-template-columns: 100px 100px 100px;
+  /* 一行占3个, 每个100px */
+  grid-template-rows: 100px 100px 100px;
+}
+```
+
+![image-20230326172737828](./images/image-20230326172737828.png) 
+
+除了使用绝对单位，也可以使用百分比
+
+```css
+.container {
+  display: grid;
+  grid-template-columns: 33.33% 33.33% 33.33%;
+  grid-template-rows: 33.33% 33.33% 33.33%;
+}
+```
+
+### repeat()函数
+
+有时候, 重复写同样的值非常麻烦, 尤其网格很多时, 这时, 可以使用`repeat()`函数, 简化重复的值, 以上面的为例:
+
+```css
+.container {
+  display: grid;
+  /* 重复 3 次 33.33% 的大小 */
+  grid-template-columns: repeat(3, 33.33%);
+  grid-template-rows: repeat(3, 33.33%);
+}
+```
+
+`repeat()`重复某种模式也是可以的
+
+```css
+.container {
+  display: grid;
+  /* 重复 2 次 10% 20% 30% 的模式 */
+  grid-template-columns: repeat(2, 10% 20% 30%);
+  grid-template-rows: repeat(2, 10% 20% 30%);
+}
+```
+
+### auto-fill关键字
+
+有时，单元格的大小是固定的，但是容器的大小不确定。如果希望每一行（或每一列）容纳尽可能多的单元格，这时可以使用`auto-fill`关键字表示自动填充
+
+```css
+.container {
+  display: grid;
+  /* 每列的宽度为 100px 知道放不下为止 */
+  grid-template-columns: repeat(auto-fill, 100px);
+}
+```
+
+![image-20230326172806992](./images/image-20230326172806992.png) 
+
+### fr单位
+
+网格布局提供了`fr`关键字, 方便表示比例关系, 如果两列的宽度分别为`1fr`和`2fr`，就表示后者是前者的两倍
+
+```css
+.container {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+}
+```
+
+ ![image-20230326172826237](./images/image-20230326172527056.png) 
+
+`fr`可以与绝对长度的单位结合使用
+
+```css
+.container {
+  display: grid;
+  grid-template-columns: 150px 1fr 2fr;
+}
+```
+
+### minmax()函数
+
+`minmax()`函数产生一个长度范围，表示长度就在这个范围之中。它接受两个参数，分别为最小值和最大值
+
+```css
+.container {
+  display: grid;
+  /* minmax(100px, 1fr) 列宽在 100px ~ 1fr 之间 */
+  grid-template-columns: 100px 150fr minmax(100px, 1fr);
+}
+```
+
+### auto关键字
+
+`auto`关键字表示由浏览器自己决定长度
+
+```css
+grid-template-columns: 100px auto 100px;
+```
+
+### grid-gap
+
+`grid-gap`是`grid-row-gap`(行间距)和`grid-column-gap`(列间距)的缩写
+
+```css
+.container {
+  display: grid;
+  grid-template-columns: repeat(3, 33.33%);
+
+  /* 行与行的间距 10px */
+  /* grid-column-gap: 10px; */
+  /* 列与列的间距 10px */
+  /* grid-row-gap: 20px; */
+
+  /* 简写 */
+  grid-gap: 10px 20px;
+}
+```
+
+![image-20230326173632658](./images/image-20230326173632658.png) 
+
+### justify-items 和 align-items
+
+`justify-items`属性设置单元格内容的水平位置（左中右）
+
+`align-items`属性设置单元格内容的垂直位置（上中下）
+
+效果和flex布局基本是一致的
+
+```css
+.container {
+  justify-items: start | end | center | stretch;
+  align-items: start | end | center | stretch;
+}
+```
+
+### justify-content 和align-content
+
+`justify-content`属性是整个内容区域在容器里面的水平位置（左中右）
+
+`align-content`属性是整个内容区域的垂直位置（上中下）
+
+效果和flex布局基本是一致的
+
+```css
+.container {
+  justify-content: start | end | center | stretch | space-around | space-between | space-evenly;
+  align-content: start | end | center | stretch | space-around | space-between | space-evenly;  
+}
+```
+
+### grid-column和grid-row
+
+`grid-column`的值为`在列的那个开始位置/占多少份列`
+
+`grid-row`的值为`在行的那个开始位置/占多少份行`
+
+```css
+.container {
+  display: grid;
+  grid-template-columns: repeat(4, 25%);
+}
+
+.item-1 {
+  background-color: #ef342a;
+  /* 在列的第2个位置 */
+  grid-column: 2;
+  /* 在行的第2个位置 */
+  grid-row: 2;
+}
+```
+
+效果如下:
+
+![image-20230326174937016](./images/image-20230326174937016.png) 
+
+还可以通过`span n`来指定对应的大小
+
+```css
+.container {
+  display: grid;
+  grid-template-columns: repeat(4, 25%);
+}
+
+.item-1 {
+  background-color: #ef342a;
+  /* 在列的第2个位置, 占两份列的大小 */
+  grid-column: 2/span 2;
+  /* 在行的第1个位置, 占两份行的大小 */
+  grid-row: 1/span 2;
+}
+```
+
+![image-20230326175414803](./images/image-20230326175327828.png) 
+
+如果省略行或者列的配置则会空出来这个位置
+
+```css
+.container {
+  display: grid;
+  grid-template-columns: repeat(4, 25%);
+}
+
+.item-1 {
+  background-color: #ef342a;
+  /* 在列的第2个位置, 占两份列的大小 */
+  grid-column: 2/span 2;
+  /* 没有配置行的位置*/
+}
+```
+
+![image-20230326175953268](./images/image-20230326175921931.png)  
 
 ## [单位](https://www.w3school.com.cn/cssref/css_units.asp)
 
@@ -1817,5 +2052,3 @@ $width: 5em;
   width: 6em; 
 }
 ```
-
-:::

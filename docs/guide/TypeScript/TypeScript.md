@@ -2270,7 +2270,10 @@ baz.test.fn();
 ```ts
 // types/foo/index.d.ts
 
-export default function hello():void
+// 默认导出(名称随便定)
+export default function hello() :void;
+// 也可以写成箭头函数
+// export default () => ({name: string, version: string});
 
 export const bar: string;
 declare const baz: number;

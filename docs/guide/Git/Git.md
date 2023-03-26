@@ -271,6 +271,20 @@ rm -rf .git
 git rm -r -f --cached fileName
 ```
 
+#### 删除一个文件的所有记录
+
+```sh
+#!/bin/base
+
+git filter-branch --force --index-filter "git rm --cached --ignore-unmatch 删除的文件地址" --prune-empty --tag-name-filter cat -- --all
+
+git add .
+git commit -m "clear config"
+
+# 强制提交到线上存储库
+git push origin master --force --tags
+```
+
 ### Tag标签
 
 为了清晰的版本管理, 可以给每个大的版本加上标签

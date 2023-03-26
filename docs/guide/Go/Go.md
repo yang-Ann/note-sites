@@ -1,6 +1,6 @@
 ---
 title: Go
-date: 2023-3-7
+date: 2023-3-25
 categories:
  - 编程语言
 tags:
@@ -162,6 +162,8 @@ func main() {
 2 100 hello 3
 ```
 
+>   也可以使用`log.Println`函数, 常用于记录调试, 会带上当前的时间和打印内容
+
 ### 格式化打印
 
 `fmt.Printf`格式化打印, 第一参数必须是字符串, 类似于`%v`这样的格式化动词, 后续的参数则会进行填充:
@@ -180,7 +182,7 @@ func main() {
 }
 ```
 
->   `%v`表示是通用的格式化动词, 表示填充对应的变量, 没有什么特别的含义
+>   格式化动词都可以使用在`fmt.Sprintf`函数上, 来创建各种字符串
 
 ### 填充空格
 
@@ -260,20 +262,71 @@ func main() {
 ### 其他格式动词
 
 ```go
-%d          十进制整数
-%b					打印每个 bit
-%x, %o, %b  十六进制，八进制，二进制整数。
-%f, %g, %e  浮点数： 3.141593 3.141592653589793 3.141593e+00
-%t          布尔：true或false
-%c          字符（rune） (Unicode码点)
+%v          可以填充一个变量
+%+v         添加字段名(一般用于结构体 struct)
+%#v         比`%+v`多了结构体路径
+%T          变量的具体类型
+%%          字符串%
 %s          字符串
+%d          十进制整数
+%f, %g, %e  浮点数: 3.141593 3.141592653589793 3.141593e+00
+%e					科学计数法
+%b					字符串的二进制表示, 可以是字符('a')或者数字(97)
+%x, %o, %b  十六进制, 八进制, 二进制整数
+%t          布尔值
+%c          字符(rune) (Unicode码点)
 %q          带双引号的字符串"abc"或带单引号的字符'c'
-%v          变量的自然形式（natural format）
-%T          变量的类型
-%%          字面上的百分号标志（无操作数）
+%p          输出变量的内存地址
 ```
 
->   也可以使用`log`包下的`Println`函数, 会带上当前的时间
+## 包
+
+`.go`文件的第一行代码(除了空行和注释)都是声明这个文件是那个包, 如下: 
+
+```go
+package xxx
+```
+
+包名一般都是小写的, 尽量避免和标准库重名, 一个`.go`文件可以是一个包, 但是同一个目录下的只能是同一个包名, 不能将不同的包放在同一个目录下, 否则报错
+
+>   推荐一个目录就是一个包
+
+如果要编写一个可执行程序, 就必须有一个`main`包, 这个包的`main`函数是这个可执行程序的入口函数
+
+## init函数
+
+`init `函数是一个特殊的函数, 一般称为**初始化函数, 不能被调用** 在每个文件里面, 当程序启动或者文件被作为包引用的时候, `init()` 函数就会**自动执行, 一般用来做一些包的初始化操作**
+
+`init() 函数`没有参数，也没有返回值
+
+```go
+func init() {
+   // ...
+}
+```
+
+`init`函数常用于包变量初始化: 
+
+```go
+package main
+
+import "fmt"
+
+var (
+    pageIndex int
+    pageSize  int
+)
+
+func init() {
+    pageIndex = 1
+    pageSize = 20
+}
+
+func main() {
+  fmt.Printf("pageIndex: %d\n", pageIndex) // 1
+  fmt.Printf("pageSize: %d\n", pageSize) // 20
+}
+```
 
 ## 基本数据类型
 
@@ -313,11 +366,14 @@ func main() {
 
 ## 常量和变量
 
-**常量**使用`const`声明常量, 常量不可变, **变量**使用`var`声明变量, 常量和变量都**不能重复定义**
+**常量**使用`const`声明常量, 常量不可变, **变量**使用`var`声明变量, 常量和变量都**不能重复定义**, 类型可省略, 因为会自动推断出来: 
 
 ```go
-var 变量名 类型 = 值
-const 变量名 类型 = 值
+var 变量名 [类型] = 值
+const 变量名 [类型] = 值
+
+// 同时声明多个常量
+const 变量名1, 变量名2, 变量名3 = 值1, 值2, 值3
 ```
 
 在声明变量时可以省略类型, 因为会自定推导出具体的类型:
@@ -531,7 +587,9 @@ func main() {
 }
 ```
 
-### 省略 expr 表达式
+### 省略switch的条件
+
+`switch`语句是可以省略条件的, 那样将会和`if...else`语句是相同的效果
 
 ```go
 package main
@@ -673,7 +731,7 @@ import (
     ```go
     // /hello/index.go
     
-    package hello // 声明为那个包(一般与目录同名)
+    package hello // 声明hello包(一般与目录同名)
     
     import "fmt"
     
@@ -689,18 +747,46 @@ import (
     package main
     
     import (
-    	"learn-go/hello" // 以模块名开头, 根据目录就可以进行导入
-    	"learn-go/abcd/ok" // 多级目录, 对应目录层级即可
-      
-      "github.com/fatih/color" // 第三方包, 可点击跳转到 pkg.go.dev
+    	"learn-go/hello"         // 以模块名开头, 根据目录就可以进行导入
+      . "learn-go/hello"       // 在调用这个包时可以省略包名, 直接使用其成员, 例如: hello.SayHi() 则变成 SayHi()
+    	_ "learn-go/hello"       // 不会导入任何成员, 只执行对应包的初始化操作(init函数)
+    	myHello "learn-go/hello" // 导入对应的包并重命名
+    
+    	"learn-go/abcd/ok" 			 // 多级目录, 对应目录层级即可
+    	"github.com/fatih/color" // 第三方包, 可点击跳转到 pkg.go.dev
     )
     
     func main() {
     	hello.SayHi()
+    	myHello.SayHi() // 使用重命名的包
+    	SayHi()         // 对应 import . xxx
     
     	ok.Hi()
     }
     ```
+    
+    >   上面的导入语法也适用与标准库的导入
+
+### 非go mod导入
+
+如果是在一个非`go mod`模块进行导入的话, go编译器会根据环境变量`%GOROOT%`和`%GOPATH%`进行路径的查找: 
+
+```SH
+go env GOROOT
+# C:\Program Files\Go
+
+go env GOPATH
+# C:\Users\[用户名]\go
+```
+
+导入规则是`%GOROOT%/src/包名`和`%GOPATH%/src/包名`进行查找导入:
+
+```go
+import "fmt" 					 // -> C:\Program Files\Go\src\fmt
+import "encoding/json" // -> C:\Program Files\Go\src\encoding\json
+```
+
+
 
 ### go mod 常用命令
 
@@ -786,6 +872,38 @@ func main() {
 	fmt.Println(a, b)                    // 3 4
 }
 ```
+
+短声明左边的变量可以是多个, 但是至少有一个是新声明的变量, 其他变量可以是之前声明过的, 否则编译会报错
+
+```go
+package main
+
+import (
+	"fmt"
+	"os"
+)
+
+func main() {
+	var bs []byte
+	var err error
+
+	// 这里会报错, 因为 := 左边的变量已经声明过了
+	// bs, err := os.ReadFile("./main.go")
+
+	// 正确用法
+	bs, err = os.ReadFile("./main.go")
+
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(string(bs))
+}
+```
+
+
+
+### 短声明使用场景
 
 短声明的语法更短, 而且可以在无法使用`var`的地方使用短声明, 下面是几个使用场景
 
@@ -1252,17 +1370,20 @@ func Intn(n int) int {
 
 ### 匿名函数
 
-`Go`中的匿名函数和JS很像
+`Go`中的匿名函数和js很像, 也是可以直接赋值给一个变量, 然后重复使用
 
 ```go
 var add = func(a, b int) int {
-  return a + b;
+  return a + b
 }
+
+fmt.Println(add(1, 2))
+fmt.Println(add(1, 3))
 ```
 
 #### 匿名函数立即执行
 
-`Go`中也有类似JS`iife`函数, 如下:
+`Go`中匿名函数也是`iife`的一种, 如下:
 
 ```go
 // 类似于 js 的 iife
@@ -1276,7 +1397,7 @@ func(msg string) {
 }("hello")
 ```
 
-### 函数默认导出
+### 函数的默认导出
 
 在`Go`里, **大写字母开头的函数, 变量或者其他的标识符都会被导出, 对其他包可用**, 小写字母开头的就不行
 
@@ -1377,11 +1498,59 @@ func test(args ...any) {
 }
 ```
 
-### 函数调用传递多个值
+### 函数的变长参数
+
+函数的参数可以定义一个变长参数, 语法是`...类型`表示可以接受任意个类型的参数
 
 ```go
-func MyPrintln(args ...string) {
-	// 这样 ... 是在变量名的后面
+package main
+
+import "fmt"
+
+func main() {
+	fmt.Println(add(1))       // 1
+	fmt.Println(add(1, 2))    // 3
+	fmt.Println(add(1, 2, 3)) // 6
+}
+
+// 可以接收任意个 int 类型的参数
+func add(args ...int) int {
+	fmt.Println("args: ", args)
+
+	var sum = 0
+	for _, v := range args {
+		sum += v
+	}
+
+	return sum
+}
+```
+
+### 传递多个参数
+
+数组和Slice类型的变量可以使用`变量...`来将里面的值都展开传递, 类似于js的展开运算符
+
+```go
+package main
+
+import "fmt"
+
+// type Persion struct {
+// 	Name string
+// 	Age  int
+// 	Sex  string
+// }
+
+func main() {
+	MyPrimtln(1, 2, 3)                 // 1 2 3
+	MyPrimtln("hello", 2, true)        // hello 2 true
+	MyPrimtln([]int{1, 2, 3}, "world") // [1 2 3] world
+}
+
+// ...interface{} 和...any 都可以表示任何类型
+func MyPrimtln(args ...interface{}) {
+  
+  // 注意... 是放在变量之后的
 	fmt.Println(args...)
 }
 ```
@@ -1391,101 +1560,174 @@ func MyPrintln(args ...string) {
 `Go`中没有提供参数默认值的语法, 但是可以利用可变参数模拟:
 
 ```go
-// 日志输出
+package main
+
+import "fmt"
+
+func main() {
+	test()
+	test(false)
+	test(true)
+}
+
 func test(isError ...bool) {
-	
+	var val bool
+
 	if len(isError) > 0 {
-		fmt.Println("有传递值")
+		fmt.Println("有传递值, 取索引为0的值")
+
+		val = isError[0]
 	} else {
-		fmt.Println("没有传递值")
+		fmt.Println("没有传递值, 取默认值")
+
+		val = false
+	}
+
+	fmt.Println(val)
+}
+
+```
+
+### 函数作为参数传递
+
+函数也可以作为函数的参数, 类似于js的回调函数一样, 如下: 
+
+```go
+package main
+
+import "fmt"
+
+// 声明一个函数类型
+type Callback func(a, b int) int
+
+func main() {
+	var cb Callback = func(a, b int) int {
+		return a + b
+	}
+
+	fnAdd(1, 2, cb) // a + b = 3
+}
+
+func fnAdd(a, b int, fn Callback) {
+	fmt.Printf("a + b = %v", fn(a, b))
+}
+```
+
+### 闭包
+
+闭包的概念在js中常见于科里化操作, 就是将一个函数作为返回值返回, 在`Go`也是支持闭包的, 下面是一个科里化的例子: 
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+	fmt.Println(CurryingAdd(1)(2)) // 3
+	fmt.Println(CurryingAdd(3)(4)) // 7
+}
+
+type Callback = func(int) int
+
+func CurryingAdd(a int) Callback {
+
+	// 返回的函数可以使用外部的变量
+	return func(b int) int {
+		return a + b
 	}
 }
 ```
 
-### 一等函数
+## defer
 
-在`Go`中函数是"一等公民", 它具有高阶函数的所有特点:
+`Go`中的`defer`关键字可以提供一种延迟调用的机制, 常用于做一些收尾的动作, 如: 释放资源, 关闭文件句柄, 类似于`Java`或`JS`中的
 
--   将函数赋值给变量
+`try/catch/finally`中的`finally`块, 可以将被`defer`关键字标记的语句或者函数可以在函数执行结束后被执行
 
-    ```go
-    package main
-    
-    import "fmt"
-    
-    func main() {
-    	// 赋值一个匿名函数
-    	hi1 := func(s string) {
-    		fmt.Println(s)
-    	}
-    	hi1("hello") // hello
-    
-    	// 赋值一个函数
-    	hi2 := hello
-    	hi2() // hello
-    }
-    
-    func hello() {
-    	fmt.Println("hello")
-    }
-    ```
+```go
+package main
 
--   将函数作为参数传递
+import "fmt"
 
-    ```go
-    package main
-    
-    import "fmt"
-    
-    func main() {
-    	hello(1, 2,
-    		func(a, b int) int {
-    			return a + b
-    		}) // a + b = 3
-    
-    }
-    
-    // 声明对应的参数类型
-    func hello(a, b int, fn func(a, b int) int) {
-    	fmt.Printf("a + b = %v", fn(a, b))
-    }
-    ```
+func main() {
+	// 这句代码会在 main 结束时调用
+	defer fmt.Println("defer 4")
 
-    当碰到很长的类型时, 可以使用别名简化
+	// 可以指定多个(指定多个 defer 的话会依次逆序执行)
+	defer fmt.Println("defer 5")
 
-    ```go
-    // 将函数的类型声明为别名
-    type funcType = func(a, b int) int
-    
-    // 将别名作为类型
-    func hello(a, b int, fn funcType) {
-    	fmt.Printf("a + b = %v", fn(a, b))
-    }
-    ```
+	// 也可以是一个函数
+	defer func() {
+		fmt.Println("defer 6")
+	}()
 
--   将函数作为返回值返回(常用于**闭包**)
+	fmt.Println("---start---")
+	fmt.Println("1")
+	fmt.Println("2")
+	fmt.Println("3")
+	fmt.Println("---end---")
+}
+```
 
-    ```go
-    package main
-    
-    import "fmt"
-    
-    func main() {
-    
-    	f := hello(1)
-    	fmt.Println(f(2)) // a + b = 3
-    }
-    
-    type resType = func(int) string
-    
-    func hello(a int) resType {
-      
-      // 返回的函数可以捕获外部的变量
-    	return func(b int) string {
-    		return fmt.Sprintf("a + b = %v", a+b)
-    	}
-    }
-    ```
+结果如下:
+
+```
+---start---
+1
+2
+3
+---end---
+defer 6
+defer 5
+defer 4
+```
+
+>   注意: 当调用`os.Exit()`方法来退出程序时, `defer`定义的语句将不会被执行
+
+### defer常用的地方
+
+`defer`关键字常用于做一些收尾的动作, 如: 释放资源, 关闭文件句柄:
+
+```go
+package main
+
+import (
+	"fmt"
+	"os"
+)
+
+func main() {
+	fileName, fileContent := "./test.txt", "hello world"
+
+	// 创建文件
+	file, err := os.Create(fileName)
+	if err != nil {
+		fmt.Println(err.Error())
+		os.Exit(1)
+	}
+
+	// 写入内容到文件中
+	_, err = fmt.Fprintln(file, fileContent)
+	if err != nil {
+		fmt.Println(err.Error())
+		os.Exit(1)
+	}
+
+	// 可以直接指定一个语句
+	defer fmt.Println("main 函数执行完毕")
+
+	// 也可以指定为一个匿名函数
+	defer func() {
+		// 关闭文件
+		err := file.Close()
+		if err != nil {
+			panic(err)
+		}
+	}()
+}
+```
+
+>   `defer`并不是专门做错误处理的, 而是用来消除必须时刻惦记执行资源释放的负担
 
 ## 方法
 
@@ -2487,6 +2729,8 @@ func main() {
 }
 ```
 
+>   上面没有使用`type`定义的结构体叫匿名机构体
+
 ### 根据类型生成结构体
 
 可以使用`type`来定义对应的结构体类型, 好处是可以复用:
@@ -2550,7 +2794,7 @@ func main() {
 }
 ```
 
->   使用`%+v`格式化动词可以打印出字段`key`和值的结构
+>   使用`%+v`和`%#v`格式化动词可以打印出字段`key`和值的结构
 
 ### 结构体的复制
 
@@ -2580,7 +2824,7 @@ func main() {
 }
 ```
 
-#### 将方法关联到struct
+### 将方法关联到struct
 
 `Go`中没有`Class`, 但是可以使用`struct`模拟出来:
 
@@ -2664,6 +2908,37 @@ successRsp.MenuData = []string{"hello", "world"}
 ```
 
 >   结构体的方法也会被继承下来
+
+## type
+
+`type`关键字不仅可以定义结构体类型, 还可以定义一个别名, 这样可以在这个别名之上绑定方法:
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+	var m MyString = "hello"
+	fmt.Println(m.getLen()) // 5
+  
+	// 实际底层类型还是字符串
+	m = "hi"
+
+	// 但是打印出来的类型会显示成别名类型
+	fmt.Printf("%v, %T", m.getLen(), m) // 2, main.MyString
+}
+
+// 定义一个别名 MyString 实际还是 string 类型
+type MyString string
+
+// 利用定义的别名就可以绑定方法了
+func (m MyString) getLen() int {
+	return len(m)
+}
+```
+
+>   标准库的`int`或者`string`是不能直接绑定方法的, 如果需要只能间接的通过`type`得到一个别名的方式来进行绑定方法
 
 ## 组合和转发
 
@@ -3791,86 +4066,6 @@ func main() {
 }
 ```
 
-## init函数
-
-`init `函数是一个特殊的函数, 一般称为**初始化函数, 不能被调用** 在每个文件里面，当程序启动或者文件被作为包引用的时候, `init()` 函数就会**自动执行, 一般用来做一些包的初始化操作**
-
-`init() 函数`没有参数，也没有返回值
-
-```go
-func init() {
-   // ...
-}
-```
-
-`init`函数常用于包变量初始化: 
-
-```go
-package main
-
-import "fmt"
-
-var (
-    pageIndex int
-    pageSize  int
-)
-
-func init() {
-    pageIndex = 1
-    pageSize = 20
-}
-
-func main() {
-  fmt.Printf("pageIndex: %d\n", pageIndex) // 1
-  fmt.Printf("pageSize: %d\n", pageSize) // 20
-}
-```
-
-## defer
-
-使用`defer`关键字, 可以让`deferred`动作在函数或者方法返回前执行, 常用于做一些收尾的动作, 如: 释放资源, 关闭文件句柄:
-
-```go
-package main
-
-import (
-	"fmt"
-	"os"
-)
-
-func main() {
-	fileName, fileContent := "./test.txt", "hello world"
-
-	// 创建文件
-	file, err := os.Create(fileName)
-	if err != nil {
-		fmt.Println(err.Error())
-		os.Exit(1)
-	}
-
-	// 写入内容到文件中
-	_, err = fmt.Fprintln(file, fileContent)
-	if err != nil {
-		fmt.Println(err.Error())
-		os.Exit(1)
-	}
-
-	// 可以直接指定一个语句
-	defer fmt.Println("main 函数执行完毕")
-
-	// 也可以指定为一个匿名函数
-	defer func() {
-		// 关闭文件
-		err := file.Close()
-		if err != nil {
-			panic(err)
-		}
-	}()
-}
-```
-
->   `defer`并不是专门做错误处理的, 而是用来消除必须时刻惦记执行资源释放的负担
-
 ## 错误处理
 
 `Go`运行函数和方法返回多个值, 按照惯例, 函数在返回错误时, 最后边的值应该表示错误, 调用者调用后需要检查是否发生了错误, 
@@ -4109,6 +4304,50 @@ func main() {
 func sleepHi(index int) {
 	time.Sleep(time.Second)
 	fmt.Println("hello", index)
+}
+```
+
+#### 匿名无法goroutine直接使用外部变量
+
+下面的`i`永远都是5, 因为goroutine是后台启动的, 当goroutine开始执行时, for循环已经结束了: 
+
+```go
+package main
+
+import (
+	"fmt"
+	"time"
+)
+
+func main() {
+	for i := 0; i < 5; i++ {
+		go func() {
+			time.Sleep(time.Second)
+			fmt.Println("hello", i) // i永远都是5
+		}()
+	}
+	time.Sleep(time.Second * 2)
+}
+```
+
+正确的写法是将需要访问的变量通过函数调用进行传递, 这样每个goroutine内部都会存在对应的值的, 如下: 
+
+```go
+package main
+
+import (
+	"fmt"
+	"time"
+)
+
+func main() {
+	for i := 0; i < 5; i++ {
+		go func(idx int) {
+			time.Sleep(time.Second)
+			fmt.Println("hello", idx)
+		}(i) // 将外部变量通过参数进行传递
+	}
+	time.Sleep(time.Second * 2)
 }
 ```
 

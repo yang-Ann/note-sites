@@ -3446,13 +3446,27 @@ userDao.deleteAll();
 
 >   内部存储空间就是`data/data/[项目名]/**/*`下面的文件
 
-获取手机上的SD卡信息通过Environment类实现，该类是App获取各种目录信息的工具，主要方法有以下7种。
+获取手机上的SD卡信息通过Environment类实现，该类是App获取各种目录信息的工具，主要方法有以下几种:
+
+-   `getFilesDir().getAbsolutePath()`: 获取应用的`files`目录
 
 -   `getRootDirectory()`: 获得系统根目录的路径
 
 -   `getDataDirectory()`: 获得系统数据目录的路径
 -   `getDownloadCacheDirectory()`: 获得下载缓存目录的路径
 -   `getExternalStorageDirectory()`: 获得外部存储（SD卡）的路径
+
+```java
+String getFilesDir = getFilesDir().getAbsolutePath();
+String getRootDirectory = getRootDirectory().getAbsolutePath();
+String getDataDirectory = getDataDirectory().getAbsolutePath();
+String getDownloadCacheDirectory = getDownloadCacheDirectory().getAbsolutePath();
+
+Log.d(TAG, getFilesDir); // /data/user/0/{包名}/files
+Log.d(TAG, getRootDirectory); // /system
+Log.d(TAG, getDataDirectory); // /data
+Log.d(TAG, getDownloadCacheDirectory); // /data/cache
+```
 
 为正常操作SD卡，需要在`AndroidManifest.xml`中声明SD卡的权限:
 
