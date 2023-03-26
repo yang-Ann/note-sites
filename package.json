@@ -9,7 +9,7 @@
   "scripts": {
     "dev": "vuepress dev docs",
     "build": "vuepress build docs",
-    "active": "cd gitee-active && npm run start:ts",
+    "active": "cd gitee-active && npm run start",
     "deploy": "npm run build && npm run active"
   },
   "keywords": [

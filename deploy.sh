@@ -116,7 +116,7 @@ function deploy() {
 
   # --- Gitee Pages Active
   cd "gitee-active"
-  pnpm start:ts
+  pnpm start
   cd - &> /dev/null
 
   git add .
