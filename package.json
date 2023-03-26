@@ -15,7 +15,7 @@
   "keywords": [
     "notes"
   ],
-  "author": "an <331536495@qq.com> (https://ann-yang.gitee.io/note-sites/)",
+  "author": "An <331536495@qq.com> (https://ann-yang.gitee.io/note-sites/)",
   "license": "ISC",
   "devDependencies": {
     "vuepress": "^1.9.7",

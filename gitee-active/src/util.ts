@@ -4,12 +4,12 @@ import loggerConfig from "./config/logger.js";
 const { operPath } = loggerConfig;
 
 // 获取指定的日期格式
-const transformationTime = (timeStr = "yyyy-MM-dd", time = new Date()) => {
+const transformationTime = (timeStr = "YYYY-MM-DD hh:mm:ss", time = new Date()) => {
   const arr = [undefined, "日", "一", "二", "三", "四", "五", "六"];
-  const timeObj: timeObjType = {
-    yyyy: time.getFullYear().toString(),
+  const timeObj = {
+    YYYY: time.getFullYear().toString(),
     MM: getVal(time.getMonth() + 1),
-    dd: getVal(time.getDate()),
+    DD: getVal(time.getDate()),
     hh: getVal(time.getHours()),
     mm: getVal(time.getMinutes()),
     ss: getVal(time.getSeconds()),
@@ -20,7 +20,7 @@ const transformationTime = (timeStr = "yyyy-MM-dd", time = new Date()) => {
   let retStr = timeStr.slice();
   for (const key in timeObj) {
     if (Object.hasOwnProperty.call(timeObj, key)) {
-      const val = timeObj[<keyof timeObjType>key];
+      const val = timeObj[(key as keyof typeof timeObj)];
       if (retStr.indexOf(key) !== -1) {
         if (val) {
           retStr = retStr.replace(key, val);
@@ -38,7 +38,7 @@ const transformationTime = (timeStr = "yyyy-MM-dd", time = new Date()) => {
 
 // 操作步骤写入
 const writeOperInfo = (msg: string, isLog = true): void => {
-  const d = transformationTime("yyyy-MM-dd hh:mm:ss");
+  const d = transformationTime();
   const logText = `${d} ${msg}\n`;
   if (!fs.existsSync(operPath)) fs.writeFileSync(operPath, "");
   fs.appendFile(operPath, logText, (err: NodeJS.ErrnoException | null) => {
@@ -47,4 +47,9 @@ const writeOperInfo = (msg: string, isLog = true): void => {
   if (isLog) console.log(logText);
 };
 
-export { transformationTime, writeOperInfo };
+// 清空日志
+const truncateLog = () => {
+  fs.truncateSync(operPath);
+}
+
+export { transformationTime, writeOperInfo, truncateLog };

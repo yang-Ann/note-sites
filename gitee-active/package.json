@@ -14,7 +14,7 @@
     "dist"
   ],
   "scripts": {
-    "start:ts": "node --loader ts-node/esm ./src/index.ts",
+    "start": "node --loader ts-node/esm ./src/index.ts",
     "vad": "node --loader ts-node/esm ./src/validatorText.ts",
     "play:install": "playwright install",
     "eslint": "eslint src --ext .ts",

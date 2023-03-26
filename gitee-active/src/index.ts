@@ -6,24 +6,23 @@ import type { Browser, Page, BrowserContext } from "@playwright/test";
 
 import config from "./config/index.js";
 import loggerConfig from "./config/logger.js";
-import { writeOperInfo, transformationTime } from "./util.js";
+import { truncateLog, writeOperInfo, transformationTime } from "./util.js";
 
 const { user, password, loginUrl, repositoryPagesUrl } = config;
-const { errTrackPath, imgErrDir, operPath } = loggerConfig;
+const { errTrackPath, imgErrDir } = loggerConfig;
 
 // https://playwright.dev/
-
-fs.truncateSync(operPath);
 
 let browser: Browser | null = null;
 let page: Page | null = null;
 let context: BrowserContext | null = null;
 
-const pageMessageUrl = "https://ann-yang.gitee.io/note-sites";
+const descriptionSelect = "body > div.site-content > div.ui.container > div > div.pages_message > div > p.start-service-description";
 
 (async () => {
   try {
 
+    truncateLog();
     const startTime = Date.now();
 
     writeOperInfo("launch browser");
@@ -51,8 +50,6 @@ const pageMessageUrl = "https://ann-yang.gitee.io/note-sites";
 
     writeOperInfo(`click "登 录"`);
     await page.getByRole("button", { name: "登 录" }).click();
-    
-    // await page.getByRole("link", { name: "An/note-sites" }).click();
 
     writeOperInfo(`waitForTimeout 1000 ms`);
     await page.waitForTimeout(1000);
@@ -77,28 +74,25 @@ const pageMessageUrl = "https://ann-yang.gitee.io/note-sites";
     writeOperInfo(`waitForTimeout 1000`);
     await page.waitForTimeout(1000);
 
-    writeOperInfo(`等待部署完成 url 重新出现: ${pageMessageUrl}`);
-    await page.getByRole("link", { name: pageMessageUrl }).waitFor({
-      state: "visible",
+    writeOperInfo(`等待部署完成 -> ${descriptionSelect}`);
+    await page.waitForSelector(descriptionSelect, {
       timeout: 1000 * 60 * 10, // 最长等待10分钟
-    })
+    });
 
     writeOperInfo("已完成部署, 关闭浏览器");
-    const numTime = Date.now() - startTime;
-    writeOperInfo(`总用时: ${numTime.toFixed(2)}ms`);
+    writeOperInfo(`用时: ${Date.now() - startTime}ms`);
 
     await browser.close();
     await context.close();
 
   } catch (error: unknown) {
-    if (error instanceof Error) {  
+    if (error instanceof Error) {
       writeOperInfo(`发生错误, 请查看 ${errTrackPath}`);
       // 报错图片路径
       const imgErrPath = `${imgErrDir + sep + Date.now()}.png`;
       // 记录错误栈信息
-      const d = transformationTime("YYYY-MM-DD hh:mm:ss");
+      const d = transformationTime();
       fs.writeFileSync(errTrackPath, `${d} >>> ${imgErrPath}\r\n${error.stack}`);
-      
       // 保存网页为图片
       if (page) await page.screenshot({ path: imgErrPath });
     }
