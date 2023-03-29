@@ -17,18 +17,18 @@ let browser: Browser | null = null;
 let page: Page | null = null;
 let context: BrowserContext | null = null;
 
-const descriptionSelect = "body > div.site-content > div.ui.container > div > div.pages_message > div > p.start-service-description";
+const descriptionSelect =
+  "body > div.site-content > div.ui.container > div > div.pages_message > div > p.start-service-description";
 
 (async () => {
   try {
-
     truncateLog();
     const startTime = Date.now();
 
     writeOperInfo("launch browser");
     browser = await chromium.launch({
-      headless: true, // 无头模式
-      slowMo: 300, // 操作延时
+      headless: false, // 无头模式
+      slowMo: 300 // 操作延时
     });
 
     writeOperInfo("newContext");
@@ -43,7 +43,7 @@ const descriptionSelect = "body > div.site-content > div.ui.container > div > di
     writeOperInfo(`fill ${user} into the "手机／邮箱／个人空间地址"`);
     await page.getByPlaceholder("手机／邮箱／个人空间地址").click();
     await page.getByPlaceholder("手机／邮箱／个人空间地址").fill(user);
-    
+
     writeOperInfo(`fill ${"*".repeat(password.length)} into the "手机／邮箱／个人空间地址"`);
     await page.getByPlaceholder("请输入密码").click();
     await page.getByPlaceholder("请输入密码").fill(password);
@@ -63,9 +63,11 @@ const descriptionSelect = "body > div.site-content > div.ui.container > div > di
     writeOperInfo(`click "Logo en Gitee Pages"`);
     await page.getByRole("link", { name: "Logo en Gitee Pages" }).click();
 
-    page.once("dialog", dialog => {
+    page.once("dialog", async dialog => {
       writeOperInfo(`Dialog message: ${dialog.message()}`);
-      dialog.dismiss().catch(() => {});
+      dialog.accept().catch(err => {
+        console.log("dialog.accept error: ", err);
+      });
     });
 
     writeOperInfo(`click "更新"`);
@@ -76,7 +78,7 @@ const descriptionSelect = "body > div.site-content > div.ui.container > div > di
 
     writeOperInfo(`等待部署完成 -> ${descriptionSelect}`);
     await page.waitForSelector(descriptionSelect, {
-      timeout: 1000 * 60 * 10, // 最长等待10分钟
+      timeout: 1000 * 60 * 10 // 最长等待10分钟
     });
 
     writeOperInfo("已完成部署, 关闭浏览器");
@@ -84,7 +86,6 @@ const descriptionSelect = "body > div.site-content > div.ui.container > div > di
 
     await browser.close();
     await context.close();
-
   } catch (error: unknown) {
     if (error instanceof Error) {
       writeOperInfo(`发生错误, 请查看 ${errTrackPath}`);

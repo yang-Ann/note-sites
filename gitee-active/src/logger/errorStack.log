@@ -1,14 +1,3 @@
-YYYY-03-DD 22:49:44 >>> F:\project\note-sites\gitee-active\src\logger\images\1677941384036.png
-browserType.launch: Executable doesn't exist at C:\Users\33153\AppData\Local\ms-playwright\chromium-1045\chrome-win\chrome.exe
-╔═════════════════════════════════════════════════════════════════════════╗
-║ Looks like Playwright Test or Playwright was just installed or updated. ║
-║ Please run the following command to download new browsers:              ║
-║                                                                         ║
-║     npx playwright install                                              ║
-║                                                                         ║
-║ <3 Playwright Team                                                      ║
-╚═════════════════════════════════════════════════════════════════════════╝
-    at file:///F:/project/note-sites/gitee-active/src/index.ts:19:34
-    at file:///F:/project/note-sites/gitee-active/src/index.ts:73:3
-
-
+2023-03-29 22:27:24 >>> F:\project\note-sites\gitee-active\src\logger\images\1680100044198.png
+page.waitForSelector: Target page, context or browser has been closed
+    at file:///F:/project/note-sites/gitee-active/src/index.ts:61:20
