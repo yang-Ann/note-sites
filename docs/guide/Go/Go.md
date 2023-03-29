@@ -1250,7 +1250,7 @@ func main() {
 | `real`           | 返回`complex`的实部(complex, real imag：用于创建和操作复数)  |
 | `imag`           | 返回`complex`的虚部                                          |
 | `make`           | 用来分配内存, 返回`Type`本身(只能应用于`slice`, `map`, `channel`) |
-| `new`            | 用来分配内存, 主要用来分配值类型, 比如`int`, `struct`。返回指向Type的指针 |
+| `new`            | 用来分配内存, 主要用来分配值类型, 比如`int`, `struct`。返回指向指定类型的指针 |
 | `cap`            | `capacity`是容量的意思, 用于返回某个类型的最大容量(只能用于`slice`和 `map`) |
 | `copy`           | 用于复制和连接`slice`, 返回复制的数目                        |
 | `len`            | 求长度, 比如`string`, `array`, `slice`, `map`, `channel`, 返回长度 |
@@ -1908,7 +1908,7 @@ func main() {
 	fmt.Println("colors: ", colors) // colors:  [red blue yellow]
 }
 
-// 直接接收数组的函数, 效率是很低的
+// 直接接收数组的函数, 效率是很低的, 而且数组的类型不通用
 func forEachArray(list [3]string) {
 	// 修改每一个元素的值
 	for i, v := range list {
@@ -1974,6 +1974,10 @@ func main() {
 	// 创建 *bool 类型的切片, 长度为 3
 	s3 := make([]*bool, 3)
 	fmt.Println("s3 = ", s3) // s3 =  [<nil> <nil> <nil>]
+  
+  // 字面量的形式创建切片, 类似数组不过长度会自动识别
+  s4 := []int{1, 2, 3}
+  fmt.Println("s4 = ", s4) // s4 =  [1 2 3]
 }
 ```
 
@@ -2003,7 +2007,10 @@ func main() {
 }
 ```
 
->   注意: `slice`的索引不能是负数
+>   切片语法的注意点: 
+>
+>   -   `slice`的索引不能是负数
+>   -   快速切片的完整语法是: `[开始索引:结束索引:容量]`
 
 ### Slice切分字符串
 
@@ -2029,7 +2036,7 @@ func main() {
 
 ### Slice的复合字面值
 
-`Go`里面很多函数倾向于使用`Slice`而不是数组作为参数, 经常使用`array[:]`来快速获取切片, 或者直接声明`Slice`和数组很像, 不知道长度即可:
+`Go`里面很多函数倾向于使用`Slice`而不是数组作为参数, 经常使用`T[:]`或者直接使用符合值来快速快速获取切片:
 
 ```go
 package main
@@ -2041,10 +2048,10 @@ func main() {
 	// 注意: 这个是数组
 	v := [...]int{1, 2, 3, 4, 5, 6, 7, 8, 9}
 
-	// 快速切分
+	// 快速切片
 	v1 := v[:]
 
-	// 手动声明切分
+	// 手动声明切片
 	v2 := []int{1, 2, 3, 4, 5, 6, 7, 8, 9}
 
 	fmt.Println(v1) // [1 2 3 4 5 6 7 8 9]
@@ -2143,7 +2150,7 @@ func main() {
 
 切片的长度可以使用`len`函数获取, 切片的容量可以使用`cap`函数获取, 切片底层会有数组来存储数据
 
-`make()`函数创建切片时还可以指定第三个参数用来指定**容量的大小**, 当`Slice`的容量不足以执行`append()`操作时, `Go`会**自动扩容一倍**的大小, 然后创建新数组并复制旧数组中的内容(切片底层会有数组来存储数据), 如下: 
+`make()`函数创建切片时还可以指定第三个参数用来指定**容量的大小**(容量不能小于长度), 当`Slice`的容量不足以执行`append()`操作时, `Go`会**自动扩容一倍**的大小, 然后创建新数组并复制旧数组中的内容(切片底层会有数组来存储数据), 如下: 
 
 ```go
 package main
@@ -2167,9 +2174,7 @@ func sliceInfo(list []int) {
 }
 ```
 
->   `make()`函数还可以指定第三个参数用来指定容量的大小, 当`Slice`的容量不足以执行`append`操作时, `Go`会自动进行创建新数组并复制旧数组中的内容
-
-### 循环切片
+### 循环切片元素
 
 切片的循环可以使用`range`或者`for`循环的方式:
 
@@ -2216,7 +2221,7 @@ Go 内置的 `append()` 和 `copy()` 两个函数非常强大，通过配合 `sl
 
 #### 复制切片数据到另一个切片
 
-可以使用`copy ()`方法
+可以使用`copy()`方法来快速复制切片数据
 
 ```go
 package main
@@ -2882,11 +2887,13 @@ func test(e error) {
 
 >   因为`Go`没有构造函数的概念, 所以以`new`或者`new`开头加一个类型的函数, 可以理解为是某个类型的构造函数
 
-### 结构体继承
-
-Go中也有类似继承的机制
+### 临时添加结构体属性
 
 ```go
+package main
+
+import "fmt"
+
 // 通用结构体
 type HttpSuccess struct {
 	Code    int               `json:"code"`
@@ -2895,19 +2902,21 @@ type HttpSuccess struct {
 	Data    map[string]string `json:"data"`
 }
 
-
 type MenuResponse struct {
-	*HttpSuccess // 使用 *继承的机构体, 即可
-	Data []map[string]string `json:"data"` // 这个会覆盖继承的字段类型
-	MenuData []string `json:"menuData"`
+	HttpSuccess // 这里指定结构体即可, 如果是小写字母开头则需要无法触发转发
+	// *HttpSuccess                     				// 也可以指定为指针类型
+	Data     []map[string]string `json:"data"` // 这个会覆盖之前的字段类型
+	MenuData []string            `json:"menuData"`
 }
 
+func main() {
+	successRsp := &MenuResponse{}
+	successRsp.MenuData = []string{"hello", "world"}
 
-successRsp := &MenuResponse{}
-successRsp.MenuData = []string{"hello", "world"}
+	fmt.Printf("%v\n", successRsp.Code)
+	fmt.Printf("%#v\n", successRsp)
+}
 ```
-
->   结构体的方法也会被继承下来
 
 ## type
 
@@ -2983,7 +2992,7 @@ type UserInfo struct {
 
 ### 转发
 
-利用**组合**的类型可以很轻松的使用**转发**进行搭积木一样进行搭建:
+利用**组合**的类型可以很轻松的使用**转发**进行搭积木一样进行搭建实现类型**继承**的效果:
 
 ```go
 package main
@@ -3035,7 +3044,7 @@ func (i UserInfo) showUserInfo() {
 
 ### struct嵌入
 
-当使用**组合**的时候可以直接写一个类型, 这时**该类型的方法和字段可以直接被转发到目标类型上面**:
+当使用**组合**的时候可以直接写一个类型, 这时**该类型的方法和字段可以直接被转发到目标类型上面**实现类似于**继承**的效果:
 
 ```go
 package main
@@ -3290,10 +3299,18 @@ import "fmt"
 func main() {
 
 	x := 1
-	p := &x
+	p1 := &x
+  
+	fmt.Println("p1内存地址: ", p1)   // p1内存地址:  0xc0000180a8
+	fmt.Println("p1指针对应的值: ", *p1) // p1指针对应的值:  1
 
-	fmt.Println("x内存地址: ", p)   // x内存地址:  0xc0000180a8
-	fmt.Println("x指针对应值: ", *p) // x指针对应值:  1
+	// 使用 new 函数也可以创建指针
+	p2 := new(int)
+  // 通过解引用修改指针指向的值
+	*p2 = 2
+  
+	fmt.Println("p2内存地址: ", p2)   // p2内存地址:  0xc0000180a8
+	fmt.Println("p2指针对应的值: ", *p2) // p2指针对应的值:  2
 }
 ```
 
@@ -3707,7 +3724,8 @@ func main() {
   )
   
   func main() {
-      // os.IsNotExist() 判断目录
+      // os.IsExist() 判断文件存在
+      // os.IsNotExist() 判断文件不存在
   	if f, err := os.Stat("./test.txt"); os.IsExist(err) {
   		fmt.Println("文件不存在", err.Error())
   	} else {
@@ -6264,13 +6282,13 @@ func main() {
 
 汇总的资源可见[awesome-go](https://github.com/avelino/awesome-go)
 
-| 包名    | 源地址引用                       | 说明                                       |
-| ------- | -------------------------------- | ------------------------------------------ |
-| Survey  | github.com/AlecAivazis/survey/v2 | 命令行交互                                 |
-| go-sh   | github.com/codeskyblue/go-sh     | 执行shell命令                              |
-| color   | github.com/fatih/color           | 终端彩色输出                               |
-| copy    | github.com/otiai10/copy          | 递归复制目录                               |
-| wails   |                                  | 桌面开发框架(类比tauri)                    |
-| resty   | github.com/go-resty/resty/v2     | http网络请求                               |
-| goquery | github.com/PuerkitoBio/goquery   | 解析网页, 可以使用JQuery语法选择指定的元素 |
+| 包名    | 源地址引用                       | 说明                                                         |
+| ------- | -------------------------------- | ------------------------------------------------------------ |
+| Survey  | github.com/AlecAivazis/survey/v2 | 命令行交互                                                   |
+| go-sh   | github.com/codeskyblue/go-sh     | 执行shell命令                                                |
+| color   | github.com/fatih/color           | 终端彩色输出                                                 |
+| copy    | github.com/otiai10/copy          | 递归复制目录                                                 |
+| wails   |                                  | 桌面开发框架(类比tauri, 都是使用[webview2](https://developer.microsoft.com/en-us/microsoft-edge/webview2/#download-section)来渲染前端页面) |
+| resty   | github.com/go-resty/resty/v2     | http网络请求                                                 |
+| goquery | github.com/PuerkitoBio/goquery   | 解析网页, 可以使用JQuery语法选择指定的元素                   |
 

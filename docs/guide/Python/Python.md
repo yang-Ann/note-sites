@@ -23,7 +23,7 @@ tags:
 安装完环境以后就可以使用`python`来进入`python`环境或者运行`.py`文件了
 
 ```sh
-# 直接进入 python 环境
+# 直接进入 python 环境, 或者是 py
 $ python
 Python 3.10.5 (tags/v3.10.5:f377153, Jun  6 2022, 16:14:13) [MSC v.1929 64 bit (AMD64)] on win32
 Type "help", "copyright", "credits" or "license" for more information.
@@ -159,9 +159,29 @@ activate.bat
 ```sh
 # 虚拟环境下可以直接安装第三方包
 pip install ProjectName
+
+# 删除第三方包
+pip uninstall ProjectName
 ```
 
 >   安装的第三方包会在对应虚拟环境下的`/visualenvName/Lib/site-packages`目录下
+
+### 导入自定义包
+
+```py
+# hello.py
+
+def say_hi():
+    print("hi")
+```
+
+```py
+# main.py
+
+import hello
+
+hello.say_hi()
+```
 
 ## 基本概念
 
@@ -882,7 +902,7 @@ if True:
 
 -   `globals()`返回一个字典, 包含当前作用域下的**全局变量**
 
--   `str(T)`, `int(T)`,`bool(T)`,`chr(T)`,`float(T)`转换类型
+-   `str(T)`, `int(T)`,`bool(T)`,`chr(T)`,`float(T)`类型转换
 
 -   `exit()`退出程序, 可以指定一个退出码, 如: `exit(1)`
 
@@ -1419,4 +1439,289 @@ import glob
 fs = glob.glob("*.py")
 print(fs) # ['main.py', 'my_math.py']
 ```
+
+### time
+
+[time](http://study.yali.edu.cn/pythonhelp/library/time.html)是日期转换
+
+```py
+import calendar
+import time
+
+# 程序休眠1秒
+time.sleep(1)
+
+ticks = time.time()
+print("时间戳", ticks)
+
+
+localtime = time.localtime(time.time())
+print("本地时间", localtime)
+
+# 格式化成 YYYY-MM-DD hh:mm:ss形式
+print(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
+ 
+# 格式化成Sat Mar 28 22:24:24 2016形式
+print(time.strftime("%a %b %d %H:%M:%S %Y", time.localtime()))
+
+# 将格式字符串转换为时间戳
+print(time.mktime(time.strptime("Sat Mar 28 22:24:24 2016","%a %b %d %H:%M:%S %Y")))
+
+
+# 打印 2023年1月的日历
+print("\n", calendar.month(2023, 1))
+```
+
+[time.strftime的解析符说明](http://study.yali.edu.cn/pythonhelp/library/time.html#time.strftime)
+
+### tkinter
+
+[tkinter](http://study.yali.edu.cn/pythonhelp/library/tk.html)模块是图形用户界面, 下面是一个获取鼠标位置的程序, 可以快速复制坐标位置供`pyautogui`库使用:
+
+```py
+import time
+import pyautogui as pg
+import pyperclip
+import tkinter
+
+num=1
+
+# 点击按钮后触发
+def get_pos():
+    po.delete(0, tkinter.END)
+    # 等待1秒
+    time.sleep(num)
+    # 获取当前的鼠标位置
+    x, y = pg.position()
+    text = str(x) + ', ' + str(y)
+    po.insert(0, text)
+    # pyperclip.copy("pyautogui.click(" + text + ")")
+    pyperclip.copy(text)
+    
+ 
+win = tkinter.Tk()
+win.title("获取鼠标坐标")
+w = win.winfo_screenwidth()
+h = win.winfo_screenheight()
+
+# 窗口居中、窗口大小 260 * 100
+win.geometry("%dx%d+%d+%d" %(260,80,(w-260)/2,(h-100)/2))
+tip = tkinter.Label(win, text="点击获取按钮, " + str(num) + "秒后显示光标位置并自动复制")
+tip.grid(row=0)
+po = tkinter.Entry(win)
+po.grid(row=1)
+# 获取位置
+do = tkinter.Button(win, text="获取", command=get_pos)
+do.grid(row=2)
+win.mainloop()
+```
+
+## 自动化操作
+
+使用`pyautogui`实现自动化操作, 安装命令
+
+```sh
+pip install pyautogui
+
+# 复制中文粘贴输入
+pip install pyperclip
+
+# 截图功能
+pip install pillow
+```
+
+基本使用:
+
+```py
+import pyautogui as pg
+import pyperclip
+import time
+
+# 粘贴中文字符
+def paste(msg):
+    pyperclip.copy(msg)
+    pg.hotkey('ctrl', 'v')
+
+
+# 鼠标光标在屏幕左上角，PyAutoGUI函数就会产生pyautogui.FailSafeException异常
+pg.FAILSAFE = True
+
+# 当前鼠标的位置
+# pg.position()
+
+# 当前屏幕的分辨率(宽度和高度)
+screenWidth, screenHeight = pg.size()
+# 鼠标移动到屏幕中心
+pg.moveTo(screenWidth / 2, screenHeight / 2)
+
+# 点击当前位置
+pg.click()
+
+# button参数可以设置 left，middle 和 right 三个键
+pg.click(button='right')
+
+# 点击指定的位置
+# pg.click(1240, 429)
+# 双击
+# pg.doubleClick()
+# 右键点击
+# pg.rightClick()
+# 中键点击
+# pg.middleClick()
+
+# 滚轮, 正数向上, 负数向下
+# pg.scroll(-200)
+
+# 按住鼠标左键，把鼠标拖拽到(100, 200)位置
+# pg.dragTo(100, 200, button='left')
+# 按住鼠标左键，用2秒钟把鼠标拖拽到(300, 400)位置
+# pg.dragTo(300, 400, 2, button='left')
+# 按住鼠标右键，用2秒钟把鼠标拖拽到(30,0)位置
+# pg.dragTo(30, 0, 2, button='right')
+
+# 输入字符(中文输入有问题), 间隔 0.25s (输入中文可以使用 pyperclip 库, 通过复制和粘贴实现)
+# pg.write('println("Hello World")', interval=0.1)
+# pyperclip.copy('这是复制的中文')
+# pg.hotkey('ctrl', 'v')
+
+# 模拟按下 esc(立刻释放)
+# pg.press('esc')
+
+# 按下 shift(不释放)
+# pg.keyDown('shift')
+# pg.write('hello\n')
+# 弹起 shift
+# pg.keyUp('shift')
+# pg.write('hello\n')
+
+# 组合键
+# pg.hotkey('ctrl', 'v')
+
+# 截图, 依赖于 pillow
+# im1 = pg.screenshot()
+# im1.save('F:\\study\\learn_python\\screenshot1.png')
+
+# im2 = pg.screenshot('F:\\study\\learn_python\\screenshot2.png')
+
+# 根据图片寻找位置
+# button7location = pg.locateOnScreen('button.png')
+# 根据图片寻找中心位置
+# button7location = pg.locateCenterOnScreen()('button.png')
+
+# pg.alert('提示框')
+# pg.confirm('对话框')
+
+# res=pg.confirm('选择框', buttons=['A', 'B', 'C'])
+# print("你的选择是: ", res)
+
+# name=pg.prompt('输入你的名称?')
+# pg.alert('你的名字是: ' + name)
+
+# pwd=pg.password('输入密码')
+# pg.alert('你的密码是: ' + pwd)
+```
+
+### 程序获取坐标
+
+可以使用[tkinter](# tkinter)的例子来快速的获取鼠标坐标, 也可以使用下面的命令行获取坐标:
+
+```py
+import os
+import time
+import pyautogui as pg
+try:
+    while True:
+        print("按下组合键 ctrl + c 结束执行\n")
+
+        # 获取屏幕的尺寸
+        sW, sH = pg.size()
+
+        # 屏幕分辨率
+        print("屏幕分辨率: " + str(sW) + ' x ' + str(sH) + '\n')
+
+        # 获取当前鼠标的坐标
+        x, y = pg.position()
+
+        # 当前鼠标坐标值
+        posX = str(x).rjust(4).strip()
+        posY = str(y).rjust(4).strip()
+
+        print("鼠标坐标: " + posX+', '+posY)
+        # print("\npyautogui.click(" + posX + ", " + posY + ")\n")
+
+        # 等待0.5秒
+        time.sleep(0.5)
+
+        # 清屏
+        os.system('cls')
+
+except KeyboardInterrupt:
+    print('\n按任意键退出...')
+```
+
+## 读取excel
+
+使用`openpyxl`包
+
+```py
+import openpyxl
+import os 
+
+def get_excel_data(file_path):
+    result = {}
+
+    wb = openpyxl.load_workbook(file_path)
+
+    for name in wb.sheetnames:
+        sheet = wb[name]
+
+        # 空表
+        if sheet.dimensions == "A1:A1":
+            result[name] = []
+        else:
+            i = 0
+            j = 0
+            data = []
+            keys = []
+
+            rows = list(sheet.rows)
+            head = rows.pop(0)
+
+            # 获取表头(作为key存储备份)
+            for cell in head:
+                keys.append(cell.value)
+
+            for row in rows:
+                data.append({})
+                for item in list(row):
+                    k = keys[j]
+                    data[i][k] = item.value
+                    j += 1
+                    if (j >= len(keys)): j = 0
+                i += 1
+
+            result[name] = data
+    return result
+
+
+##################
+
+cwd = os.getcwd()
+file_path = cwd + "\\消防巡检.xlsx"
+
+data = get_excel_data(file_path)
+print("excel数据: ", data)
+```
+
+## 第三方库
+
+资源合集[awesome-python](https://github.com/vinta/awesome-python)
+
+| 库名                                                | 说明                                                         |
+| --------------------------------------------------- | ------------------------------------------------------------ |
+| [pyautogui](https://github.com/asweigart/pyautogui) | 已编程的方式模拟鼠标点击和键盘输入                           |
+| [Pillow](https://github.com/python-pillow/Pillow)   | 集成图像处理功能, 可以截图, 保存图片操作                     |
+| [pywin32](https://github.com/mhammond/pywin32)      | 配合[spy++](https://learn.microsoft.com/zh-cn/visualstudio/debugger/spy-increment-help?view=vs-2019)控制windows窗口 |
+| [requests](https://github.com/psf/requests)         | 网络请求                                                     |
+| openpyxl                                            | 读取excel                                                    |
 
