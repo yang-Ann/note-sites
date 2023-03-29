@@ -27,7 +27,7 @@ const descriptionSelect =
 
     writeOperInfo("launch browser");
     browser = await chromium.launch({
-      headless: false, // 无头模式
+      headless: true, // 无头模式
       slowMo: 300 // 操作延时
     });
 
