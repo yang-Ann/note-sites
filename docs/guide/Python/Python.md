@@ -1659,21 +1659,24 @@ except KeyboardInterrupt:
     print('\n按任意键退出...')
 ```
 
-## 读取excel
+## excel操作
 
-使用`openpyxl`包
+使用[`openpyxl`](https://openpyxl-chinese-docs.readthedocs.io/zh_CN/latest/tutorial.html)包完成
+
+### 读取excel数据
 
 ```py
 import openpyxl
-import os 
+import os
 
 def get_excel_data(file_path):
     result = {}
 
     wb = openpyxl.load_workbook(file_path)
 
-    for name in wb.sheetnames:
-        sheet = wb[name]
+    print("所有的工作表", wb.sheetnames) 
+    for sheet in wb:
+        name = sheet.title
 
         # 空表
         if sheet.dimensions == "A1:A1":
@@ -1685,17 +1688,20 @@ def get_excel_data(file_path):
             keys = []
 
             rows = list(sheet.rows)
+
+            # 获取表头一行
             head = rows.pop(0)
 
-            # 获取表头(作为key存储备份)
+            # 作为key存储备份
             for cell in head:
                 keys.append(cell.value)
 
             for row in rows:
                 data.append({})
-                for item in list(row):
+                for cell in list(row):
+
                     k = keys[j]
-                    data[i][k] = item.value
+                    data[i][k] = cell.value
                     j += 1
                     if (j >= len(keys)): j = 0
                 i += 1
@@ -1712,6 +1718,130 @@ file_path = cwd + "\\消防巡检.xlsx"
 data = get_excel_data(file_path)
 print("excel数据: ", data)
 ```
+
+### 保存为excel
+
+```py
+import openpyxl
+import os
+import datetime
+
+
+cwd = os.getcwd()
+# 创建 excel
+wb = openpyxl.Workbook()
+
+# 创建三个工作表
+for i in range(3):
+    wb.create_sheet("Sheet" + str(i+1))
+
+
+# 获取当前活跃的工作表
+sheet = wb.active
+sheet.title = '新的工作表'
+# 设置单个单元格数据
+sheet['A1'] = 42
+sheet['A2'] = datetime.datetime.now()
+# 填充一行的数据
+sheet.append([1, 2, 3])
+
+# 第一行行高100
+sheet.row_dimensions[1].height=30
+# A行行宽50
+sheet.column_dimensions['A'].width=20
+# 保存为指定的文件
+wb.save(cwd + "/test.xlsx")
+
+# 加载一个excel
+wb = openpyxl.load_workbook(cwd + "/template.xlsx")
+# 设置为模板
+wb.template = True
+# 保存为一个模板(注意后缀名)
+wb.save('hello.xltx')
+
+print('success')
+```
+
+### 创建带图表的excel
+
+柱形图:
+
+```py
+from openpyxl import Workbook
+from openpyxl.chart import BarChart, Reference
+import os
+
+wb = Workbook()
+ws = wb.active
+ws.title = "柱形图"
+
+rows = [
+    ('月份', '苹果', '香蕉'),
+    (1, 43, 25),
+    (2, 10, 30),
+    (3, 40, 60),
+    (4, 50, 70),
+    (5, 20, 10),
+    (6, 10, 40),
+    (7, 50, 30),
+]
+
+for row in rows:
+    ws.append(row)
+
+chart = BarChart()
+chart.type = "col"
+chart.style = 10
+chart.title = "销量柱状图"
+chart.y_axis.title = '销量'
+chart.x_axis.title = '月份'
+
+data = Reference(ws, min_col=2, min_row=1, max_row=8, max_col=3)
+series = Reference(ws, min_col=1, min_row=2, max_row=8)
+chart.add_data(data, titles_from_data=True)
+chart.set_categories(series)
+ws.add_chart(chart, "A10")
+
+
+wb.save(os.getcwd() + "/chart.xlsx")
+```
+
+饼图:
+
+```py
+from openpyxl import Workbook
+from openpyxl.chart import PieChart, Reference
+import os
+
+data = [
+    ['水果', '销量'],
+    ['苹果', 50],
+    ['樱桃', 30],
+    ['橘子', 10],
+    ['香蕉', 40],
+]
+
+wb = Workbook()
+ws = wb.active
+ws.title = "饼图"
+
+for row in data:
+    ws.append(row)
+
+pie = PieChart()
+pie.title = "水果销量占比"
+labels = Reference(ws, min_col=1, min_row=2, max_row=5)
+data = Reference(ws, min_col=2, min_row=1, max_row=5)
+pie.add_data(data, titles_from_data=True)
+pie.set_categories(labels)
+
+ws.add_chart(pie, "D1")
+
+
+wb.save(os.getcwd() + "/chart.xlsx")
+```
+
+
 
 ## 第三方库
 
