@@ -13,7 +13,7 @@ tags:
 
 - [英文官网](https://devguide.python.org/)
 - [官网教程](https://docs.python.org/zh-cn/dev/tutorial/index.html)
-- [参考手册](https://docs.python.org/zh-tw/3/reference/index.html)
+- [参考手册](https://docs.python.org/zh-cn/dev/index.html)
 - [标准库文档](http://study.yali.edu.cn/pythonhelp/library/index.html)
 - [pip仓库](https://pypi.org/)
 - [pip文档](https://pip.pypa.io/en/stable/getting-started/)
@@ -214,7 +214,7 @@ hello.say_hi()
 
 -   `Python`是根据换行缩进进行代码块和作用域的区分的
 
--   `Python`中会使用`:`来表示结束, 比如: `if`, `for`, `函数定义`
+-   `Python`中不使用`{`和`}`来包裹代码, 取而代之的是会使用`:`来表示结束, 比如: `if`, `for`, `函数定义`
 
 ## 基本数据类型
 
@@ -244,11 +244,17 @@ print(none) # None
 -   `format()`: 格式化字符串
 
 ```py
+s1 = "张三"
+s2 = "广东"
+
 # 根据位置填充参数
-print("你好, {} 欢迎来到 \"{}\"".format("小明", "广东")) # 你好, 小明 欢迎来到 "广东"
+print('你好, {} 欢迎来到 {}'.format(s1, s2))
 
 # 根据名称填充参数
-print("你好, {name} 欢迎来到 \"{city}\"".format(city="广东", name="小明")) # 你好, 小明 欢迎来到 "广东"
+print('你好, {name} 欢迎来到 {city}'.format(city=s2, name=s1))
+
+# F-strings 3.6.2版本以后才可以使用
+print(f"你好, {s1} 欢迎来到 {s2}")
 ```
 
 -   `title()`: 以首字母大写的方式显示每个单词
@@ -1359,6 +1365,8 @@ with open("./README.md", "w", encoding="utf8") as file_obj:
 
 ## 异常
 
+[菜鸟教程异常处理](https://www.runoob.com/python/python-exceptions.html)
+
 ### 触发异常
 
 使用`raise`可以[抛出异常](https://docs.python.org/zh-cn/dev/tutorial/errors.html#raising-exceptions)
@@ -1367,7 +1375,7 @@ with open("./README.md", "w", encoding="utf8") as file_obj:
 raise NameError("这是异常信息") # 会显示指定的异常信息
 ```
 
-### 捕获异常
+### 捕获特定的异常
 
 捕获异常使用`try/except/finally`代码块处理的
 
@@ -1380,7 +1388,20 @@ finally:
     print("finally run")
 ```
 
->   注意, `except 错误类型：`的语法类似于 `js` 的 `catch` 概念，但是 `except` 必须要匹配指定类型的错误才会进入该分支, 而 `js` 的 `catch` 是只要错误产生就会进入分支：
+>   注意, `except [错误类型]：`的语法类似于 `js` 的 `catch` 概念，但是 `except` 必须要匹配指定类型的错误才会进入该分支, 而 `js` 的 `catch` 是只要错误产生就会进入分支
+
+#### 捕获所有的异常
+
+使用`except:`而不带任何异常类型, 就可以捕获所有的异常
+
+```py
+try:
+    正常的操作
+except:
+    发生异常，执行这块代码
+else:
+    如果没有异常执行这块代码
+```
 
 #### else 代码块
 
@@ -1401,7 +1422,30 @@ finally:
 
 `.pyi`文件类似于`TS`中的`.d.ts`类型声明文件
 
+## 异步操作
+
+[asyncio](https://docs.python.org/3/library/asyncio.html)
+
+TODO
+
 ## 常用标准库
+
+### os
+
+[os](https://docs.python.org/3/library/os.html)模块提供了非常丰富的方法用来处理文件和目录
+
+```py
+import os
+import time
+
+print('当前目录为: ', os.getcwd())
+print('环境变量: ', os.getenv('path'))
+
+# 退出
+os._exit(1)
+```
+
+>   菜鸟教程[os](https://www.runoob.com/python/os-file-methods.html)
 
 ### json
 
@@ -1484,9 +1528,11 @@ import pyautogui as pg
 import pyperclip
 import tkinter
 
-num=1
+num = 1
 
-# 点击按钮后触发
+# 点击获取按按钮后触发
+
+
 def get_pos():
     po.delete(0, tkinter.END)
     # 等待1秒
@@ -1495,24 +1541,48 @@ def get_pos():
     x, y = pg.position()
     text = str(x) + ', ' + str(y)
     po.insert(0, text)
-    # pyperclip.copy("pyautogui.click(" + text + ")")
-    pyperclip.copy(text)
-    
- 
+
+    # 复选框选中则复制
+    if check_button_var.get() == 1:
+        # pyperclip.copy("pyautogui.click(" + text + ")")
+        pyperclip.copy(text)
+
+
+# 创建一个窗口
 win = tkinter.Tk()
+# 设置标题
 win.title("获取鼠标坐标")
+
+# 宽高
 w = win.winfo_screenwidth()
 h = win.winfo_screenheight()
 
-# 窗口居中、窗口大小 260 * 100
-win.geometry("%dx%d+%d+%d" %(260,80,(w-260)/2,(h-100)/2))
-tip = tkinter.Label(win, text="点击获取按钮, " + str(num) + "秒后显示光标位置并自动复制")
+# 窗口居中、窗口大小 250 * 80
+win.geometry("%dx%d+%d+%d" % (250, 80, (w-250)/2, (h-80)/2))
+
+# label 控件
+tip = tkinter.Label(win, text="点击获取按钮, " + str(num) + "秒后显示光标位置")
+# 网格布局
 tip.grid(row=0)
+
+# 文本框控件
 po = tkinter.Entry(win)
-po.grid(row=1)
-# 获取位置
+# 网格布局
+po.grid(row=1, column=0)
+
+# 获取位置按钮
 do = tkinter.Button(win, text="获取", command=get_pos)
-do.grid(row=2)
+do.grid(row=1, column=1)
+
+# 初始化一个值(绑定给复选框)
+check_button_var = tkinter.IntVar()
+check_button_var.set(1)  # 1 选中, 0 非选中
+# 复选框控件
+c = tkinter.Checkbutton(win, text="自动复制位置", variable=check_button_var)
+c.grid(row=3)
+
+
+# 进入消息循环
 win.mainloop()
 ```
 
@@ -1621,43 +1691,7 @@ pg.click(button='right')
 # pg.alert('你的密码是: ' + pwd)
 ```
 
-### 程序获取坐标
-
-可以使用[tkinter](# tkinter)的例子来快速的获取鼠标坐标, 也可以使用下面的命令行获取坐标:
-
-```py
-import os
-import time
-import pyautogui as pg
-try:
-    while True:
-        print("按下组合键 ctrl + c 结束执行\n")
-
-        # 获取屏幕的尺寸
-        sW, sH = pg.size()
-
-        # 屏幕分辨率
-        print("屏幕分辨率: " + str(sW) + ' x ' + str(sH) + '\n')
-
-        # 获取当前鼠标的坐标
-        x, y = pg.position()
-
-        # 当前鼠标坐标值
-        posX = str(x).rjust(4).strip()
-        posY = str(y).rjust(4).strip()
-
-        print("鼠标坐标: " + posX+', '+posY)
-        # print("\npyautogui.click(" + posX + ", " + posY + ")\n")
-
-        # 等待0.5秒
-        time.sleep(0.5)
-
-        # 清屏
-        os.system('cls')
-
-except KeyboardInterrupt:
-    print('\n按任意键退出...')
-```
+>   获取程序获取坐标, 可以使用[tkinter](# tkinter)的例子来快速的获取鼠标坐标
 
 ## excel操作
 
@@ -1841,17 +1875,17 @@ ws.add_chart(pie, "D1")
 wb.save(os.getcwd() + "/chart.xlsx")
 ```
 
-
-
 ## 第三方库
 
 资源合集[awesome-python](https://github.com/vinta/awesome-python)
 
-| 库名                                                | 说明                                                         |
-| --------------------------------------------------- | ------------------------------------------------------------ |
-| [pyautogui](https://github.com/asweigart/pyautogui) | 已编程的方式模拟鼠标点击和键盘输入                           |
-| [Pillow](https://github.com/python-pillow/Pillow)   | 集成图像处理功能, 可以截图, 保存图片操作                     |
-| [pywin32](https://github.com/mhammond/pywin32)      | 配合[spy++](https://learn.microsoft.com/zh-cn/visualstudio/debugger/spy-increment-help?view=vs-2019)控制windows窗口 |
-| [requests](https://github.com/psf/requests)         | 网络请求                                                     |
-| openpyxl                                            | 读取excel                                                    |
+| 库名                                                         | 说明                                                         |
+| ------------------------------------------------------------ | ------------------------------------------------------------ |
+| [pyautogui](https://github.com/asweigart/pyautogui)          | 已编程的方式模拟鼠标点击和键盘输入                           |
+| [Pillow](https://github.com/python-pillow/Pillow)            | 集成图像处理功能, 可以截图, 保存图片操作                     |
+| [pywin32](https://github.com/mhammond/pywin32)               | 配合[spy++](https://learn.microsoft.com/zh-cn/visualstudio/debugger/spy-increment-help?view=vs-2019)控制windows窗口 |
+| [requests](https://github.com/psf/requests)                  | 网络请求                                                     |
+| [openpyxl](https://openpyxl-chinese-docs.readthedocs.io/zh_CN/latest/tutorial.html) | 读取excel                                                    |
+| [pyinstaller](https://pyinstaller.org/en/stable/)            | 可以将python打包成一个可执行程序                             |
+| [playwright](https://playwright.dev/python/docs/intro)       | 浏览器端到端测试框架                                         |
 

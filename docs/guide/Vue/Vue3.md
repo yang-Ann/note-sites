@@ -15,8 +15,6 @@ tags:
 - [中文官网(new)](https://staging-cn.vuejs.org/)
 - [Vue2迁移指南](https://v3.cn.vuejs.org/guide/migration/introduction.html#%E4%BB%8B%E7%BB%8D)
 
-
-
 [[toc]]
 
 ## vite
@@ -2025,6 +2023,52 @@ export default {
 - `emit`:  一个函数, 用于发射自定义事件
 - `expose`: 一个函数, 用来显示暴露组件对外暴露的属性(Vue 3.2)
 
+### setup props 指定类型
+
+```ts
+import { defineComponent } from "vue";
+import type { PropType } from "vue";
+
+type ListType = Array<{ type: string, value: string }>;
+
+export default defineComponent({
+  props: {
+    data: {
+      type: Array as PropType<ListType>, // 这里指定类型
+			default: () => []
+    }
+  },
+  setup(props) {
+    console.log(props.data);
+  }
+})
+```
+
+### setup emits 指定类型
+
+```ts
+import { defineComponent } from "vue";
+import type { PropType } from "vue";
+
+type ListType = Array<{ type: string, value: string }>;
+
+export default defineComponent({
+  emits: {
+    addBook(payload: { bookName: string }) {
+      // 执行运行时校验
+      return payload.bookName.length > 0
+    }
+  },
+  setup(props, { emits }) {
+    emits('addBook', {
+        bookName: 123 // 类型错误
+    });
+    
+    emits('non-declared-event') // 类型错误
+  }
+})
+```
+
 ## 生命周期
 
 Vue3 的[生命周期](https://v3.cn.vuejs.org/api/options-lifecycle-hooks.html)相较于 Vue2 的一些区别: 
@@ -3150,8 +3194,8 @@ import { myDirective as vMyDirective } from "./MyDirective.js";
 
 ```vue
 <template>
-    <h3>Parent</h3>
-    <Child foo="hello foo" :bar="999" @myEvent="handleMyEvent" />
+  <h3>Parent</h3>
+  <Child foo="hello foo" :bar="999" @myEvent="handleMyEvent" />
 </template>
 
 <script lang="ts" setup>
@@ -3164,26 +3208,33 @@ const handleMyEvent = (e, msg) => window.alert(msg);
 
 ```vue
 <template>
-    <h3>Child</h3>
-    <div>props: {{ props }}</div>
-    <button @click="emit('myEvent', $event, 'child Data')">trigger</button>
+  <h3>Child</h3>
+  <div>props: {{ props }}</div>
+  <button @click="emit('myEvent', $event, 'child Data')">trigger</button>
 </template>
 
 <script lang="ts" setup>
-const count = 1;
+
+// 定义 Props 类型
+export interface Props {
+  foo?: string
+  bar?: number
+}
 
 // 获取 props
-const props = defineProps({
-    foo: String,
-    bar: {
-        type: Number,
-        default: 1,
-        // default: count, // Error
-    },
-});
+const props = withDefaults(defineProps<Props>(), {
+  // 指定默认值, 可以是一个值, 也可以是一个函数
+  foo: "hello",
+  bar: () => 1,
+})
 
-// 获取 emit
+// 运行时获取 emit(无法定义类型)
 const emit = defineEmits(["myEvent"]);
+
+// 基于类型获取 emit
+const emit = defineEmits<{
+  (e: 'myEvent', msg: string): void
+}>();
 </script>
 ```
 
@@ -3207,10 +3258,10 @@ const emit = defineEmits(["myEvent"]);
 
 ```vue
 <template>
-      <div>Child</div>
+  <div>Child</div>
 </template>
 
-<script setup>
+<script lang="ts" setup>
 import { ref } from "vue";
 
 const count = 999;
@@ -3224,20 +3275,20 @@ defineExpose({ count, msg });
 
 ```vue
 <template>
-    <Child ref="ChildRef" />
+  <Child ref="ChildRef" />
 </template>
 
-<script setup>
+<script lang="ts" setup>
 import Child from "./Child.vue";
 import { ref, onMounted } from "vue";
 
-const ChildRef = ref(null);
+const ChildRef = ref<InstanceType<typeof Child> | null>(null);
 
 onMounted(() => {
-    console.log(ChildRef.value); // Child 组件实例
-    // 会被自动解包
-    console.log(ChildRef.value.count); // => 999
-    console.log(ChildRef.value.msg); // => hello i'm Child
+  console.log(ChildRef.value); // Child 组件实例
+  // 会被自动解包
+  console.log(ChildRef.value?.count); // => 999
+  console.log(ChildRef.value?.msg); // => hello i'm Child
 });
 </script>
 ```

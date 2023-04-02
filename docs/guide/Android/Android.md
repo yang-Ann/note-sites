@@ -2755,15 +2755,17 @@ String value = sp.getString("userName", "默认用户");
 
 SQLite3支持**NULL**, **INTEGER**, **REAL(浮点数字)**, **TEXT(字符串文本)**和**BLOB(二进制对象)**数据类型, 虽然它支持的类型只有五种(不支持布尔值, 会自动转换为0和1)
 
-但实际上sqlite3也接受**varchar(n)**, **char(n)**, **decimal(p,s)**等数据类型, 只不过在运算或保存时会转成对应的五种数据类型;
+但实际上SQlite3也接受**varchar(n)**, **char(n)**, **decimal(p,s)**等数据类型, 只不过在运算或保存时会转成对应的五种数据类型;
 
 SQLite最大的特点是可以把各种类型的数据保存到**任何字段**中, 但是主键只能是**Integer类型**
 
-Sqlite数据库一般要求主键是**_id**,当然也可以是**id**
+SQlite数据库一般要求主键是**_id**,当然也可以是**id**
 
 > android里面的数据库是由底层的**sqilte.c**的代码来动态生成的
 
 #### SQLiteDatabase
+
+[菜鸟教程SQL](https://www.runoob.com/sql/sql-tutorial.html)
 
 `SQLiteDatabase`是SQlint的数据库管理类, 它体用了若干操作数据库表的API, 常用的方法如下: 
 
@@ -2779,12 +2781,10 @@ Sqlite数据库一般要求主键是**_id**,当然也可以是**id**
     - `getVersion`: 获取数据库的版本号
 
     - `setVersion`: 设置数据库的版本号
-
 -   事务类, 用于事务层面的操作
     - `beginTransaction`: 开始事务
     - `setTransactionSuccessful`: 设置事务的成功标志
     - `endTransaction`: 结束事务
-
 -   数据处理类, 用于数据表层面的操作
     - `execSQL`: 执行拼接好的SQL控制语句
     - `delete`: 删除符合条件的记录
@@ -2792,6 +2792,8 @@ Sqlite数据库一般要求主键是**_id**,当然也可以是**id**
     - `insert`: 插入一条记录
     - `query`: 执行查询操作，返回结果集的游标
     - `rawQuery`: 执行拼接好的SQL查询语句，返回结果集的游标
+
+>   可以下载一个GUI软件来本地运行测试sqlint语句, 比如: [SQLite Expert](https://sqliteexpert.com/)
 
 ##### 创建数据库
 
@@ -2925,8 +2927,6 @@ public class UserSQLiteOpenHelper extends SQLiteOpenHelper {
     ///////////// 上面是数据库的初始化操作
 }
 ```
-
-> [菜鸟教程SQL](https://www.runoob.com/sql/sql-tutorial.html)
 
 ##### 新建一个用户类
 

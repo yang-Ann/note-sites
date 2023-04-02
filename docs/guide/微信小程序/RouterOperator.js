@@ -9,7 +9,7 @@ const joinParams = (obj) => {
 			result += `${key}=${obj[key]}&`
 		}
 		// decodeURIComponent()
-		res = first + encodeURIComponent(result.slice(0, -1));		
+		res = first + encodeURIComponent(result.slice(0, -1));
 	}
 	
 	return res;

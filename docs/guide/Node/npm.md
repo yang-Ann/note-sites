@@ -418,6 +418,23 @@ npm run env
 
 `npx` 会在当前目录下的`./node_modules/.bin`里去查找是否有可执行的命令，没有找到的话再从全局里查找是否有安装对应的模块，全局也没有的话就会自动下载对应的模块, `npx`经常用在一些`cli`, `校验工具`等, 一般只会执行一次的地方, 如: `npx create-react-app xxx`, `npx vue create xxx`,`npx eslint`
 
+## .npmrc
+
+[npmrc](https://docs.npmjs.com/cli/v9/using-npm/config#npmrc-files)
+
+`.npmrc`文件可以修改`npm`项目级别的配置, 例如, 下面是一个典型的`pnpm monorepo`项目:
+
+```sh
+# 镜像修改
+registry=https://registry.npmjs.org/
+# 禁用严格依赖
+strict-peer-dependencies=false
+# pnpm i 不安装工作区下的所有包的依赖
+recursive-install=false
+# 发布包是不检查 git 是否提交
+git-checks=false
+```
+
 ## npm 开发工具包
 
 [官方教程](https://docs.npmjs.com/packages-and-modules/contributing-packages-to-the-registry)
@@ -428,7 +445,11 @@ npm run env
 
 ```sh
 npm init # 正常初始化
-npm init --scoped=@scope/package # 创建带命名空间的包, 例如: @vue/cli
+
+# 创建带命名空间的包, 例如: @vue/cli
+mkdir project
+cd project
+npm init --scoped=@myName # 对应的包名则叫 @myName/project, 会自动拼接
 ```
 
 添加`package.json`中`bin`字段可以添加可执行文件安装到路径中, `key`表示命令, `value`命令执行的文件, 例如:
@@ -480,18 +501,37 @@ npm logout # 登出
 npm whoami # 查看当前登录用户
 npm version patch # 自动修改版本并 commit(支持很多的参数可见 npm version -h)
 npm publish # 发布
-npm unpublish [pkg]@[version] -f # 强制撤销
+npm unpublish 包名 -f # 删除一个包
+npm unpublish 包名@0.0.1 -f # 删除指定版本的包
+```
 
+如果配置了淘宝源则需要修改为官方源`npm config set registry https://registry.npmjs.org`, 然后重新安装依赖再发布
+
+>   如果报`TLS 1.2`错误需要将`.npmrc`的`registry`从`http`修改为`https`
+
+#### 发布命名空间的包
+
+>   使用命名空间的包发布的话还需要在npm上新建一个对应命名空间的[组织](https://www.npmjs.com/org/create)
+
+```sh
 npm publish --access public # 发布私有包
-
 npm access ls-packages # 查看当前用户的组织
 ```
 
-> 如果配置了淘宝源则需要修改为官方源`npm config set registry https://registry.npmjs.org`, 然后重新安装依赖再发布
+可以配置`npm`
 
-> 如果报`TLS 1.2`错误需要将`.npmrc`的`registry`从`http`修改为`https`
+```sh
+npm config set access public
+```
 
->   使用命名空间的包发布的话还需要在npm上新建一个对应命名空间的[组织](https://www.npmjs.com/org/create)
+或者在`package.json`添加如下的配置:
+
+```json
+"publishConfig": {
+  "access": "public",
+  "registry": "https://registry.npmjs.org/"
+}
+```
 
 ## npm create 
 
@@ -592,6 +632,7 @@ npm access ls-packages # 查看当前用户的组织
 | progress        | 进度条                                             |
 | update-notifier | 应用更新通知                                       |
 | which-pm-runs   | 检查当前使用的包管理器                             |
+| bumpp           | 交互式更新package版本                              |
 
 ## nvm
 
@@ -960,14 +1001,6 @@ pnpm add pkg2 -rD --filter pkg1
 
 ### release工作流
 
-[monorepo工作流基础之changesets打开与进阶](https://blog.csdn.net/qq_21567385/article/details/122361591)
-
 [软件开发版本](https://blog.csdn.net/waynelu92/article/details/73604172)
 
-常见的`tag`如下所示: 
-
-| 名称  | 功能                                                         |
-| ----- | ------------------------------------------------------------ |
-| alpha | 预览版(内部测试版), 一般不向外部发布，会有很多Bug，一般只有测试人员使用 |
-| beta  | 测试版(公开测试版)，这个阶段的版本会一直加入新的功能。在Alpha版之后推出 |
-| rc    | 最终测试版本, 可能成为最终产品的候选版本, 如果未出现问题则可发布成为正式版本 |
+可以使用[`bumpp`](https://github.com/antfu/bumpp)包来快速管理版本, 发布依赖包使用`pnpm publish`或者`pnpm -r publish`(发布所有的)命令即可

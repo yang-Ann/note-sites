@@ -10,6 +10,8 @@ tags:
 
 [菜鸟教程](https://www.runoob.com/mysql/mysql-tutorial.html)
 
+[Mysql廖雪峰](https://www.liaoxuefeng.com/wiki/1177760294764384)
+
 ## 下载安装
 
 下载安装解压即可
@@ -277,21 +279,21 @@ create table `数据表名` (
 ```sql
 # 当 test1 表不存在时才创建
 create table if not exists `test1`( 
-   `id` int auto_increment primary key, # 自增 主键
-   `title` varchar(100) not null, # 类型为 varchar(100), 即字符串长度为 100, 不能为空
-   `author` varchar(40) null, # 可以为空
+   `id` int PRIMARY KEY AUTOINCREMENT, # 自增 主键
+   `title` varchar(100) NOT NULL, # 类型为 varchar(100), 即字符串长度为 100, 不能为空
+   `author` varchar(40) NULL, # 可以为空
    `date` date,
    primary key ( `id` ) # 主键是id
-)engine=innodb default charset=utf8; # 设置存储引擎和字符串为 utf8
+) engine=innodb default charset=utf8; # 设置存储引擎和字符串为 utf8
 ```
 
 #### 常用的列条件
 
--   `primary key`: 主键(不能为空)
+-   `PRIMARY KEY`: 主键(不能为空)
 
--   `auto_increment`: 自增
--   `not null`: 非空
--   `null`: 可以为空
+-   `AUTOINCREMENT`: 自增
+-   `NOT NULL`: 非空
+-   `NULL`: 可以为空
 
 ### 更新表结构
 
@@ -300,8 +302,6 @@ create table if not exists `test1`(
 ```sql
 alter table 表名 add 新增列的名称 新增列的类型 新增列的条件 
 ```
-
-
 
 ```sql
 alter table learn_mysql.test1 add content varchar(255) null 
@@ -334,9 +334,9 @@ drop table 表名;
 ### 插入数据
 
 ```sql
-insert into [数据库名.]表名 ( 字段1, 字段2, ... )
+insert into [数据库名.]表名 (字段1, 字段2, ... )
                 				values
-                				( 值1, 值2, ... );
+                				(值1, 值2, ... );
 ```
 
 >   `insert into 数据库名.表名`可以指定为那个数据库的那个表插入数据, 当然使用`use 数据库`也可以省略指定数据库
@@ -344,6 +344,16 @@ insert into [数据库名.]表名 ( 字段1, 字段2, ... )
 ```sh
 # 插入一条数据, NOW()为 mysql 自带的时间函数
 insert into test1 (author, title, date) values ('An', 'learn mysql', NOW());
+```
+
+### 插入多条数据
+
+```sql
+insert into [数据库名.]表名 (字段1, 字段2, ... )
+                        values ( 值1, 值2, ... ),
+                        (行1值1, 行1值2, ... ),
+                        (行2值1, 行2值2, ... ),
+                        (行3值1, 行3值2, ... );
 ```
 
 #### 常见的mysql函数
@@ -408,8 +418,6 @@ select * from learn_mysql.test1 where author = "An" and to_days(date) = to_days(
 select * from learn_mysql.test1 where to_days(now()) - to_days(date) = 1;
 ```
 
-
-
 ### 更新数据
 
 ```sql
@@ -467,8 +475,6 @@ select * from test1 where author like 'A%';
 ```sql
 select * from 表名 order by 要排序的列名 asc
 ```
-
-
 
 ```sql
 # test1 表按照 date 字段升序排列

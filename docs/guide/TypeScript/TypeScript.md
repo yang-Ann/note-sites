@@ -16,7 +16,9 @@ tags:
 
 [官方中文文档](https://www.tslang.cn/docs/handbook/basic-types.html)
 
-[TypeScript入门教程](https://ts.xcatliu.com/introduction/index.html) 
+[TypeScript入门教程](https://ts.xcatliu.com/introduction/index.html)
+
+[学习TypeScript](https://learntypescript.dev/)
 
 [[toc]]
 
@@ -70,16 +72,16 @@ flag3 = false;
 
 ### 自动类型推断
 
-ts拥有自动的类型推断机制
+TS拥有自动的类型推断机制, 默认是`let`(宽泛推断), 还有`const`(精准推断)
 
 当对变量的声明和赋值是同时进行的, ts编译器会自动推断变量的类型
 
 ```ts
-let count = 0; // 自定类型推断为 number
-count.toFixed(2); // ok
-count = 'hello'; // Error 不能将类型“string”分配给类型“number”
-count.slice(); // Error 类型“number”上不存在属性“slice”
+let count1 = 0; // 自动类型推断为 number
+const count2 = 0; // 自动类型推断为 0
 ```
+
+>   同样的规则对数组和对象也是一样
 
 ### Null 和 Undefined
 
@@ -4001,15 +4003,13 @@ const obj: Omit<Person, "name"> = {
 
 #### Exclude
 
-`Exclude<T, U>`: 在 T 类型中，去除 T 类型和 U 类型的交集，返回剩余的部分, 它的定义如下: 
+`Exclude<T, U>`: 在 T 类型和 U 类型中获取不重复的部分, 它的定义如下: 
 
 ```ts
 type Exclude<T, U> = T extends U ? never : T;
 ```
 
-> 这里的 `extends` 返回的 T 是原来的 T 中和 U 无交集的属性，而任何属性联合 `never` 都是自身
-
-基本使用
+基本使用: 
 
 ```ts
 // 返回 "c"
@@ -4023,6 +4023,24 @@ const str1: T1 = "c";
 
 let str2: T2 = "hello";
 str2 = 123;
+```
+
+#### Extract
+
+`Extract<T, U>` 在 T 类型中, 去除 T 类型和 U 类型的交集，返回剩余的部分, 它的定义如下: 
+
+```ts
+type Extract<T, U> = T extends U ? T : never;
+```
+
+基本使用:
+
+```ts
+// 返回 "a" | "b"
+type T1 = Extract<"a" | "b" | "c", "a" | "b">;
+
+// 返回 () => void
+type T2 = Extract<string | number | (() => void), Function>; 
 ```
 
 #### NonNullable
@@ -4058,24 +4076,23 @@ const o6: NewPerson = undefined; // Error
 `ReturnType<T>`: 获取 T 类型(函数)对应的返回值类型, 它的类型定义如下: 
 
 ```ts
-type ReturnType<T extends (...args: any) => any> 
-= T extends (...args: any) => infer R ? R : any;
+type ReturnType<T extends (...args: any) => any> = T extends (...args: any) => infer R ? R : any;
 ```
 
 基本使用:
 
 ```ts
-type Person = {
-  foo: (x: string | number) => string | number
-}
+const myFn = () => {
+  return [1, true, "hello"];
+};
 
-type hello = () => [number, string]; 
+// 这里要使用 typeof 因为 myFn 不是一个类型
+type MyFnResType = ReturnType<typeof myFn>;
+// (string | number | boolean)[]
 
-// string | number
-type FooType = ReturnType<Person["foo"]>;
-
+type FnType = () => [number, string];
+type ResType = ReturnType<FnType>;
 // [number, string]
-type HelloType = ReturnType<hello>;
 ```
 
 #### InstanceType
@@ -4156,9 +4173,12 @@ type PersonParamsType = ConstructorParameters<typeof Person>;
 const p: PersonParamsType = ["hello", 1];
 ```
 
+#### 其他泛型
 
-
-
+-   `Uppercase`: 转换为大写
+-   `Lowercase`: 转换为小写
+-   `Capitalize`: 首字母大写
+-   `Uncapitalize`: 首字母小写
 
 ## 声明的合并
 
@@ -4278,119 +4298,6 @@ Alarm.version;
 
 类的合并与接口的合并规则是一样的
 
-## 非空断言 !
-
-非空断言运算符(`!`)可以用在变量名或者函数名之后, 用来强调对应的元素是非`null | undefined`的
-
-```ts
-// 参数是可选的
-function onClick(callback?: () => void){
-  callback(); // error 不能调用可能是“未定义”的对象
-
-  // 正常需要手动的去判断
-  if (typeof callback === "function") { 
-    callback();
-  }
-
-  // 使用非空断言可以(类似于 可选链`?` 差不多)
-  callback!(); 
-}
-```
-
-> 编译后的代码会去除这个非空断言`!`
-
-## 键值获取 keyof
-
-`keyof`可以获取一个类型所有键值, 返回一个联合类型, 如下: 
-
-```ts
-type Person = {
-  name: string;
-  age: number;
-}
-
-type PersonKey = keyof Person; // "name" | "age"
-```
-
-`keyof`的一个典型用途是限制访问对象的 key 合法化，因为`any`做索引是不被接受的
-
-```ts
-type Person = {
-  name: string;
-  age: number;
-}
-
-// 将 key 定义 any 会报错
-function getValue(obj: Person, key: keyof Person): Person[keyof Person] {
-  return obj[key];
-}
-```
-
-更好的做法是使用泛型配合`extends`,`keyof`如下: 
-
-```ts
-type Person = {
-  name: string;
-  age: number;
-}
-
-// T 是一个对象
-// K 是这个对象的 key 的联合类型
-// 返回值为 T[K]
-function getValue<T extends Object, K extends keyof T>(obj: T, key: K): T[K] {
-  return obj[key];
-}
-```
-
-## 遍历属性 in
-
-`in`只能用在类型的定义中，可以对枚举类型进行遍历，如下：
-
-```ts
-// TypeToNumber 类型可以将任何类型的键值转化成 number 类型
-type TypeToNumber<T> = {
-  [key in keyof T]: number
-}
-```
-
-`keyof`返回泛型 T 的所有键枚举类型, `key`是自定义的任何变量名, 中间用`in`链接, 外围用`[]`包裹起来(这个是固定搭配)，冒号右侧`number`将所有的`key`定义为`number`类型, 使用如下: 
-
-```ts
-const obj: TypeToNumber<Person> = { name: 10, age: 10 }
-```
-
-## typeof
-
-`typeof`关键字在js中可以用来判断基本数据类型, 在ts中也除了可以判断基本数据类型, 还可以获取类型的"相关类型", 如下:
-
-```ts
-const obj = {
-  name: "张三",
-  age: 18,
-}
-
-// 获取对象类型
-type ObjType = typeof obj;
-// { name: string; age: number; }
-
-// 获取对象键值字面量
-type ObjKyes = keyof typeof obj;
-// "name" | "age"
-
-
-function add(a: number, b: number): number {
-  return a + b;
-}
-
-// 获取函数参数类型
-type AddParamsType = Parameters<typeof add>;
-// [a: number, b: number]
-
-// 获取函数返回值类型
-type AddReturnType = ReturnType<typeof add>;
-// number
-```
-
 ## 编译文件
 
 安装TypeScript编译器:`npm install -g typescript`
@@ -4454,6 +4361,8 @@ tsc index.ts --outDir ../dist --target ES6 --watch
 当命令行上指定了输入文件时,`tsconfig.json`文件会被忽略
 
 ### 配置选项
+
+[`tsconfig.json`](https://www.typescriptlang.org/zh/tsconfig#skipLibCheck) 
 
 #### include
 
@@ -4519,94 +4428,7 @@ tsc index.ts --outDir ../dist --target ES6 --watch
 
 #### compilerOptions
 
-[编译选项](https://www.typescriptlang.org/zh/tsconfig)是配置文件中非常重要也比较复杂的配置选项, 配置如下:
-
-| 选项                                 | 类型                            | 默认值                                                       | 描述                                                         |
-| :----------------------------------- | :------------------------------ | :----------------------------------------------------------- | :----------------------------------------------------------- |
-| `--allowJs`                          | `boolean`                       | `false`                                                      | 允许编译javascript文件。                                     |
-| `--allowSyntheticDefaultImports`     | `boolean`                       | `module === "system"` 或设置了 `--esModuleInterop` 且 `module` 不为 `es2015` / `esnext` | 允许从没有设置默认导出的模块中默认导入。这并不影响代码的输出，仅为了类型检查。 |
-| `--allowUnreachableCode`             | `boolean`                       | `false`                                                      | 不报告执行不到的代码错误。                                   |
-| `--allowUnusedLabels`                | `boolean`                       | `false`                                                      | 不报告未使用的标签错误。                                     |
-| `--alwaysStrict`                     | `boolean`                       | `false`                                                      | 以严格模式解析并为每个源文件生成 `"use strict"`语句          |
-| `--baseUrl`                          | `string`                        |                                                              | 解析非相对模块名的基准目录。查看 [模块解析文档](https://www.tslang.cn/docs/handbook/module-resolution.html#base-url)了解详情。 |
-| `--charset`                          | `string`                        | `"utf8"`                                                     | 输入文件的字符集。                                           |
-| `--checkJs`                          | `boolean`                       | `false`                                                      | 在 `.js`文件中报告错误。与 `--allowJs`配合使用。             |
-| `--declaration` `-d`                 | `boolean`                       | `false`                                                      | 生成相应的 `.d.ts`文件。                                     |
-| `--declarationMap`                   | `boolean`                       | `false`                                                      | 对每个`.d.ts`文件, 都生成对应的`.d.ts.map`（sourcemap）文件  |
-| `--declarationDir`                   | `string`                        |                                                              | 生成声明文件的输出目录路径。                                 |
-| `--diagnostics`                      | `boolean`                       | `false`                                                      | 显示诊断信息。                                               |
-| `--disableSizeLimit`                 | `boolean`                       | `false`                                                      | 禁用JavaScript工程体积大小的限制                             |
-| `--emitBOM`                          | `boolean`                       | `false`                                                      | 在输出文件的开头加入BOM头（UTF-8 Byte Order Mark）。         |
-| `--emitDecoratorMetadata` [1]        | `boolean`                       | `false`                                                      | 给源码里的装饰器声明加上设计类型元数据。查看 [issue #2577](https://github.com/Microsoft/TypeScript/issues/2577)了解更多信息。 |
-| `--emitDeclarationOnly`              | `boolean`                       | `false`                                                      | 仅生成`.d.ts`文件, 不生成`.js`文件                           |
-| `--experimentalDecorators` [1]       | `boolean`                       | `false`                                                      | 启用实验性的ES装饰器。                                       |
-| `--extendedDiagnostics`              | `boolean`                       | `false`                                                      | 显示详细的诊段信息。                                         |
-| `--forceConsistentCasingInFileNames` | `boolean`                       | `false`                                                      | 禁止对同一个文件的不一致的引用。                             |
-| `--help` `-h`                        |                                 |                                                              | 打印帮助信息。                                               |
-| `--importHelpers`                    | `string`                        |                                                              | 从 [`tslib` ](https://www.npmjs.com/package/tslib)导入辅助工具函数（比如 `__extends`, `__rest`等） |
-| `--inlineSourceMap`                  | `boolean`                       | `false`                                                      | 生成单个sourcemaps文件，而不是将每sourcemaps生成不同的文件。 |
-| `--inlineSources`                    | `boolean`                       | `false`                                                      | 将代码与sourcemaps生成到一个文件中，要求同时设置了 `--inlineSourceMap`或 `--sourceMap`属性。 |
-| `--init`                             |                                 |                                                              | 初始化TypeScript项目并创建一个 `tsconfig.json`文件。         |
-| `--isolatedModules`                  | `boolean`                       | `false`                                                      | 将每个文件作为单独的模块（与“ts.transpileModule”类似）。     |
-| `--jsx`                              | `string`                        | `"Preserve"`                                                 | 在 `.tsx`文件里支持JSX： `"React"`或 `"Preserve"`。查看 [JSX](https://www.tslang.cn/docs/handbook/jsx.html)。 |
-| `--jsxFactory`                       | `string`                        | `"React.createElement"`                                      | 指定生成目标为react JSX时，使用的JSX工厂函数，比如 `React.createElement`或 `h`。 |
-| `--lib`                              | `string[]`                      |                                                              | 编译过程中需要引入的库文件的列表。 可能的值见[官网](https://www.typescriptlang.org/zh/tsconfig#lib), 注意：如果`--lib`没有指定默认注入的库的列表。默认注入的库为： <br />► 针对于`--target ES5`：`DOM，ES5，ScriptHost` ► 针对于`--target ES6`：`DOM，ES6，DOM.Iterable，ScriptHost` |
-| `--listEmittedFiles`                 | `boolean`                       | `false`                                                      | 打印出编译后生成文件的名字。                                 |
-| `--listFiles`                        | `boolean`                       | `false`                                                      | 编译过程中打印文件名。                                       |
-| `--locale`                           | `string`                        | *(platform specific)*                                        | 显示错误信息时使用的语言，比如：en-us。                      |
-| `--mapRoot`                          | `string`                        |                                                              | 为调试器指定指定sourcemap文件的路径，而不是使用生成时的路径。当 `.map`文件是在运行时指定的，并不同于 `js`文件的地址时使用这个标记。指定的路径会嵌入到 `sourceMap`里告诉调试器到哪里去找它们。 |
-| `--maxNodeModuleJsDepth`             | `number`                        | `0`                                                          | node_modules依赖的最大搜索深度并加载JavaScript文件。仅适用于 `--allowJs`。 |
-| `--module` `-m`                      | `string`                        | `target === "ES6" ? "ES6" : "commonjs"`                      | 指定生成哪个模块系统代码： `"None"`, `"CommonJS"`, `"AMD"`, `"System"`, `"UMD"`, `"ES6"`或 `"ES2015"`。 <br />► 只有 `"AMD"`和 `"System"`能和 `--outFile`一起使用。 <br />► `"ES6"`和 `"ES2015"`可使用在目标输出为 `"ES5"`或更低的情况下。 |
-| `--moduleResolution`                 | `string`                        | `module === "AMD" or "System" or "ES6" ? "Classic" : "Node"` | 决定如何处理模块。或者是`"Node"`对于Node.js/io.js，或者是`"Classic"`（默认）。查看[模块解析](https://www.tslang.cn/docs/handbook/module-resolution.html)了解详情。 |
-| `--newLine`                          | `string`                        | *(platform specific)*                                        | 当生成文件时指定行结束符： `"crlf"`（windows）或 `"lf"`（unix）。 |
-| `--noEmit`                           | `boolean`                       | `false`                                                      | 不生成输出文件。                                             |
-| `--noEmitHelpers`                    | `boolean`                       | `false`                                                      | 不在输出文件中生成用户自定义的帮助函数代码，如 `__extends`。 |
-| `--noEmitOnError`                    | `boolean`                       | `false`                                                      | 报错时不生成输出文件。                                       |
-| `--noErrorTruncation`                | `boolean`                       | `false`                                                      | 不截短错误消息。                                             |
-| `--noFallthroughCasesInSwitch`       | `boolean`                       | `false`                                                      | 报告switch语句的fallthrough错误。（即，不允许switch的case语句贯穿） |
-| `--noImplicitAny`                    | `boolean`                       | `false`                                                      | 在表达式和声明上有隐含的 `any`类型时报错。                   |
-| `--noImplicitReturns`                | `boolean`                       | `false`                                                      | 不是函数的所有返回路径都有返回值时报错。                     |
-| `--noImplicitThis`                   | `boolean`                       | `false`                                                      | 当 `this`表达式的值为 `any`类型的时候，生成一个错误。        |
-| `--noImplicitUseStrict`              | `boolean`                       | `false`                                                      | 模块输出中不包含 `"use strict"`指令。                        |
-| `--noLib`                            | `boolean`                       | `false`                                                      | 不包含默认的库文件（ `lib.d.ts`）。                          |
-| `--noResolve`                        | `boolean`                       | `false`                                                      | 不把 `/// <reference``>`或模块导入的文件加到编译文件列表。   |
-| `--noStrictGenericChecks`            | `boolean`                       | `false`                                                      | 禁用在函数类型里对泛型签名进行严格检查。                     |
-| `--noUnusedLocals`                   | `boolean`                       | `false`                                                      | 若有未使用的局部变量则抛错。                                 |
-| `--noUnusedParameters`               | `boolean`                       | `false`                                                      | 若有未使用的参数则抛错。                                     |
-| `--out`                              | `string`                        |                                                              | 弃用。使用 `--outFile` 代替。                                |
-| `--outDir`                           | `string`                        |                                                              | 重定向输出目录。                                             |
-| `--outFile`                          | `string`                        |                                                              | 将输出文件合并为一个文件。合并的顺序是根据传入编译器的文件顺序和 `///<reference``>`和 `import`的文件顺序决定的。查看输出文件顺序文件了解详情。 |
-| `paths` [2]                          | `Object`                        |                                                              | 模块名到基于 `baseUrl`的路径映射的列表。查看 [模块解析文档](https://www.tslang.cn/docs/handbook/module-resolution.html#path-mapping)了解详情。 |
-| `--preserveConstEnums`               | `boolean`                       | `false`                                                      | 保留 `const`和 `enum`声明。查看 [const enums documentation](https://github.com/Microsoft/TypeScript/blob/master/doc/spec.md#94-constant-enum-declarations)了解详情。 |
-| `--preserveSymlinks`                 | `boolean`                       | `false`                                                      | 不把符号链接解析为其真实路径；将符号链接文件视为真正的文件。 |
-| `--preserveWatchOutput`              | `boolean`                       | `false`                                                      | 保留watch模式下过时的控制台输出。                            |
-| `--pretty` [1]                       | `boolean`                       | `false`                                                      | 给错误和消息设置样式，使用颜色和上下文。                     |
-| `--project` `-p`                     | `string`                        |                                                              | 编译指定目录下的项目。这个目录应该包含一个 `tsconfig.json`文件来管理编译。查看 [tsconfig.json](https://www.tslang.cn/docs/handbook/tsconfig-json.html)文档了解更多信息。 |
-| `--reactNamespace`                   | `string`                        | `"React"`                                                    | 当目标为生成 `"react"` JSX时，指定 `createElement`和 `__spread`的调用对象 |
-| `--removeComments`                   | `boolean`                       | `false`                                                      | 删除所有注释，除了以 `/!*`开头的版权信息。                   |
-| `--rootDir`                          | `string`                        | *(common root directory is computed from the list of input files)* | 仅用来控制输出的目录结构 `--outDir`。                        |
-| `rootDirs` [2]                       | `string[]`                      |                                                              | *根（root）*文件夹列表，表示运行时组合工程结构的内容。查看 [模块解析文档](https://www.tslang.cn/docs/handbook/module-resolution.html#virtual-directories-with-rootdirs)了解详情。 |
-| `--skipDefaultLibCheck`              | `boolean`                       | `false`                                                      | 忽略 [库的默认声明文件](https://www.tslang.cn/docs/handbook/triple-slash-directives.html#-reference-no-default-libtrue)的类型检查。 |
-| `--skipLibCheck`                     | `boolean`                       | `false`                                                      | 忽略所有的声明文件（ `*.d.ts`）的类型检查。                  |
-| `--sourceMap`                        | `boolean`                       | `false`                                                      | 生成相应的 `.map`文件。                                      |
-| `--sourceRoot`                       | `string`                        |                                                              | 指定TypeScript源文件的路径，以便调试器定位。当TypeScript文件的位置是在运行时指定时使用此标记。路径信息会被加到 `sourceMap`里。 |
-| `--strict`                           | `boolean`                       | `false`                                                      | 启用所有严格类型检查选项。 启用 `--strict`相当于启用 `--noImplicitAny`, `--noImplicitThis`, `--alwaysStrict`, `--strictNullChecks`和 `--strictFunctionTypes`和`--strictPropertyInitialization`。 |
-| `--strictFunctionTypes`              | `boolean`                       | `false`                                                      | 禁用函数参数双向协变检查。                                   |
-| `--strictPropertyInitialization`     | `boolean`                       | `false`                                                      | 确保类的非`undefined`属性已经在构造函数里初始化。若要令此选项生效，需要同时启用`--strictNullChecks`。 |
-| `--strictNullChecks`                 | `boolean`                       | `false`                                                      | 在严格的 `null`检查模式下, `null`和 `undefined`值不包含在任何类型里，只允许用它们自己和 `any`来赋值（有个例外, `undefined`可以赋值到 `void`）。 |
-| `--stripInternal` [1]                | `boolean`                       | `false`                                                      | 不对具有 `/** @internal */` JSDoc注解的代码生成代码。        |
-| `--suppressExcessPropertyErrors` [1] | `boolean`                       | `false`                                                      | 阻止对对象字面量的额外属性检查。                             |
-| `--suppressImplicitAnyIndexErrors`   | `boolean`                       | `false`                                                      | 阻止 `--noImplicitAny`对缺少索引签名的索引对象报错。查看 [issue #1232](https://github.com/Microsoft/TypeScript/issues/1232#issuecomment-64510362)了解详情。 |
-| `--target` `-t`                      | `string`                        | `"ES3"`                                                      | 指定ECMAScript目标版本 `"ES3"`（默认）, `"ES5"`, `"ES6"`/ `"ES2015"`, `"ES2016"`, `"ES2017"`或 `"ESNext"`。  注意： `"ESNext"`最新的生成目标列表为 [ES proposed features](https://github.com/tc39/proposals) |
-| `--traceResolution`                  | `boolean`                       | `false`                                                      | 生成模块解析日志信息                                         |
-| `--types`                            | `string[]`                      |                                                              | 要包含的类型声明文件名列表。查看 [@types，--typeRoots和--types](https://www.tslang.cn/docs/handbook/tsconfig-json.html#types-typeroots-and-types)章节了解详细信息。 |
-| `--typeRoots`                        | `string[]`                      |                                                              | 要包含的类型声明文件路径列表。查看 [@types，--typeRoots和--types](https://www.tslang.cn/docs/handbook/tsconfig-json.html#types-typeroots-and-types)章节了解详细信息。 |
-| `--version` `-v`                     |                                 |                                                              | 打印编译器版本号。                                           |
-| `--watch` `-w`                       |                                 |                                                              | 在监视模式下运行编译器。会监视输出文件，在它们改变时重新编译。监视文件和目录的具体实现可以通过环境变量进行配置。详情请看[配置 Watch](https://www.tslang.cn/docs/handbook/configuring-watch.html)。 |
-| `--importsNotUsedAsValues`           | `"remove" |"preserve" |"error"` |                                                              | 检查`import`语句是否合法, 导入类型需要使用`import type `     |
-
--   [1] 这些选项是试验性的。
--   [2] 这些选项只能在 `tsconfig.json`里使用，不能在命令行使用。
+编译选项是配置文件中非常重要也比较复杂的配置选项, 完整的配置可见官网[编译选项](https://www.typescriptlang.org/zh/tsconfig)
 
 ##### 项目选项
 
@@ -4737,3 +4559,589 @@ tsc index.ts --outDir ../dist --target ES6 --watch
 `allowUnreachableCode`: 检查不可达代码, 默认 **false**(不可达代码将引起错误),  **true**(忽略不可达代码)
 
 `noEmitOnError`: 有错误的情况下不生成输出文件, 默认 **false**
+
+## 类型体操
+
+TS 类型本身就是一个很复杂的、独立的语言, 不仅仅是 JS 的增强和类型注释, 具体有多复杂可以试着挑战一下[type-challenges](https://github.com/type-challenges/type-challenges)项目
+
+### 取类型的值
+
+JS可以通过`.`操作符或者`[变量]`来取对象的值, 而TS可以通过`["子类型名"]`来取类型的值, 如下:
+
+```ts
+// 对象类型
+type Person = {
+  name: string;
+  age: number;
+}
+
+type Name = Person["name"]; // 对应 name 的类型 string
+
+// 枚举
+enum Color {
+  Red,
+  Green,
+  Blue
+}
+type Red = Color.Red; // 注意这里是 0 ,枚举是获取其的值
+
+// 数组
+type Names = string[];
+type FirstName = Names[0]; // string
+type Len = Names["length"]; // 注意这个类型是 number, 因为数组长度不固定, 无法获取长度
+
+// 元组
+type Language = ["ts", "rust", "go"];
+type Go = Language[2]; // go
+type LupleLen = Language["length"]; // 3 注意这个类型是元组的长度(元组长度固定)
+
+// 字符串
+type Str = "hello";
+type S = Str[0]; // 注意这里是 string, 不是字符串 h
+type StrLen = Str["length"] // 这里是 number 而非具体的数字
+```
+
+基础类型是可以取到原型的类型定义的, 如下: 
+
+```ts
+type MapType = []["map"]; // 对应 Array.proptype.map 的类型
+type IndexOfType = ""["indexOf"]; // 对应 string.proptype.indexOf 的类型
+type ToFixedType = 1["toFixed"]; // 对应 number.proptype.toFixed 的类型
+```
+
+### 非空断言 !
+
+非空断言运算符(`!`)可以用在变量名或者函数名之后, 用来强调对应的元素是非`null | undefined`的
+
+```ts
+// 参数是可选的
+function onClick(callback?: () => void){
+  callback(); // error 不能调用可能是“未定义”的对象
+
+  // 正常需要手动的去判断
+  if (typeof callback === "function") { 
+    callback();
+  }
+
+  // 使用非空断言可以(类似于 可选链`?` 差不多)
+  callback!(); 
+}
+```
+
+> 编译后的代码会去除这个非空断言`!`
+
+### 键值获取 keyof
+
+`keyof`可以获取一个类型所有键值, 返回一个联合类型, 如下: 
+
+```ts
+type Person = {
+  name: string;
+  age: number;
+}
+
+type PersonKey = keyof Person; // "name" | "age"
+```
+
+`keyof`的一个典型用途是限制访问对象的 key 合法化，因为`any`做索引是不被接受的
+
+```ts
+type Person = {
+  name: string;
+  age: number;
+}
+
+// 将 key 定义 any 会报错
+function getValue(obj: Person, key: keyof Person): Person[keyof Person] {
+  return obj[key];
+}
+```
+
+更好的做法是使用泛型配合`extends`,`keyof`如下: 
+
+```ts
+type Person = {
+  name: string;
+  age: number;
+}
+
+// T 是一个对象
+// K 是这个对象的 key 的联合类型
+// 返回值为 T[K]
+function getValue<T extends Object, K extends keyof T>(obj: T, key: K): T[K] {
+  return obj[key];
+}
+```
+
+泛型工具`Readonly`和`Partial`就是使用`keyof`很好的例子, 如下:
+
+```ts
+type MyReadonly<T> = {
+  // readonly 表示只读
+  readonly [key in keyof T]: T[key];
+};
+
+type MyPartial<T> = {
+  // 注意这里是 ?: 表示可选
+  [key in keyof T]?: T[key];
+};
+
+type Person = {
+  name: string;
+  age: number;
+};
+
+const obj: MyPartial<Person> = { name: "张三" };
+```
+
+### 遍历属性 in
+
+`in`只能用在类型的定义中，可以对枚举类型进行遍历，如下：
+
+```ts
+// TypeToNumber 类型可以将任何类型的键值转化成 number 类型
+type TypeToNumber<T> = {
+  [key in keyof T]: number
+};
+```
+
+`keyof`返回泛型 T 的所有键枚举类型, `key`是自定义的任何变量名, 中间用`in`链接, 外围用`[]`包裹起来(这个是固定搭配)，冒号右侧`number`将所有的`key`定义为`number`类型, 使用如下: 
+
+```ts
+// TypeToNumber 类型可以将任何类型的键值转化成 number 类型
+type TypeToNumber<T> = {
+  [key in keyof T]: number;
+};
+
+type Person = {
+  name: string;
+  age: number;
+};
+
+const obj: TypeToNumber<Person> = { name: 10, age: 10 };
+```
+
+### 条件判断
+
+TS的类型判断主要是使用`extends`关键字+三元表达式实现的, 可以用来判断任意的类型, 比如下面的例子是一个判断类型是不是字符串的类型:
+
+```ts
+type isString<T> = T extends string ? true : false;
+
+type a = isString<1>; // false
+type b = isString<"hello">; // true
+```
+
+### 嵌套的条件判断
+
+```ts
+type isStringA<T> = T extends string // 是否是字符串
+  ? T extends "A" // 是否值字符串 "A"
+    ? true
+    : false
+  : false;
+
+type a = isStringA<"a">; // false
+type b = isStringA<"A">; // true
+type c = isStringA<"hello">; // false
+```
+
+### infer
+
+`infer`是一个泛型类型推断关键字, 一般是搭配泛型条件语句使用的, 所谓推断就是不用预先指定在泛型列表中, 在运行时会自动判断, 不过得先预定义好整体的结构, 大白话说就是可以将推断出来的泛型, 用在条件分支上, 比如`ReturnType`泛型工具就是使用`infer`实现推导函数返回值的, 如下: 
+
+```ts
+// 接受一个泛型类型T
+type ReturnType<T> = 
+  // 判断泛型T是否是一个函数类型, 这里使用 infer 标记了一个泛型R对应函数的返回值类型
+  T extends ((...args: any) => infer R)
+    ? R  // 条件满足, 即泛型T是一个函数类型, 这里可以直接拿到泛型R(因为使用了infer标记), 泛型R就是该函数的返回值类型
+    : never; // 不满足则返回 never 类型
+```
+
+### 元组类型的操作
+
+#### 元组类型解构
+
+元组的解构和 JS 数组的解构十分相似, 下面是将两个元组类型合并成一个的例子: 
+
+```ts
+type ConcatTuple<
+  T extends unknown[],
+  U extends unknown[],
+> = [...T, ...U]; // 泛型前面加 ... 就可以解构元组类型了
+
+type MyTuple = ConcatTuple<[1], [2, 3]>;
+// [1, 2, 3]
+```
+
+利用解构的特点可以将`readonly`的元组类型重新生成可变的元组类型:
+
+```ts
+// 只读的元组
+type Tuple1 = readonly [number, string];
+const t1: Tuple1 = [1, "hello"];
+// t1[0] = 2; // Error 只读不可修改
+
+
+// 这里解构重新赋值成一个新的元组类型
+type Tuple2 = [...Tuple1];
+
+const t2: Tuple2 = [1, "hello"];
+t2[0] = 2;
+```
+
+#### 元组类型的遍历
+
+元组的遍历有两种方式, 如下: 
+
+##### 递归遍历
+
+```ts
+// JS 中用递归将数组展平
+function flatten(arr) {
+// function flatten<T = any>(arr: T[]): T[] {
+  if (arr.length === 0) return [];
+  const [first, ...rest] = arr;
+  if (Array.isArray(first)) {
+    return [...flatten(first), ...flatten(rest)];
+  }
+  return [first, ...flatten(rest)];
+}
+
+console.log(flatten([[1], [2, [3, 4]], [[[5]]]]));
+// [1, 2, 3, 4, 5]
+
+//-----------
+
+// TS 中用递归将元组展平
+type TupleFlatten<T extends any[]> = T extends [infer First, ...infer Rest]
+    ? First extends any[]
+      ? [...TupleFlatten<First>, ...TupleFlatten<Rest>]
+      : [First, ...TupleFlatten<Rest>]
+    : [];
+
+type TupleType = TupleFlatten<[[1], [2, [3, 4]], [[[5]]]]>;
+// [1, 2, 3, 4, 5]
+```
+
+##### 对象类型遍历
+
+```ts
+// JS 将 [1, () => 2 + 3, 4] 转换为 [1, 5, 4]
+function getArrVal(arr) {
+  for(let key in arr) {
+    if (typeof arr[key] === "function") {
+      arr[key] = arr[key]();
+    }
+  }
+  return arr;
+}
+getArrVal([1, () => 2 + 3, 4]);
+
+
+//------------
+
+// Ts 将 [1, () => number, string] 转换为 [1, number, string]
+type GetType1<T extends any[]> = {
+  [key in keyof T]: T[key] extends () => infer R ? R : T[key]
+};
+
+// 递归实现
+type GetType2<T extends any[]> = 
+  T extends [infer First, ...infer Rest]
+    ? First extends () => infer R
+      ? [R, ...GetType2<Rest>]
+      : [First, ...GetType2<Rest>]
+    : []
+
+
+type a1 = GetType1<[1, () => number, string]>;
+type a2 = GetType2<[1, () => number, string]>;
+```
+
+#### 元组与索引与联合类型
+
+元组其实就是个数有限、类型固定的数组类型。所以可以使用数字作为下标来访问的，例如：
+
+```ts
+type tupleStr = ["a", "b", "c"];
+type A = tupleStr[0]; // "a"
+type B = tupleStr[1]; // "b"
+```
+
+如果这个索引是`number`就会变成联合类型, 因为`number`代表了可能是`0`,`1`, `2`, 因为长度有限所以这些可能性组成的集合就是联合类型, 如下: 
+
+```ts
+type tupleStr = ["a", "b", "c"];
+type VS = tupleStr[number]; // "a" | "b" | "c"
+```
+
+利用这个特点我可以将一个元组类型构建成一个对象类型
+
+```ts
+// 元组转对象
+type TupleToObject<T extends readonly any[]> = {
+  // T[number] 表示每个值
+  [key in T[number]]: key
+}
+
+type FormType = TupleToObject<["name", "age", "sort"]>;
+// {
+//   name: "name";
+//   age: "age";
+//   sort: "sort";
+// }
+```
+
+也可以加多一个参数实现`key`的值类型自定义:
+
+```ts
+// 泛型 U 控制键的类型, 不传等于键的值, 传什么值就是什么
+type TupleToObject<T extends readonly any[], U = void> = {
+  [key in T[number]]: U extends void ? key : U
+}
+
+// 不传等于键的值
+type FormType1 = TupleToObject<["name", "age", "sort"]>;
+// {
+//   name: "name";
+//   age: "age";
+//   sort: "sort";
+// }
+
+
+type FormType2 = TupleToObject<["name", "age", "sort"], string>;
+// {
+//   name: string;
+//   age: string;
+//   sort: string;
+// }
+
+type FormType3 = TupleToObject<["name", "age", "sort"], 1>;
+// {
+//   name: 1;
+//   age: 1;
+//   sort: 1;
+// }
+```
+
+有一些组件库表格组件是根据json配置来生成, 我们可以写一个泛型来从中构建表单值的类型, 如下: 
+
+```ts
+// 泛型 U 控制键的类型, 传什么类型值就是什么类型, 默认 string
+type TupleToObject<T extends string[], U = string> = {
+  [key in T[number]]?: U extends void ? key : U;
+};
+
+const option = {
+  // ...
+  column: [
+    { label: "姓名", prop: "name" },
+    { label: "年龄", prop: "age", search: true }
+  ],
+  group: [
+    {
+      column: [
+        { label: "年龄", prop: "age" },
+        { label: "排序", prop: "sort" },
+        { label: "文件", prop: "file" }
+      ]
+    }
+  ]
+} as const; // 这里必须要断言
+
+// 获取所有的 prop(set去重)
+const propStr = [
+  ...new Set([
+      ...option.column, 
+      ...option.group[0].column
+    ])].map(e => e.prop);
+
+type FormType = TupleToObject<typeof propStr>; // 这里使用 typeof 取元组类型
+/* 得到如下类型:
+  {
+    name?: string | undefined;
+    age?: string | undefined;
+    sort?: string | undefined;
+    file?: string | undefined;
+  }
+*/
+```
+
+### 字符串操作
+
+字符串的相关操作主要体现在两方面
+
+#### 字符串类型推导和解构
+
+字符串类型推导和解构，是将一个完整字符串分解为几个部分，然后对各个部分我们可以进行各种处理。
+
+这里需要注意的是, 在拆分的时候需要注意是否含有字符串字面量作为分割符, 有和没有的情况, 分割后的变量含义是不相同
+
+##### 推导类型中有字符串字面量的情况
+
+下面是一个将两个单词的蛇形(`_`)命名的单词转换为中横线(`-`)命名的例子:
+
+```ts
+type SnakeToKebab<T extends string> = T extends `${infer First}_${infer Tail}`
+  ? `${First}-${Tail}`
+  : T;
+
+type a = SnakeToKebab<"hello_world">; // hello-world
+type b = SnakeToKebab<"_ts">; // "-ts"
+```
+
+改进一下切分任意分割符的两个单词
+
+```ts
+type SplitToCamelCase<T extends string, SEP extends string = "_"> = T extends `${infer First}${SEP}${infer Tail}`
+  ? First extends `${infer F1}${infer O1}`
+    ? `${Uppercase<F1>}${O1} ${
+      Tail extends `${infer F2}${infer O2}`
+        ? `${Uppercase<F2>}${O2}`
+        : `${Tail}`}`
+    : Tail extends `${First}${infer F2}${infer O2}`
+      ? `${First}${Uppercase<F2>}${O2}`
+      : `${First}${Uppercase<Tail>}`
+  : T extends `${infer F3}${infer O3}` ? `${Uppercase<F3>}${O3}` : T;
+
+type a1 = SplitToCamelCase<"hello_world">; // "Hello World"
+type b1 = SplitToCamelCase<"hello_">; // "Hello" 
+type c1 = SplitToCamelCase<"_world">; // "World"
+type d1 = SplitToCamelCase<"world">; // "World"
+type e1 = SplitToCamelCase<"">; // ""
+
+// 指定分割符
+type a2 = SplitToCamelCase<"hello-world", "-">; // "Hello World"
+type b2 = SplitToCamelCase<"hello,world", ",">; // "Hello World"
+```
+
+字符串分割成元组
+
+```ts
+// 字符串分割成元组
+type Split<
+  S extends string,
+  SEP extends string = ",",
+  ANSWER extends string[] = []
+> = string extends S 
+  ? string[]
+  : S extends SEP 
+    ? ANSWER
+    : S extends `${infer HEAD}${SEP}${infer TAIL}` 
+      ? Split<TAIL, SEP, [...ANSWER, HEAD]> 
+      : [...ANSWER, S];
+
+type a = Split<"hello,world">; // ["hello", "world"]
+type b = Split<"hello-world", "-">; // ["hello", "world"]
+```
+
+##### 推导类型中无字符串字面量的情况
+
+下面是一个TS字符串字面量类型转换为首字母大写的类型, 如下: 
+
+```ts
+type MyCapitalize<T extends string> = T extends `${infer First}${infer Rest}` 
+    ? `${Uppercase<First>}${Rest}` 
+    : T;
+
+type A = MyCapitalize<"hello">; // "Hello" (First 为 "h", Rest 为 "ello")
+type B = MyCapitalize<"b">; // "B" (First 为 "b", Rest 为空字符串)
+type C = MyCapitalize<"">; // 当为空字符串时, 会走到 false 的分支, 返回空字符串
+```
+
+当推断类型中没有字符串字面量作为边界时，第一个变量作为第一个字符，第二个变量代表**剩下的字符**，可以为空字符串。如果有三个变量，`${A}${B}${C}`，则第一个变量 `A` 代表第一个字符，`B` 代表第二个字符串，`C` 代表剩下的字符
+
+### 字符串字面量类型的遍历
+
+字符串字面量类型的遍历, 核心是使用递归思想以及加上字符串的解构, 如下:
+
+```ts
+type StringToTuple<T extends string> = T extends `${infer First}${infer Rest}`
+  ? [First, ...StringToTuple<Rest>]
+  : [T];
+
+type A = StringToTuple<"hello">; // ["h", "e", "l", "l", "o", ""]
+```
+
+### 联合类型的操作
+
+#### 联合类型与泛型推导
+
+联合类型代表着几种可能性的集合，它在泛型推导中和其他类型都不一样，可以把他理解为它在做泛型推到时，并不是一次性判断，而是将每一项单独判读并返回，然后再将这些返回进行联合
+
+```ts
+// 如果类型是 a 或者 b 则拼接字符串1
+type AppendOne<T> = T extends "a" | "b" ? `${T}1` : T;
+
+type A = AppendOne<"a" | "b" | "c">; // "c" | "a1" | "b1"
+```
+
+利用联合类型的这个特点, 我们可以实现一个从一个联合类型中根据指定的值判断类型的泛型:
+
+```ts
+interface Cat {
+  kind: "🐱";
+}
+interface Dog {
+  kind: "🐶";
+}
+type Animal = Cat | Dog;
+
+// 如果泛型 T 是 { kind: U } 的类型, 则返回 T(当前符合条件的类型)
+type GetTypeByKind<T, U extends string> = T extends { kind: U } ? T : never;
+
+type A = GetTypeByKind<Animal, "🐱">; // Cat
+type B = GetTypeByKind<Animal, "🐶">; // Dog
+type C = GetTypeByKind<Animal, "hello">; // never
+```
+
+### JS值转TS类型
+
+#### typeof
+
+`typeof`关键字在JS中可以用来判断基本数据类型, 而在TS中`typeof`更加的强大, 除了可以判断基本数据类型, 还可以获取类型的"相关类型", 如下:
+
+```ts
+const obj = {
+  name: "张三",
+  age: 18,
+}
+
+// 获取对象类型
+type ObjType = typeof obj;
+// { name: string; age: number; }
+
+// 获取对象键值字面量
+type ObjKyes = keyof typeof obj;
+// "name" | "age"
+
+
+function add(a: number, b: number): number {
+  return a + b;
+}
+
+// 获取函数参数类型
+type AddParamsType = Parameters<typeof add>;
+// [a: number, b: number]
+
+// 获取函数返回值类型
+type AddReturnType = ReturnType<typeof add>;
+// number
+```
+
+### const 断言
+
+TS的自动类型推断机制, 默认是`let`(宽泛推断)
+
+当对变量使用`as const`时可以获得更严格的推导
+
+```ts
+const obj = {
+  name: "张三",
+  age: 18
+} as const; // 会被推导为：{ readonly name: "张三"; readonly age: 18; }
+
+const arr = [1, 2] as const; // 会被推导为：readonly [1, 2];
+```
