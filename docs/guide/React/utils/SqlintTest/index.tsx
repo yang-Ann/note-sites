@@ -44,7 +44,7 @@ const ScanCode = () => {
 
   return (
     <View>
-      <Text style={{ textAlign: "center", fontSize: 24 }}>数据库测试</Text>
+      <Text style={{ textAlign: "center", fontSize: 24 }}>封装数据库测试</Text>
       <Button
         title="创建数据库"
         onPress={() => {
@@ -61,7 +61,7 @@ const ScanCode = () => {
         title="插入数据"
         onPress={() => {
           if (mhelper instanceof SqlintHelper) {
-            mhelper.insert(["张三", 18]).then(res => {
+            mhelper.insert({ name: "张三", age: 18 }).then(res => {
               console.log("res: ", res);
             }).catch(err => {
               console.log("err: ", err);
@@ -73,17 +73,17 @@ const ScanCode = () => {
         title="插入多条数据"
         onPress={() => {
           if (mhelper instanceof SqlintHelper) {
-            mhelper.inserts([
-              ["啦啦啦啦啦绿绿", 18, 1, 2.3, "说明", 123, 12313, 12312],
-              ["小李", 22],
-              ["小明", 11],
-              ["小张", 18],
-              ["小王", 21]
-            ]).then(res => {
+            const datas = [
+              { name: "小李", age: 22, info: "说明", age3: 3.14 },
+              { name: "小明", age: 11 },
+              { name: "小张", age: 18 },
+              { name: "小王", age: 21, info: "ceeeee" },
+            ]
+            mhelper.inserts(datas).then(res => {
               console.log("res: ", res);
             }).catch(err => {
               console.log("err: ", err);
-            });
+            })
           }
         }}
       />
@@ -127,7 +127,7 @@ const ScanCode = () => {
         title="获取 name=李四 OR id=1 的数据"
         onPress={() => {
           if (mhelper instanceof SqlintHelper) {
-            mhelper.getByCustom(["name", "id"], ["李四", 1], "OR").then(res => {
+            mhelper.getByCustom({ name: "李四", id: 1 }, "OR").then(res => {
               console.log("res: ", res);
             }).catch(err => {
               console.log("err: ", err);
@@ -139,7 +139,19 @@ const ScanCode = () => {
         title="更新id=1的数据"
         onPress={() => {
           if (mhelper instanceof SqlintHelper) {
-            mhelper.updateById(6, ["李四", 22]).then(res => {
+            mhelper.updateById({ id: 12, name: "李四", age: 22 }).then(res => {
+              console.log("res: ", res);
+            }).catch(err => {
+              console.log("err: ", err);
+            })
+          }
+        }}
+      />
+      <Button
+        title="更新 id=12 AND name=张三 的数据"
+        onPress={() => {
+          if (mhelper instanceof SqlintHelper) {
+            mhelper.updateByCustom({ age: 999, info: "abcde" }, {id: 12, name: "李四"}, "AND").then(res => {
               console.log("res: ", res);
             }).catch(err => {
               console.log("err: ", err);
@@ -160,10 +172,10 @@ const ScanCode = () => {
         }}
       />
       <Button
-        title="删除 name=小王 AND age=21 的数据"
+        title="删除 age=22 AND name=小李 的数据"
         onPress={() => {
           if (mhelper instanceof SqlintHelper) {
-            mhelper.deleteByCustom(["name", "age"], ["小王", 21], "AND").then(res => {
+            mhelper.deleteByCustom({ age: 22, name: "小李" }, "OR").then(res => {
               console.log("res: ", res);
             }).catch(err => {
               console.log("err: ", err);

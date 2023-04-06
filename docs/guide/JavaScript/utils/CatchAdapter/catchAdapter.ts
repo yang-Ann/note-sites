@@ -1,9 +1,10 @@
 
 export type PlatformType = "web" | "wechat" | "uniapp";
 export type CallbackType = (...args: any[]) => void;
+export type ValueType = { key: string; value: any };
 export type StorageInfoType = {
-	cache: { key: string; value: any }[];
-	origin: { key: string; value: any }[];
+	cache: ValueType[];
+	origin: ValueType[];
 };
 export type P<T = any> = Promise<T>;
 
@@ -25,13 +26,15 @@ const checkUniKey = (key: string) => {
 	return ret;
 }
 
-// 通用缓存数据操作, 支持 web | wechat | uniapp, 带缓存超时, 支持回调 和 Promise 两种使用方式
+/**
+ * 通用缓存数据操作, 支持 web | wechat | uniapp, 带缓存超时, 支持回调 和 Promise 两种使用方式
+ */
 class CatchAdapter {
-	$getStorage!: (k: string) => any;
-	$setStorage!: (k: string, v: any) => any;
-	$removeStorage!: (k: string) => any;
-	$clearStorage!: () => any;
-	$getStorageInfo!: () => ({
+	#getStorage!: (k: string) => any;
+	#setStorage!: (k: string, v: any) => any;
+	#removeStorage!: (k: string) => any;
+	#clearStorage!: () => any;
+	#getStorageInfo!: () => ({
 		keys: string[];
 		currentSize: number;
 		limitSize: number;
@@ -53,7 +56,9 @@ class CatchAdapter {
 	static VOID = "void" // 获取的数据不存在
 	static instanceof: null | CatchAdapter = null; // 保存单例实例
 
-	// 单例模式
+	/**
+	 * 获取实例(单例模式)
+	 */
 	static getInstanceof(platform: PlatformType, catchTime: Date | number, timingClear = false) {
 		const operate = CatchAdapter.instanceof;
 		if (!operate) {
@@ -62,62 +67,66 @@ class CatchAdapter {
 		return CatchAdapter.instanceof;
 	}
 
-	init() {
+	protected init() {
 		this.initCommonApi();
 		this.initOther();
 	}
 
-	// 初始化api
-	initCommonApi() {
+	/**
+	 * 初始化api
+	 */
+	protected initCommonApi() {
 		try {
 			switch (this.platform) {
 				case "web":
 					// localStorage 的方法不能使用解构, 也不能直接赋值函数的引用
 					// const { getItem, setItem, removeItem, clear } = window.localStorage;
-					this.$getStorageInfo = () => {
+					this.#getStorageInfo = () => {
 						return {
 							keys: Object.keys(window.localStorage),
 							currentSize: window.localStorage.length,
 							limitSize: 0, // web无法获取大小
 						};
 					};
-					this.$getStorage = (key: string) => window.localStorage.getItem(key);
-					this.$setStorage = (key: string, value: any) => window.localStorage.setItem(key, value);
-					this.$removeStorage = (key: string) => window.localStorage.removeItem(key);
-					this.$clearStorage = () => window.localStorage.clear();
+					this.#getStorage = (key: string) => window.localStorage.getItem(key);
+					this.#setStorage = (key: string, value: any) => window.localStorage.setItem(key, value);
+					this.#removeStorage = (key: string) => window.localStorage.removeItem(key);
+					this.#clearStorage = () => window.localStorage.clear();
 					break;
 
 				case "wechat":
 					// TODO wx的全局变量类型声明, 可见 src/typings/global.d.ts
 					// eslint-disable-next-line no-case-declarations
 					const { getStorageSync, setStorageSync, removeStorageSync, clearStorageSync } = wx;
-					this.$getStorageInfo = wx.getStorageInfoSync;
-					this.$getStorage = getStorageSync;
-					this.$setStorage = setStorageSync;
-					this.$removeStorage = removeStorageSync;
-					this.$clearStorage = clearStorageSync;
+					this.#getStorageInfo = wx.getStorageInfoSync;
+					this.#getStorage = getStorageSync;
+					this.#setStorage = setStorageSync;
+					this.#removeStorage = removeStorageSync;
+					this.#clearStorage = clearStorageSync;
 					break;
 
 				case "uniapp":
 					{
 						const { getStorageSync, setStorageSync, removeStorageSync, clearStorageSync } = uni;
-						this.$getStorageInfo = uni.getStorageInfoSync;
-						this.$getStorage = getStorageSync;
-						this.$setStorage = setStorageSync;
-						this.$removeStorage = removeStorageSync;
-						this.$clearStorage = clearStorageSync;
+						this.#getStorageInfo = uni.getStorageInfoSync;
+						this.#getStorage = getStorageSync;
+						this.#setStorage = setStorageSync;
+						this.#removeStorage = removeStorageSync;
+						this.#clearStorage = clearStorageSync;
 					}
 					break;
 				default:
 					throw new Error();
 			}
 		} catch (e) {
-			throw new Error(`不存在 ${this.platform} 平台的API: ${e}`);
+			throw new Error(`不存在 #{this.platform} 平台的API: #{e}`);
 		}
 	}
 
-	// 初始化其他
-	initOther() {
+	/**
+	 * 初始化其他
+	 */
+	protected initOther() {
 		const type = getDateType(this.cacheTime)
 		if (type === "date") {
 			this.cacheTime = new Date(this.cacheTime).getTime();
@@ -134,8 +143,10 @@ class CatchAdapter {
 		}
 	}
 
-	// 触发回调
-	callFn(fn?: CallbackType, ...args: any[]) {
+	/**
+	 * 触发回调
+	 */
+	protected callFn(fn?: CallbackType, ...args: any[]) {
 		const next = args.pop();
 		if (typeof fn === "function") {
 			fn(...args)
@@ -145,15 +156,17 @@ class CatchAdapter {
 		}
 	}
 
-	// 获取缓存数据
-	getStorage(key: string, callback?: CallbackType): P {
+	/**
+	 * 获取缓存数据
+	 */
+	protected getStorage(key: string, callback?: CallbackType): P {
 		return new Promise((resolve, reject) => {
 			if (getDateType(key) === "object") {
 				console.warn("getStorage(key) 的key是一个引用数据类型, 可能会获得错误的结果 -> ", key);
 			}
 
 			try {
-				let res = this.$getStorage(key);
+				let res = this.#getStorage(key);
 				if (!res) {
 					const error = {
 						flog: CatchAdapter.VOID,
@@ -191,8 +204,10 @@ class CatchAdapter {
 		});
 	}
 
-	// 设置缓存数据(支持自定义存储时长)
-	setStorage(
+	/**
+	 * 设置缓存数据(支持自定义存储时长)
+	 */
+	protected setStorage(
 		key: string,
 		value: any,
 		cacheTime = this.cacheTime,
@@ -213,7 +228,7 @@ class CatchAdapter {
 		
 		if (this.platform === "uniapp") {
 			if (!checkUniKey(key)) {
-				console.warn(`${uniExcludeKey.join(", ")}, 为前缀的key, 为 uniapp 的系统保留关键前缀, 请避免使用`);
+				console.warn(`#{uniExcludeKey.join(", ")}, 为前缀的key, 为 uniapp 的系统保留关键前缀, 请避免使用`);
 			}
 		}
 		
@@ -225,29 +240,21 @@ class CatchAdapter {
 					[this.cacheKey]: Date.now(),
 					[this.overtimeKey]: cacheTime,
 				};
-				const res = this.$setStorage(key, JSON.stringify(obj));
+				const res = this.#setStorage(key, JSON.stringify(obj));
 				this.callFn(callback, null, res, () => resolve(res));
 			} catch (err) {
 				this.callFn(callback, err, null, () => reject(err));
 			}
 		});
 	}
-	// 删除缓存数据
-	removeStorage(key: string, callback?: CallbackType) {
+
+	/**
+	 * 删除缓存数据
+	 */
+	protected removeStorage(key: string, callback?: CallbackType) {
 		return new Promise((resolve, reject) => {
 			try {
-				const res = this.$removeStorage(key);
-				this.callFn(callback, null, res, () => resolve(res));
-			} catch (err) {
-				this.callFn(callback, err, null, () => reject(err));
-			}
-		});
-	}
-	// 清空所有的数据
-	clearStorage(callback?: CallbackType) {
-		return new Promise((resolve, reject) => {
-			try {
-				const res = this.$clearStorage();
+				const res = this.#removeStorage(key);
 				this.callFn(callback, null, res, () => resolve(res));
 			} catch (err) {
 				this.callFn(callback, err, null, () => reject(err));
@@ -255,8 +262,24 @@ class CatchAdapter {
 		});
 	}
 	
-	// 清空缓存的数据
-	clearDateStorage(callback?: CallbackType) {
+	/**
+	 * 清空所有的数据
+	 */
+	protected clearStorage(callback?: CallbackType) {
+		return new Promise((resolve, reject) => {
+			try {
+				const res = this.#clearStorage();
+				this.callFn(callback, null, res, () => resolve(res));
+			} catch (err) {
+				this.callFn(callback, err, null, () => reject(err));
+			}
+		});
+	}
+	
+	/**
+	 * 清空缓存的数据
+	 */
+	protected clearDateStorage(callback?: CallbackType) {
 		return new Promise(async (resolve, reject) => {
 			try {
 				const catchKeys = await this.getCatchDataKey();
@@ -270,11 +293,13 @@ class CatchAdapter {
 		});
 	}
 	
-	// 获取缓存的信息
-	getStorageInfo(callback?: CallbackType): P<StorageInfoType> {
+	/**
+	 * 获取缓存的信息
+	 */
+	protected getStorageInfo(callback?: CallbackType): P<StorageInfoType> {
 		return new Promise(async (resolve, reject) => {
 			try {
-				const storage = await this.$getStorageInfo();
+				const storage = await this.#getStorageInfo();
 
 				const result = Object.create(null);
 				result.cache = [], // 缓存数据
@@ -282,7 +307,7 @@ class CatchAdapter {
 
 				for (let i = 0; i < storage.keys.length; i++) {
 					const key = storage.keys[i];
-					let value = this.$getStorage(key);
+					let value = this.#getStorage(key);
 					// JSON 化一下
 					try {
 						value = JSON.parse(value);
@@ -303,8 +328,10 @@ class CatchAdapter {
 			}
 		});
 	}
-	// 获取所有缓存数据的key
-	getCatchDataKey(callback?: CallbackType): P<string[]> {
+	/**
+	 * 获取所有缓存数据的key
+	 */
+	protected getCatchDataKey(callback?: CallbackType): P<string[]> {
 		return new Promise(async (resolve, reject) => {
 			try {
 				const catchData = await this.getStorageInfo();
@@ -315,7 +342,10 @@ class CatchAdapter {
 			}
 		});
 	}
-	// 清除超时的缓存
+
+	/**
+	 * 清除超时的缓存
+	 */
 	clearOvertimeData(callback?: CallbackType) {
 		return new Promise(async (resolve, reject) => {
 			try {
@@ -325,7 +355,7 @@ class CatchAdapter {
 					const { key, value } = catchData[i];
 					if (key && Date.now() >= value[this.overtimeKey]) {
 						console.log("清理已超时的缓存数据 --> : ", key);
-						await this.$removeStorage(key);
+						await this.#removeStorage(key);
 					}
 				}
 				this.callFn(callback, null, null, () => resolve({success: true}));
@@ -334,42 +364,64 @@ class CatchAdapter {
 			}
 		});
 	}
-	// 清除定时器
-	clearInterval() {
+
+	/**
+	 * 清除定时器
+	 */
+	protected clearInterval() {
 		if (this.timer) clearInterval(this.timer);
 		this.timer = null;
 	}
 
-	// 设置超时时间
-	setCacheTime(time: number | Date) {
+	/**
+	 * 设置超时时间
+	 */
+	protected setCacheTime(time: number | Date) {
 		this.cacheTime = time;
 		// 校验参数
 		this.initOther();
 	}
 
-	// 设置定时清理
-	setTimingClear(timingClear: boolean) {
+	/**
+	 * 设置定时清理
+	 */
+	protected setTimingClear(timingClear: boolean) {
 		this.timingClear = timingClear;
 		this.initOther();
 	}
 	
 	//////////////// 提供同步方法
-	getStorageSync(key: string) {
-		return this.$getStorage(key);
+
+	/**
+	 * 同步获取值
+	 */
+	protected getStorageSync(key: string) {
+		return this.#getStorage(key);
 	}
-	setStorageSync(key: string, value: any) {
+
+	/**
+	 * 同步设置值
+	 */
+	protected setStorageSync(key: string, value: any) {
 		if (this.platform === "uniapp") {
 			if (!checkUniKey(key)) {
-				console.warn(`${uniExcludeKey.join(", ")}, 为前缀的key, 为 uniapp 的系统保留关键前缀, 请避免使用`);
+				console.warn(`#{uniExcludeKey.join(", ")}, 为前缀的key, 为 uniapp 的系统保留关键前缀, 请避免使用`);
 			}
 		}
-		return this.$setStorage(key, value);
+		return this.#setStorage(key, value);
 	}
-	removeStorageSync(key: string) {
-		return this.$removeStorage(key);
+	/**
+	 * 同步删除值
+	 */
+	protected removeStorageSync(key: string) {
+		return this.#removeStorage(key);
 	}
-	clearStorageSync() {
-		return this.$clearStorage();
+
+	/**
+	 * 同步清空值
+	 */
+	protected clearStorageSync() {
+		return this.#clearStorage();
 	}
 }
 

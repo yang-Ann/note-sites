@@ -3786,36 +3786,11 @@ func main() {
 
 ### 写入和读取
 
-IO操作可以使用[`io`](https://pkg.go.dev/io@go1.20)标准库
+IO操作可以使用[`io`](https://pkg.go.dev/io@go1.20)标准库, `Go`语言中把`UNIX`和`Linux`中一切皆文件的理念的贯彻的更好, `io`包内部提供了`io.Reader`和`io.Writer`两个接口, 只要实现了这两个接口就可以完成基本所有的"读写"操作
 
-#### 读取
+`io`的一些方法创建文件或者是打开文件, 都是要指定模式和权限, 如下: 
 
-##### 读取全部文件
-
-```go
-package main
-
-import (
-	"fmt"
-	"os"
-)
-
-func main() {
-	context, err := os.ReadFile("./main.go")
-	if err != nil {
-		fmt.Println(err.Error())
-		os.Exit(0)
-	}
-
-	fmt.Println(string(context))
-}
-```
-
-##### 获取文件句柄后读取
-
-`OpenFile(文件地址, 权限, 模式)`可以获取文件句柄
-
--   权限可见[os常量](https://pkg.go.dev/os#pkg-constants)
+-   模式可见[os常量](https://pkg.go.dev/os#pkg-constants)
 
     ```go
     const (
@@ -3830,18 +3805,44 @@ func main() {
     )
     ```
 
--   模式见官方文档[文件模式](https://pkg.go.dev/io/fs#FileMode), 
-    
+-   权限官方文档[文件模式](https://pkg.go.dev/io/fs#FileMode), 
+
     ```go
     读（r）：4
     写（w）：2
     执行（x）：1
     ```
-    
+
     -   对应的Linux里面的权限常见的模式如下:
         -   `0755`: 即用户具有读/写/执行权限，组用户和其它用户具有读写权限；
         -   `0644`: 即用户具有读写权限，组用户和其它用户具有只读权限
-    
+
+#### 读取
+
+##### 读取全部文件
+
+一般使用与比较小的文件
+
+```go
+package main
+
+import (
+	"fmt"
+	"os"
+)
+
+func main() {
+	context, err := os.ReadFile("./main.go")
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(0)
+	}
+
+	fmt.Println(string(context))
+}
+```
+
+##### 读取指定长度的数据
 
 
 ```go
@@ -3853,20 +3854,71 @@ import (
 )
 
 func main() {
-	file, err := os.OpenFile("./main.go", os.O_RDWR, 0755)
+  // 打开文件, 以 O_RDONLY 模式打开文件
+	file, err := os.Open("./main.go")
 	if err != nil {
 		panic(err)
 	}
 
-	defer file.Close()
+	defer func() {
+		if err := file.Close(); err != nil {
+			panic(err)
+		}
+	}()
 
-	bytes := make([]byte, 1024) // 切片长度就代表每次读取的长度
-	n, err := file.Read(bytes)  // n 就是读取到的长度
+	buffer := make([]byte, 10) // 切片长度就要读取的长度
+
+	n, err := file.Read(buffer)  // n 就是当次读取到的长度
+	if err != nil {
+		fmt.Println("文件读取失败了: ", err.Error())
+	}
+
+	fmt.Print(string(buffer[:n]))
+}
+```
+
+##### 分片读取
+
+使用[`bufio`](https://pkg.go.dev/bufio@go1.20)包的`NewReader`函数可以开启一个读取流
+
+```go
+package main
+
+import (
+	"bufio"
+	"fmt"
+	"os"
+)
+
+func main() {
+  // 打开文件, 以 O_RDONLY 模式打开文件
+	file, err := os.Open("./main.go")
 	if err != nil {
 		panic(err)
 	}
-	fmt.Printf("读取了%v个长度的字节数据\n", n)
-	fmt.Printf("读取的字节数据: %v\n", string(bytes))
+
+	defer func() {
+		if err := file.Close(); err != nil {
+			panic(err)
+		}
+	}()
+
+	buffer := make([]byte, 1024) // 切片长度就代表每次读取的长度
+
+	// 创建一个 Reader
+	f := bufio.NewReader(file)
+
+	fmt.Println("文件内容为: ")
+	for {
+		n, err := f.Read(buffer)  // n 就是当次读取到的长度
+
+		// 文件读取完成
+		if err != nil {
+			break
+		}
+
+		fmt.Print(string(buffer[:n]))
+	}
 }
 ```
 
@@ -3884,20 +3936,24 @@ import (
 )
 
 func main() {
-	file, err := os.Open("../main.go")
+	file, err := os.Open("./main.go")
 	if err != nil {
-		fmt.Println(err.Error())
+		fmt.Println(err)
 		return
 	}
 
 	defer file.Close()
 
 	// 创建扫描器
-	file_scanner := bufio.NewScanner(file)
+	sc := bufio.NewScanner(file)
 
-	for file_scanner.Scan() {
-		line := file_scanner.Text()
+	for sc.Scan() {
+		line := sc.Text()
 		fmt.Println("line:", line)
+
+		if err := sc.Err(); err != nil {
+			fmt.Println("文件操作失败了: ", err)
+		}
 	}
 }
 ```
@@ -3905,6 +3961,8 @@ func main() {
 #### 写入
 
 ##### 直接写入
+
+`os.WriteFile(文件地址, 写入的内容, 权限)`方法可以获取文件句柄
 
 ```go
 package main
@@ -3922,7 +3980,9 @@ func main() {
 }
 ```
 
-##### 获取文件句柄后写入
+##### 分片写入
+
+`os.OpenFile(文件地址, 模式, 权限)`方法可以获取文件句柄
 
 ```go
 package main
@@ -3933,18 +3993,22 @@ import (
 )
 
 func main() {
-	// 打开文件, os.O_CREATE 表示文件不存在则新建(支持多个模式)
-	file_obj, err := os.OpenFile("../test.txt", os.O_CREATE|os.O_RDWR, 0755)
+	// 指定模式打开文件(支持多个模式) os.O_CREATE 表示文件不存在则新建
+	file, err := os.OpenFile("../test.txt", os.O_CREATE|os.O_RDWR, 0755)
 	if err != nil {
 		fmt.Println(err.Error())
 		return
 	}
 
-	defer file_obj.Close()
+	defer func() {
+		if err := file.Close(); err != nil {
+			panic(err)
+		}
+	}()
 
 	// 写入字节数据
 	b1 := []byte("hello world\n")
-	count, err := file_obj.Write(b1)
+	count, err := file.Write(b1)
 	if err != nil {
 		fmt.Println(err.Error())
 		return
@@ -3952,7 +4016,7 @@ func main() {
 	fmt.Printf("写入了长度为 %v 的字节数据\n", count)
 
 	// 写入字符串数据
-	count, err = file_obj.WriteString("world")
+	count, err = file.WriteString("world")
 	if err != nil {
 		fmt.Println(err.Error())
 		return
@@ -3961,7 +4025,7 @@ func main() {
 
 	// 写入字节数据, 偏移量为 0
 	b2 := []byte("xxxxxxxx\n")
-	count, err = file_obj.WriteAt(b2, 0)
+	count, err = file.WriteAt(b2, 0)
 	if err != nil {
 		fmt.Println(err.Error())
 		return
@@ -3976,24 +4040,28 @@ func main() {
 package main
 
 import (
-  "fmt"
-  "os"
+	"fmt"
+	"os"
 )
 
 func main() {
-  // 追加文件
-  file_obj, err := os.OpenFile(filePath, os.O_WRONLY|os.O_APPEND, 0666)
-  if err != nil {
-    colorLog.LogError("没有读取到 " + filePath + " 文件")
-  }
-  defer file_obj.Close()
+	// 追加文件
+	file, err := os.OpenFile("./test.txt", os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0666)
+	if err != nil {
+		fmt.Println(err)
+	}
+	defer func() {
+		if err := file.Close(); err != nil {
+			panic(err)
+		}
+	}()
 
-  count, err = file_obj.WriteString("world")
-  if err != nil {
-    fmt.Println(err.Error())
-    return
-  }
-  fmt.Printf("写入了长度为 %v 的字符串数据\n", count)
+	count, err := file.WriteString("world\n")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	fmt.Printf("追加写入了长度为 %v 的字符串数据\n", count)
 }
 ```
 
@@ -4001,7 +4069,7 @@ func main() {
 
 ##### 多次写入(缓冲区)
 
-使用 [`bufio`](https://pkg.go.dev/bufio@go1.20) 里的 `Writer` 结构体去操作，它会开辟一个缓冲区，默认大小为 `4096` 字节。在数据没有被刷入磁盘之前，所写入的数据都会暂时保存到缓冲区里
+使用 [`bufio`](https://pkg.go.dev/bufio@go1.20) 里的`NewWriter`方法创建一个, 写入流它会开辟一个缓冲区，默认大小为 `4096` 字节。在数据没有被刷入磁盘之前，所写入的数据都会暂时保存到缓冲区里
 
 ```go
 package main
@@ -4013,16 +4081,20 @@ import (
 )
 
 func main() {
-	// 打开文件, os.O_CREATE 表示文件不存在则新建, 模式为: 0
-	file_obj, err := os.OpenFile("../test.txt", os.O_CREATE, 0)
+	// 打开文件, os.O_CREATE 表示文件不存在则新建, 模式为: 0755
+	file, err := os.OpenFile("./test.txt", os.O_CREATE|os.O_APPEND, 0755)
 	if err != nil {
-		fmt.Println(err.Error())
+		fmt.Println(err)
 		return
 	}
 
-	defer file_obj.Close()
+	defer func() {
+		if err := file.Close(); err != nil {
+			panic(err)
+		}
+	}()
 
-	writer := bufio.NewWriter(file_obj)
+	writer := bufio.NewWriter(file)
 
 	// 写入字节
 	if err = writer.WriteByte(62); err != nil {
@@ -4037,16 +4109,53 @@ func main() {
 		fmt.Println(err.Error())
 		return
 	}
-	fmt.Printf("写入了 %v 个长度的字符数据", count)
+	fmt.Printf("写入了 %v 个长度的字符数据\n", count)
 
-	if count, err = writer.WriteString("hello"); err != nil {
+	if count, err = writer.WriteString("\nhello"); err != nil {
 		fmt.Println(err.Error())
 		return
 	}
-	fmt.Printf("写入了 %v 个长度的字符串数据", count)
+	fmt.Printf("写入了 %v 个长度的字符串数据\n", count)
 
 	// 将缓存区中的数据写入到文件中
 	writer.Flush()
+}
+```
+
+##### 逐行写入
+
+使用`fmt.Fprintln()`即可
+
+```go
+package main
+
+import (
+	"fmt"
+	"os"
+)
+
+func main() {
+	file, err := os.Create("./test.txt")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	defer func() {
+		if err = file.Close(); err != nil {
+			panic(err)
+		}
+	}()
+
+	str := "hello, world"
+
+	for i, v := range str {
+		// 逐行写入
+		line := fmt.Sprintf("%v. %s", i+1, string(v))
+		fmt.Fprintln(file, line)
+	}
+
+	fmt.Println("文件写入完成")
 }
 ```
 
@@ -5297,7 +5406,7 @@ func intMax(a, b int) int {
 上面这个例子的函数只能求`int`类型的最大值, 如果要求其他类型的最大值就不行了(`Go`中没有函数重载这个特性), 这时就可以使用泛型了, 如下:
 
 ```go
-func max(T constraints.Ordered) (a, b T) T {
+func max[T constraints.Ordered](a, b T) T {
 	if a > b {
 		return a
 	} else {
@@ -5308,6 +5417,68 @@ func max(T constraints.Ordered) (a, b T) T {
 // 调用泛型函数
 m := max[int](2, 3)
 ```
+
+### 泛型的其他使用
+
+### 用于map
+
+```go
+package main
+
+// 类型形参, 将类型作为参数使用
+type MyMap[KEY int | string, VALUE float32 | float64] map[KEY]VALUE
+
+func main() {
+	var m1 MyMap[string, float64] = map[string]float64{
+		"张三": 1.1,
+		"李四": 2.1,
+	}
+
+	var m2 MyMap[int, float64] = map[int]float64{
+		1: 1.1,
+		2: 2.1,
+	}
+}
+```
+
+### 用于slice
+
+```go
+package main
+
+// | 表示类型约束, 可以是其中指定的某一种
+type MySlice[T int | float32 | string] []T
+
+func main() {
+	var s1 MySlice[int] = []int{1, 2, 3}
+	var s2 MySlice[string] = []string{"hello", "world"}
+}
+```
+
+### 用于strict
+
+```go
+package main
+
+type MyStruct[T int|string] struct {
+	Name string
+	Data T
+}
+
+func main() {
+	m1 := MyStruct[int] {
+		Name: "张三",
+		Data: 123456,
+	}
+
+	m2 := MyStruct[string] {
+		Name: "张三",
+		Data: "2023-4-1",
+	}
+}
+```
+
+## 反射
 
 TODO
 
@@ -5488,6 +5659,36 @@ func main() {
 }
 ```
 
+### flag
+
+[`flag`](https://pkg.go.dev/flag@go1.20)是用于解析命令行参数的包
+
+```go
+package main
+
+import (
+	"flag"
+	"fmt"
+)
+
+func main() {
+	create := flag.String("create", "默认值", "-create 的描述")
+	isBool := flag.Bool("isBool", false, "-isBool 的描述")
+	n := flag.Int("n", 10, "-n 的描述")
+	// 必须要先解析
+	flag.Parse()
+
+	fmt.Printf("create: %s, isBool: %v, n: %v\n", *create, *isBool, *n)
+}
+```
+
+运行结果
+
+```sh
+go run main.go isBool true n 1
+# create: 默认值, isBool: false, n: 10
+```
+
 ### os
 
 [`os`](https://pkg.go.dev/os@go1.20)是获取和系统相关的, 比如: `os.Stdout`标准输入, `os.Stdin`标准输出, `os.Stderr`标准错误
@@ -5503,11 +5704,13 @@ import (
 )
 
 func main() {
+  fmt.Println("当前执行的目录名: ", os.Getwd())
+  
 	fmt.Println("命令行参数: ", os.Args)
 	__fileName := os.Args[0]
 	fmt.Println("当前执行的文件地址: ", __fileName)
 	fmt.Println("当前执行的文件名: ", filepath.Base(__fileName))
-	fmt.Println("当前执行的目录名: ", filepath.Dir(__fileName))
+	fmt.Println("当前执行的目录名: ", os.Getwd())
 	fmt.Println("path 环境变量: ", os.Getenv("path"))
 	fmt.Println("系统分割符: ", string(os.PathSeparator))
 	os.Setenv("abcd", "测试的环境变量") // 程序结束后, 环境变量就失效
@@ -6035,8 +6238,6 @@ func main() {
 }
 ```
 
-
-
 ### 常见加密算法
 
 #### base64
@@ -6278,6 +6479,134 @@ func main() {
 }
 ```
 
+## gin
+
+[gin示例](https://gin-gonic.com/zh-cn/docs/examples/)
+
+### 基本使用
+
+```go
+package main
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
+
+func main() {
+	r := gin.Default()
+	r.GET("/", handleHone)
+	r.POST("/filUpload", UploadFileControl)
+	r.GET("/filDownload", DownloadFileControl)
+
+	r.Run(":8100")
+}
+
+func handleHone(c *gin.Context) {
+	response := gin.H{
+		"foo": gin.H{"email": "foo@bar.com", "phone": "12345"},
+		"bar": gin.H{"flog": true},
+	}
+	c.JSON(http.StatusOK, response)
+}
+```
+
+### 文件上传
+
+```go
+package main
+
+import (
+	"fmt"
+	"io/ioutil"
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
+
+func UploadFileControl(c *gin.Context) {
+	// GIN框架获取前端上传文件, formData 对象里的 file 字段
+	uploadFile, fileHeader, err := c.Request.FormFile("file")
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"success": false,
+			"msg":     "获取文件信息失败: " + err.Error(),
+		})
+	}
+	// 关闭文件
+	if uploadFile != nil {
+		defer uploadFile.Close()
+	}
+
+	// 读取上传文件的内容, 如果文件过大时会占用很多内存，可以考虑使用缓冲区读取
+	fileContent, err := ioutil.ReadAll(uploadFile)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"success": false,
+			"msg":     "读取文件内容失败: " + err.Error(),
+		})
+	}
+
+	// 保存文件
+	fmt.Println("Filename", fileHeader.Filename)
+	fmt.Println("fileContent", string(fileContent))
+
+	// 这里向前端返回下上传成功的信息
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"msg":     "文件上传成功",
+	})
+}
+```
+
+### 文件下载
+
+```go
+package main
+
+import (
+	"fmt"
+	"log"
+	"net/http"
+	"os"
+
+	"github.com/gin-gonic/gin"
+)
+
+func DownloadFileControl(c *gin.Context) {
+	//  查询一些必要的参数 进行一些必要的验证
+	file := c.Query("file")
+	log.Println("file: ", file)
+
+	// 获取要返回的文件数据流, 需要获取一个 []byte
+	buffer, err := os.ReadFile("./main.go")
+
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"success": false,
+			"msg":     "文件下载失败了: " + err.Error(),
+		})
+		return
+	}
+
+	// 设置文件名
+	c.Header("Content-Disposition", "attachment; filename=abc.txt")
+	// c.Header("Content-Type", "application/zip") // 压缩文件类型 .zip
+  // 格式
+	c.Header("Content-Type", "application/text/plain")
+  // 文件长度
+	c.Header("Accept-Length", fmt.Sprintf("%d", len(buffer)))
+
+	// 以下三种都可以
+	// c.Data(http.StatusOK, "", buffer)
+	c.Writer.Write(buffer)
+	// c.File("./main.go")
+}
+```
+
+
+
 ## 第三方库
 
 汇总的资源可见[awesome-go](https://github.com/avelino/awesome-go)
@@ -6291,4 +6620,5 @@ func main() {
 | wails   |                                  | 桌面开发框架(类比tauri, 都是使用[webview2](https://developer.microsoft.com/en-us/microsoft-edge/webview2/#download-section)来渲染前端页面) |
 | resty   | github.com/go-resty/resty/v2     | http网络请求                                                 |
 | goquery | github.com/PuerkitoBio/goquery   | 解析网页, 可以使用JQuery语法选择指定的元素                   |
+| gin     | github.com/gin-gonic/gin         | web框架                                                      |
 

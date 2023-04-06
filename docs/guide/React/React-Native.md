@@ -145,13 +145,19 @@ React Native 只提供了[FlexBox](https://reactnative.cn/docs/next/flexbox)布�
 -   输入`i`运行到IOS
 -   输入`a`运行到Android
 
+>   使用 Chrome 调试目前无法观测到 React Native 中的网络请求, 可以使用第三方的[react-native-debugger](https://github.com/jhen0409/react-native-debugger)
+>
+>   使用步骤
+>
+>   -   下载安装打开
+>   -   开启`debugger`菜单
+>   -   开启网络检测, 点击菜单`Debugger -> Open Config File`打开配置文件, 修改`defaultNetworkInspect: true`即可开启网络检查
+
 ## 网络请求
 
 [网络请求](https://reactnative.cn/docs/next/network)
 
 React Native内置提供了和WEB一模一样的[Fetch API](https://developer.mozilla.org/zh-CN/docs/Web/API/Fetch_API)标准, React Native同样也内置支持[AJAX](https://developer.mozilla.org/zh-CN/docs/Web/API/XMLHttpRequest)(XMLHttpRequest)所以可以直接使用如[`axios`](https://axios-http.com/zh/docs/intro)等一些第三方封装AJAX的库
-
->   使用 Chrome 调试目前无法观测到 React Native 中的网络请求, 可以使用第三方的[react-native-debugger](https://github.com/jhen0409/react-native-debugger)来进行观测
 
 ## 常用API
 
@@ -179,13 +185,18 @@ console.log("window: ", window);
 
 汇总的第三方库可以从[awesome-react-native](https://www.awesome-react-native.com/)这个仓库获取, 下面是一些常用的库: 
 
--   组件库: [React Native Elements](https://reactnativeelements.com/)
-
--   图标库: [react-native-vector-icons](https://oblador.github.io/react-native-vector-icons/)
-
--   导航: [React-Navigation](https://reactnavigation.org/docs/getting-started/)
-
--   SQLine: [react-native-sqlite-storage](https://www.npmjs.com/package/react-native-sqlite-storage)
+| 名称     | 说明                                      |
+| -------- | ----------------------------------------- |
+| 组件库   | React Native Elements                     |
+| 图标库   | react-native-vector-icons                 |
+| 导航     | React-Navigation                          |
+| SQLine   | react-native-sqlite-storage               |
+| 文件操作 | react-native-fs                           |
+| 设备信息 | react-native-device-info                  |
+| 本地存储 | @react-native-async-storage/async-storage |
+| 截图操作 | react-native-view-shot                    |
+| 视频播放 | react-native-video                        |
+| 图库控制 | react-native-cameraroll                   |
 
 ## 原生端
 

@@ -20,7 +20,7 @@ tags:
 
 ## Android Studio
 
-[Android Studio](https://developer.android.google.cn/studio)是官方的IDE
+[Android Studio](https://developer.android.google.cn/studio)是官方的IDE, [操作文档](tps://developer.android.google.cn/studio/intro?hl=zh-cn)
 
 ### 汉化
 

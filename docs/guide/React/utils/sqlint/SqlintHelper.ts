@@ -3,6 +3,7 @@ import type { DatabaseParams, SQLiteDatabase, ResultSet } from "react-native-sql
 
 // 数据类型
 export type DataType = "INTEGER" | "LONG" | "FLOAT" | "VARCHAR" | "TEXT";
+type MyObject<T = any> = { [k in string]: T };
 
 // 表字段配置
 export type TableFieldsOption = {
@@ -95,24 +96,17 @@ class SqlintHelper {
     return this.fieldsOption.filter(e => !e.isKey).map(e => e.field);
   }
 
-  // 数据字段对齐填充位(就是表有5个字段, 数据只给了2个字段, 剩下的补上 undefined)
-  public alignFill(data: any[]) {
-    let ret = JSON.parse(JSON.stringify(data));
-    // 所有的字段
-    const fields = this.getFields();
-    // 填充位不对
-    const fieldsLen = fields.length;
-
-    // 太短填充 undefined 至对齐填充位
-    if (fieldsLen > ret.length) {
-      const fill = Array.from({ length: fieldsLen - ret.length }).map(() => undefined);
-      ret.push(...fill);
-
-      // 太长只截取到字段长度
-    } else if (fieldsLen < ret.length) {
-      ret = ret.slice(0, fieldsLen)
+  // 获取数据的信息
+  public getDataInfo(data: MyObject) {
+    // 字段
+    const fields = Object.keys(data);
+    // 数据
+    const values = [];
+    for (const k of fields) {
+      const value = data[k];
+      values.push(value);
     }
-    return ret;
+    return { fields, values };
   }
 
   // 关闭数据库
@@ -179,13 +173,14 @@ class SqlintHelper {
   }
 
   // 查询数据(自定义字段和数据)
-  public getByCustom(fields: string[], data: any[], flog: WhereType = "AND", queryFields = this.queryFields) {
+  public getByCustom(query: MyObject, flog: WhereType = "AND", queryFields = this.queryFields) {
     return new Promise(async (resolve, reject) => {
       try {
+        const { fields, values } = this.getDataInfo(query);
         // 值填充符
         const whereSql = fields.map(e => `${e}=?`).join(` ${flog} `);
         const sql = `SELECT ${queryFields} FROM "${this.tableName}" WHERE ${whereSql}`;
-        const results = await this.executeSql(sql, data);
+        const results = await this.executeSql(sql, values);
         const list = this.bulidRet(results);
         resolve(list);
       } catch (error) {
@@ -195,17 +190,17 @@ class SqlintHelper {
   }
 
   // 插入单条数据
-  public insert(data: any[]) {
+  public insert(data: MyObject) {
     return new Promise(async (resolve, reject) => {
       try {
-        const fields = this.getFields();
+        const { fields, values } = this.getDataInfo(data);
         // 所有的字段
         const fieldsStr = fields.join(", ");
         // 值填充符
         const fillStr = fields.map(() => "?").join(", ");
         // INSERT or REPLACE 表示插入或替换
         const sql = `INSERT or REPLACE INTO "${this.tableName}" (${fieldsStr}) VALUES(${fillStr})`;
-        const [res] = await this.executeSql(sql, data);
+        const [res] = await this.executeSql(sql, values);
         resolve(res);
       } catch (error) {
         reject(error);
@@ -214,32 +209,36 @@ class SqlintHelper {
   }
 
   // 插入多条数据
-  public inserts(data: any[][]) {
+  public inserts(datas: MyObject[]) {
     return new Promise(async (resolve, reject) => {
       try {
         const fields = this.getFields();
         // 所有的数据
-        const allData: any = [];
-        // 所有的字段
-        const fieldsStr = fields.join(", ");
-        const item = data.shift();
-        let first;
-        if (item) {
-          // 对齐填充位
-          const alignData = this.alignFill(item);
-          allData.push(...alignData);
-          first = alignData.map(() => "?").join(", ");
-        }
-        const other = data.flatMap(e => {
-          // 对齐填充位
-          const alignData = this.alignFill(e);
-          allData.push(...alignData);
-          const line = alignData.map(() => "?").join(", ");
-          return `(${line})`;
-        }).join(", ");
-        // INSERT or REPLACE 表示插入或替换
-        const sql = `INSERT or REPLACE INTO "${this.tableName}" (${fieldsStr}) VALUES(${first}), ${other}`;
-        const [res] = await this.executeSql(sql, allData);
+        const allData: any[][] = [];
+        datas.forEach(item => {
+          const values: any[] = [];
+          // 这里是为了要把添加的数据和表数据字段顺序对应
+          for (const key of fields) {
+            const val = item[key];
+            if (val) {
+              values.push(val);
+            } else {
+              const idx = this.fieldsOption.findIndex(e => e.field === key && e.isNotNull);
+              // 必填字段没有给值
+              if (idx !== -1) {
+                throw new Error(`${key}字段类型是非空, 请检查给的数据是否对应 fieldsOption 里的配置`);
+              }
+              values.push(undefined);
+            }
+          }
+          // 一行的数据
+          allData.push(values);
+        });
+        const values = allData.map(item => `(${item.map(() => `?`).join(", ")})`).join(", ");
+
+        // 生成sql示例: INSERT or REPLACE INTO "test.db" (name, age, age2, age3, info) VALUES(?, ?, ?, ?, ?), (?, ?, ?, ?, ?), (?, ?, ?, ?, ?);
+        const sql = `INSERT or REPLACE INTO "${this.tableName}" (${fields.join(", ")}) VALUES${values};`;
+        const [res] = await this.executeSql(sql, allData.flat(1)); // allData 是二维数组这里要打平
         resolve(res);
       } catch (error) {
         reject(error);
@@ -248,19 +247,38 @@ class SqlintHelper {
   }
 
   // 根据主键更新数据
-  public updateById(where: any, data: any[]) {
+  public updateById(data: MyObject) {
     return new Promise(async (resolve, reject) => {
       try {
-        const fields = this.getFields();
-        const setSql = fields.map(e => `${e}=?`).join(", ");
+        const json = JSON.parse(JSON.stringify(data));
         const key = this.getFieldKey();
+        // 拿到主键的值
+        const keyVal = json[key];
+        if (!keyVal) throw new Error(`${data}里面没有主键(${key})的值, 请检查`);
+        // 删除主键的值
+        delete json[key];
+        const { fields, values } = this.getDataInfo(json);
+        const setSql = fields.map(e => `${e}=?`).join(", ");
         const sql = `UPDATE "${this.tableName}" SET ${setSql} WHERE ${key}=?`;
-        // 对齐填充位
-        const alignData = this.alignFill(data);
-        // 将主键值添加到最后, 对应 where 条件(前提是要先把没有给的数据字段先填充好)
-        alignData.push(where);
+        const [res] = await this.executeSql(sql, [...values, keyVal]); // 主键的值加到最后, 对应 WHERE 条件
+        resolve(res);
+      } catch (error) {
+        reject(error);
+      }
+    });
+  }
 
-        const [res] = await this.executeSql(sql, alignData);
+  // 更新数据根据自定义字段
+  public updateByCustom(data: MyObject, where: MyObject, flog: WhereType = "AND") {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const { fields, values } = this.getDataInfo(data);
+        const setSql = fields.map(e => `${e}=?`).join(", ");
+        // 值填充符
+        const { fields: whereFields, values: whereValues } = this.getDataInfo(where);
+        const whereSql = whereFields.map(e => `${e}=?`).join(` ${flog} `);
+        const sql = `UPDATE "${this.tableName}" SET ${setSql} ${whereSql}`;
+        const [res] = await this.executeSql(sql, [...values, ...whereValues]); // WHERE 条件加到最后
         resolve(res);
       } catch (error) {
         reject(error);
@@ -269,7 +287,7 @@ class SqlintHelper {
   }
 
   // 根据主键删除数据
-  public deleteById(id: any) {
+  public deleteById(id: string | number) {
     return new Promise(async (resolve, reject) => {
       try {
         const key = this.getFieldKey();
@@ -283,13 +301,14 @@ class SqlintHelper {
   }
 
   // 删除数据(根据自定义字段)
-  public deleteByCustom(fields: string[], data: any[], flog: WhereType = "AND") {
+  public deleteByCustom(query: MyObject, flog: WhereType = "AND") {
     return new Promise(async (resolve, reject) => {
       try {
+        const { fields, values } = this.getDataInfo(query);
         // 值填充符
         const whereSql = fields.map(e => `${e}=?`).join(` ${flog} `);
         const sql = `DELETE from "${this.tableName}" WHERE ${whereSql}`;
-        const [res] = await this.executeSql(sql, data);
+        const [res] = await this.executeSql(sql, values);
         resolve(res);
       } catch (error) {
         reject(error);
