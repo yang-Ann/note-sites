@@ -145,19 +145,40 @@ React Native 只提供了[FlexBox](https://reactnative.cn/docs/next/flexbox)布�
 -   输入`i`运行到IOS
 -   输入`a`运行到Android
 
->   使用 Chrome 调试目前无法观测到 React Native 中的网络请求, 可以使用第三方的[react-native-debugger](https://github.com/jhen0409/react-native-debugger)
->
->   使用步骤
->
->   -   下载安装打开
->   -   开启`debugger`菜单
->   -   开启网络检测, 点击菜单`Debugger -> Open Config File`打开配置文件, 修改`defaultNetworkInspect: true`即可开启网络检查
+>   使用 Chrome 调试目前无法观测到 React Native 中的网络请求, 推荐使用[flipper](https://fbflipper.com/)或者使用第三方的[react-native-debugger](https://github.com/jhen0409/react-native-debugger)
+
+## flipper
+
+[flipper](https://fbflipper.com/)是官方的移动端调试工具, 可以查看网络请求, reducx, sqlint数据库, Shared Preferences很强大
 
 ## 网络请求
 
 [网络请求](https://reactnative.cn/docs/next/network)
 
 React Native内置提供了和WEB一模一样的[Fetch API](https://developer.mozilla.org/zh-CN/docs/Web/API/Fetch_API)标准, React Native同样也内置支持[AJAX](https://developer.mozilla.org/zh-CN/docs/Web/API/XMLHttpRequest)(XMLHttpRequest)所以可以直接使用如[`axios`](https://axios-http.com/zh/docs/intro)等一些第三方封装AJAX的库
+
+## 权限操作
+
+[PermissionsAndroid](https://reactnative.cn/docs/permissionsandroid)
+
+```ts
+import { PermissionsAndroid, Linking, ToastAndroid } from "react-native";
+import type { Permission } from "react-native";
+
+// 获取权限封装
+const getPermissions = async (per: Permission, msg = "请设置权限") => {
+  // 判断是否有权限
+  const isFlog = await PermissionsAndroid.check(per);
+  if (!isFlog) {
+    const res = await PermissionsAndroid.request(per);
+    // 没有权限直接跳转到应用设置界面
+    if ([PermissionsAndroid.RESULTS.DENIED, PermissionsAndroid.RESULTS.NEVER_ASK_AGAIN].includes(res)) {
+      ToastAndroid.show(msg, ToastAndroid.LONG);
+      await Linking.openSettings();
+    }
+  }
+};
+```
 
 ## 常用API
 
@@ -187,7 +208,7 @@ console.log("window: ", window);
 
 | 名称     | 说明                                      |
 | -------- | ----------------------------------------- |
-| 组件库   | React Native Elements                     |
+| 组件库   | react-native-paper                        |
 | 图标库   | react-native-vector-icons                 |
 | 导航     | React-Navigation                          |
 | SQLine   | react-native-sqlite-storage               |

@@ -6496,10 +6496,19 @@ import (
 
 func main() {
 	r := gin.Default()
+
+  // 静态资源目录(默认)
+	r.Static("/assets", "./assets")
+	// 静态资源自定义目录
+	r.StaticFS("/images", http.Dir("./my-images"))
+	// 静态资源自定义文件
+	// r.StaticFile("/favicon.ico", "./resources/favicon.ico")
+
 	r.GET("/", handleHone)
 	r.POST("/filUpload", UploadFileControl)
 	r.GET("/filDownload", DownloadFileControl)
 
+  // 监听指定的端口
 	r.Run(":8100")
 }
 
@@ -6518,15 +6527,17 @@ func handleHone(c *gin.Context) {
 package main
 
 import (
+	"bufio"
 	"fmt"
-	"io/ioutil"
 	"net/http"
+	"os"
+	"path/filepath"
 
 	"github.com/gin-gonic/gin"
 )
 
 func UploadFileControl(c *gin.Context) {
-	// GIN框架获取前端上传文件, formData 对象里的 file 字段
+	// formData 对象里的 file 字段
 	uploadFile, fileHeader, err := c.Request.FormFile("file")
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
@@ -6534,25 +6545,39 @@ func UploadFileControl(c *gin.Context) {
 			"msg":     "获取文件信息失败: " + err.Error(),
 		})
 	}
+
 	// 关闭文件
 	if uploadFile != nil {
-		defer uploadFile.Close()
+		defer func() {
+			err = uploadFile.Close(); if err != nil {
+				panic(err)
+			}
+		}()
 	}
 
-	// 读取上传文件的内容, 如果文件过大时会占用很多内存，可以考虑使用缓冲区读取
-	fileContent, err := ioutil.ReadAll(uploadFile)
-	if err != nil {
-		c.JSON(http.StatusOK, gin.H{
-			"success": false,
-			"msg":     "读取文件内容失败: " + err.Error(),
-		})
+	// 读取上传文件的内容
+	buffer := make([]byte, 2048)
+	f := bufio.NewReader(uploadFile)
+
+	for {
+		n, err := f.Read(buffer)
+		// 读取完成
+		if err != nil {
+			break
+		}
+
+		// 保存文件到指定的地方
+		dir, err := os.Getwd()
+		fmt.Println(dir)
+		if err != nil {
+			dir = "./"
+			fmt.Println("Getwd error", err)
+		}
+		filPath := filepath.Join(dir, "downFile", fileHeader.Filename)
+		fmt.Println("filPath", filPath)
+		os.WriteFile(filPath, buffer[:n], 0755)
 	}
 
-	// 保存文件
-	fmt.Println("Filename", fileHeader.Filename)
-	fmt.Println("fileContent", string(fileContent))
-
-	// 这里向前端返回下上传成功的信息
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"msg":     "文件上传成功",
@@ -6575,7 +6600,7 @@ import (
 )
 
 func DownloadFileControl(c *gin.Context) {
-	//  查询一些必要的参数 进行一些必要的验证
+	// 查询参数
 	file := c.Query("file")
 	log.Println("file: ", file)
 
@@ -6590,22 +6615,18 @@ func DownloadFileControl(c *gin.Context) {
 		return
 	}
 
-	// 设置文件名
+	// 设置响应头并返回数据
 	c.Header("Content-Disposition", "attachment; filename=abc.txt")
 	// c.Header("Content-Type", "application/zip") // 压缩文件类型 .zip
-  // 格式
 	c.Header("Content-Type", "application/text/plain")
-  // 文件长度
 	c.Header("Accept-Length", fmt.Sprintf("%d", len(buffer)))
 
 	// 以下三种都可以
 	// c.Data(http.StatusOK, "", buffer)
-	c.Writer.Write(buffer)
-	// c.File("./main.go")
+	// c.Writer.Write(buffer)
+	c.File("./main.go")
 }
 ```
-
-
 
 ## 第三方库
 
