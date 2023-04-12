@@ -6503,10 +6503,16 @@ func main() {
 	r.StaticFS("/images", http.Dir("./my-images"))
 	// 静态资源自定义文件
 	// r.StaticFile("/favicon.ico", "./resources/favicon.ico")
+  
+  name := c.Query("name")
+  name := c.PostForm("name")
 
-	r.GET("/", handleHone)
-	r.POST("/filUpload", UploadFileControl)
-	r.GET("/filDownload", DownloadFileControl)
+	// r.GET("/", handleHone)
+  
+	// r.POST("/filUpload", FileUpload)
+  
+  // body, _ := c.GetRawData()
+	// fmt.Println("body: ", string(body))
 
   // 监听指定的端口
 	r.Run(":8100")
@@ -6527,7 +6533,6 @@ func handleHone(c *gin.Context) {
 package main
 
 import (
-	"bufio"
 	"fmt"
 	"net/http"
 	"os"
@@ -6536,15 +6541,19 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func UploadFileControl(c *gin.Context) {
-	// formData 对象里的 file 字段
-	uploadFile, fileHeader, err := c.Request.FormFile("file")
+
+func UpdateLog(c *gin.Context) {
+	// 单文件解析
+	uploadFile, handleFile, err := c.Request.FormFile("file")
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
-			"success": false,
-			"msg":     "获取文件信息失败: " + err.Error(),
+			"msg": "获取文件失败",
 		})
+		return
 	}
+
+	// 多文件解析
+	// files, err := c.MultipartForm()
 
 	// 关闭文件
 	if uploadFile != nil {
@@ -6555,28 +6564,19 @@ func UploadFileControl(c *gin.Context) {
 		}()
 	}
 
-	// 读取上传文件的内容
-	buffer := make([]byte, 2048)
-	f := bufio.NewReader(uploadFile)
-
-	for {
-		n, err := f.Read(buffer)
-		// 读取完成
-		if err != nil {
-			break
-		}
-
-		// 保存文件到指定的地方
-		dir, err := os.Getwd()
-		fmt.Println(dir)
-		if err != nil {
-			dir = "./"
-			fmt.Println("Getwd error", err)
-		}
-		filPath := filepath.Join(dir, "downFile", fileHeader.Filename)
-		fmt.Println("filPath", filPath)
-		os.WriteFile(filPath, buffer[:n], 0755)
+	// 保存文件到指定的地方
+	var dir = ""
+	if dir, err = os.Getwd(); err != nil {
+		dir = "./"
+		fmt.Println("Getwd error", err)
 	}
+	filePath := filepath.Join(dir, "downFile", handleFile.Filename)
+
+	fmt.Println("Filename: ", handleFile.Filename)
+	fmt.Println("Size: ", handleFile.Size)
+
+	// 保存文件到指定的位置
+	c.SaveUploadedFile(handleFile, filePath)
 
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,

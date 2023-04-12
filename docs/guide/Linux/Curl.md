@@ -1,6 +1,6 @@
 # Curl
 
-[curl](https://curl.se/)是一个可以通过命令行发送网络请求的一个库
+[curl](https://curl.se/)是一个可以通过命令行发送网络请求的库
 
 ## 使用
 
@@ -44,11 +44,13 @@ curl -G --data-urlencode 'name=张三' http://localhost:8100/get -v
 curl -d '{"name":"张三", "age":"18"}' -H "Content-Type:application/json" http://localhost:8100/post -v
 curl -d 'name=张三&age=18' http://localhost:8100/post -v
 
-# -d 参数可以读取本地文本文件的数据, 向服务器发送
-curl -d '@data.txt' http://localhost:8100/post
-
 # 指定表单参数
 curl -F name=张三 -F age=18 http://localhost:8100/post -v
+# 上传表单文件(formData形式), 注意使用 @表示值是一个文件, 可以指定多个 -F
+curl -F fileName=@data.txt http://localhost:8100/uploadFile -v
+
+# 上传文件, 请求体(body) 就是文件二进制数据
+curl -X POST -T data.json http://localhost:8100/post -v
 
 # 设置请求头 referer, 简写 -e
 curl --referer http://www.baidu.com http://localhost:8100/get -v

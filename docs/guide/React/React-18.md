@@ -1338,6 +1338,23 @@ function Child() {
 export default App;
 ```
 
+缓存工具类的实例
+
+```tsx
+import { useMemo, useEffect } from "react";
+import Logger from "./index";
+
+const log = useMemo(() => new Logger("mlkj-wddmt"), []);
+
+useEffect(() => {
+  log.init().then(() => {
+    console.log("初始化成功");
+  }).catch(err => {
+    console.log("初始化失败了: ", err);
+  });
+}, [log]);
+```
+
 ### useCallback
 
 `useCallback`和`useMemo`接受到的参数是一样的, 都是在依赖项变量之后才执行函数, 返回缓存的值, 区别在于`useMemo`返回的是**函数运行的结果**，`useCallback`返回的是**函数本身**, `useCallback`经常被滥用, 其正确的应用场景是**在往子组件传入了一个函数并且子组件被`React.momo`缓存了的时候使用, 如果是普通的函数即使是被`React.momo`缓存了的子组件也会更新**: 
