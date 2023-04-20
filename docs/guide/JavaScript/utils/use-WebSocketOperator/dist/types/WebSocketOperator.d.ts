@@ -1,7 +1,10 @@
+type EventObjType = {
+    event: Event;
+};
 export default class WebSocketOperator {
     #private;
-    ws: WebSocket;
     url: string;
+    ws: WebSocket;
     heartbeatInterval: number;
     heartbeatData: string;
     heartbeatNum: number;
@@ -14,30 +17,14 @@ export default class WebSocketOperator {
     static isCompatibleWebSocket(listener?: (err: Error | void) => void): void;
     private static log;
     protected init(): void;
-    onopen(ws: WebSocketState & {
-        event: Event;
-    }): void;
-    onmessage(ws: WebSocketState & {
-        event: Event;
-    }): void;
-    onclose(ws: WebSocketState & {
-        event: Event;
-    }): void;
-    onerror(ws: WebSocketState & {
-        event: Event;
-    }): void;
-    onheartbeat(ws: WebSocketState & {
-        event: Event;
-    }): void;
-    onreconnection(ws: WebSocketState & {
-        event: Event;
-    }): void;
-    ondestroy(ws: WebSocketState & {
-        event: Event;
-    }): void;
-    onmaxReconnection(ws: WebSocketState & {
-        event: Event;
-    }): void;
+    onopen(ws: WebSocketState & EventObjType): void;
+    onmessage(ws: WebSocketState & EventObjType): void;
+    onclose(ws: WebSocketState & EventObjType): void;
+    onerror(ws: WebSocketState & EventObjType): void;
+    onheartbeat(ws: WebSocketState & EventObjType): void;
+    onreconnection(ws: WebSocketState & EventObjType): void;
+    ondestroy(ws: WebSocketState & EventObjType): void;
+    onmaxReconnection(ws: WebSocketState & EventObjType): void;
     protected bindEvent(event: WebSocketEvent, listener: (e: Event | MessageEvent<any> | CloseEvent | any) => void): this;
     protected $triggerFn(key: WebSocketEvent | "onreconnection" | "onheartbeat" | "ondestroy" | "onmaxReconnection", event: Event): void;
     protected $onopenOperator(e: Event): void;
@@ -75,3 +62,4 @@ export default class WebSocketOperator {
     getMaxReconnectionNum(): number;
     setMaxReconnectionNum(maxReconnectionNum: number): void;
 }
+export {};

@@ -579,6 +579,7 @@ npm config set access public
 |    relationship.js    |                         亲戚关系计算                         |
 |       js-base64       |                         base64编解码                         |
 |       jsencrypt       |                          rsa加解密                           |
+|       nprogress       |                        页面顶部进度条                        |
 
 **服务端工具包**
 
@@ -611,6 +612,7 @@ npm config set access public
 |                piscina                 |                          多线程实现                          |
 |               node-fetch               |                      node中的fetch实现                       |
 |                  tsx                   |                       直接运行 ts文件                        |
+|                  open                  |                可以编程的打开图片, 网站, 应用                |
 
 **终端工具**
 

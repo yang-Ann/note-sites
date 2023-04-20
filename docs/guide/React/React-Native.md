@@ -184,40 +184,70 @@ const getPermissions = async (per: Permission, msg = "请设置权限") => {
 
 [所有的API](https://reactnative.cn/docs/accessibilityinfo)
 
-### 获取设备屏幕的尺寸
+-   获取设备屏幕的尺寸
 
-```tsx
-import { Dimensions } from 'react-native';
+    ```ts
+    import { Dimensions } from 'react-native';
+    
+    const dimensions = Dimensions.get('window');
+    const window = Dimensions.get("window");
+    console.log("window: ", window);
+    /* 结果类似
+    {
+      "width": 411.42857142857144,
+      "height": 683.4285714285714,
+      "scale": 3.5,
+      "fontScale": 1
+    }
+    */
+    ```
 
-const dimensions = Dimensions.get('window');
-const window = Dimensions.get("window");
-console.log("window: ", window);
-/* 结果类似
-{
-  "width": 411.42857142857144,
-  "height": 683.4285714285714,
-  "scale": 3.5,
-  "fontScale": 1
-}
-*/
-```
+-   原生toast: 使用`ToastAndroid`模块即可
+
+-   动画: 使用`Animated`即可
+
+-   自定义后退逻辑使用`BackHandler`模块:
+
+    ```ts
+    import { BackHandler, ToastAndroid } from "react-native";
+    
+    let clickExitDelay = Date.now();
+    BackHandler.addEventListener("hardwareBackPress", () => {
+      if (Date.now() - clickExitDelay < 2000) {
+        // 退出
+        return false;
+      } else {
+        clickExitDelay = Date.now();
+        // TODO Toast 无法隐藏, 会导致应用已经退出了, Toast 还存在一段时间
+        ToastAndroid.show("再按一次退出", ToastAndroid.SHORT);
+        return true;
+      }
+    });
+    ```
+
+-   打开一个抽屉页面使用`DrawerLayoutAndroid`组件
+
+-   状态栏操作使用`StatusBar`组件
+
+-   安全区域使用`SafeAreaView`组件
 
 ## 第三方库
 
 汇总的第三方库可以从[awesome-react-native](https://www.awesome-react-native.com/)这个仓库获取, 下面是一些常用的库: 
 
-| 名称     | 说明                                      |
-| -------- | ----------------------------------------- |
-| 组件库   | react-native-paper                        |
-| 图标库   | react-native-vector-icons                 |
-| 导航     | React-Navigation                          |
-| SQLine   | react-native-sqlite-storage               |
-| 文件操作 | react-native-fs                           |
-| 设备信息 | react-native-device-info                  |
-| 本地存储 | @react-native-async-storage/async-storage |
-| 截图操作 | react-native-view-shot                    |
-| 视频播放 | react-native-video                        |
-| 图库控制 | react-native-cameraroll                   |
+| 名称         | 说明                                      |
+| ------------ | ----------------------------------------- |
+| 组件库       | react-native-paper                        |
+| 图标库       | react-native-vector-icons                 |
+| 导航         | React-Navigation                          |
+| SQLine       | react-native-sqlite-storage               |
+| 文件操作     | react-native-fs                           |
+| 文件上传下载 | rn-fetch-blob                             |
+| 设备信息     | react-native-device-info                  |
+| 本地存储     | @react-native-async-storage/async-storage |
+| 截图操作     | react-native-view-shot                    |
+| 视频播放     | react-native-video                        |
+| 图库控制     | react-native-cameraroll                   |
 
 ## 原生端
 
@@ -231,8 +261,6 @@ Toast.makeText(context, "hello world", Toast.LENGTH_SHORT).show();
 ```
 
 ### 与原生端通信
-
-参考掘金[「React Native」与「Android」的交互方式总结](https://juejin.cn/post/6844903866341801998)
 
 #### 通过原生 Module 进行交互
 
@@ -287,7 +315,7 @@ public class Module extends ReactContextBaseJavaModule {
     }
 
     // Toast 封装
-    // 添加 @ReactMethod 注解, 然后方法定义为 public void 则可以给到 JS端 使用
+    // 添加 @ReactMethod 注解, 然后方法的返回值必须是 void 才可以给到 JS端 使用(静态方法也可以)
     @ReactMethod
     public void showToast(String msg) {
         if (mToast == null) {
@@ -422,24 +450,25 @@ export default App;
 
 参数类型对应如下: 
 
-| JavaScript | Java          |
-| ---------- | ------------- |
-| Bool       | Boolean       |
-| Number     | Integer       |
-| Number     | Double        |
-| Number     | Float         |
-| String     | String        |
-| Function   | Callback      |
-| Object     | ReadableMap   |
-| Array      | ReadableArray |
+| JavaScript | Java                                                 |
+| ---------- | ---------------------------------------------------- |
+| Bool       | Boolean                                              |
+| Number     | Integer                                              |
+| Number     | Double                                               |
+| Number     | Float                                                |
+| String     | String                                               |
+| Function   | Callback                                             |
+| Object     | ReadableMap, 可以通过`Arguments.createMap()`获得     |
+| Array      | ReadableArray, 可以通过`Arguments.createArray()`获得 |
 
 ##### 原生端通过 Callback 回调函数返回数据给 JS 端
 
 因为`@ReactMethod`注解的要求必须是`public void`的所以是不能有返回值, 如果需要原生端处理结果后返回对应的值给JS端则需要传递回调函数作为参数给到原生端, 如下:
 
 ```java
-// 导入回调的类
+// 导入对应的类
 import com.facebook.react.bridge.Callback;
+import com.facebook.react.bridge.Arguments;
 
 // ...
 
@@ -454,6 +483,18 @@ public void AndroidCallbackFunc(String str, Callback success, Callback error) {
     } else {
         // 回调成功, 返回结果信息
         success.invoke(str.length(), "这是从原生返回数据");
+      
+      	// 可以回调对象
+      	WritableMap map = Arguments.createMap();
+        map.putInt("age", 18);
+        map.putString("name", "张三");
+        success.invoke(map);
+
+      	// 也可以回调数组
+        WritableArray array = Arguments.createArray();
+        array.pushInt(18);
+        array.pushString("hello");
+      	success.invoke(array);
     }
 }
 ```
@@ -478,8 +519,9 @@ Module.AndroidCallbackFunc(
 原生端除了可以使用回调函数的形式返回数据, 也可以使用Promise函数进行回调如下: 
 
 ```java
-// 导入Promise的类
+// 导入对应的类
 import com.facebook.react.bridge.Promise;
+import com.facebook.react.bridge.Arguments;
 
 // ...
 
@@ -494,6 +536,18 @@ public void AndroidPromiseFunc(String str, Promise promise) {
     } else {
         // 成功回调
         promise.resolve("这是从原生返回数据");
+      
+      	// 可以回调对象
+      	WritableMap map = Arguments.createMap();
+        map.putInt("age", 18);
+        map.putString("name", "张三");
+        promise.resolve(map);
+
+      	// 也可以回调数组
+        WritableArray array = Arguments.createArray();
+        array.pushInt(18);
+        array.pushString("hello");
+      	promise.resolve(array);
     }
 }
 ```
@@ -582,6 +636,251 @@ useEffect(() => {
 ```
 
 >   注意: `RCTDeviceEventEmitter`这种方式通信在IOS端是不行的, 还需要添加一个自定义的 Module, 见[这里](https://juejin.cn/post/6844903866341801998#heading-20)
+
+### 与原生UI交互
+
+通过自定义 `Module` 进行交互可以解决大部分开发需求, 有的时候，基于性能和开发工作量的角度考虑，我们可以将原生的组件或布局封装好，并为这个原生 `View` 建立一个继承自 `SimpleViewManager` 或 `ViewGroupManager` 的 `ViewManager` 类。通过这个 `ViewManager` 可以注册一系列原生端和 JS 端的参数及事件映射，达到交互的目的
+
+#### 创建原生View
+
+以封装一个简单的`Button`为例, 如下: 
+
+```java
+package com.szzc_pda.ui.NaiveButton;
+
+import android.content.Context;
+
+// 封装原生按钮供JS端使用
+public class NaiveButton extends androidx.appcompat.widget.AppCompatButton {
+    public NaiveButton(Context context) {
+        super(context);
+    }
+}
+```
+
+#### 创建对应的ViewManager类
+
+简单的 `View` 可以创建 `ViewManager` 类继承 `SimpleViewManager` ，而通过布局生成的复杂 `View` 可以继承自 `ViewGroupManager` 类:
+
+```java
+// ... 省略导入
+
+// 创建对应的 SimpleViewManager 子类
+public class NativeButtonSimpleViewManager extends SimpleViewManager<NaiveButton> {
+    static NaiveButton mBtn;
+
+    @NonNull
+    @Override
+    public String getName() {
+        return "NativeButton"; // 此处的名称对应 JS 的引用, 通过 requireNativeComponent("xxx"); 获取对应的组件
+    }
+
+    // 创建 view 实例
+    @NonNull
+    @Override
+    protected NaiveButton createViewInstance(@NonNull ThemedReactContext themedReactContext) {
+        mBtn = new NaiveButton(themedReactContext);
+        return mBtn;
+    }
+}
+```
+
+#### 注册ViewManager类
+
+在上面的[与原生端通信](# 与原生端通信)中, 在`reactPackages`类中使用了`createNativeModules()`方法里注册 `Module` 的, 注册原生端则需要在`createViewManagers()`方法中注册刚刚创建的`NaiveButton`实例：
+
+```java
+package com.szzc_pda.reactPackages;
+
+import com.facebook.react.ReactPackage;
+import com.facebook.react.bridge.NativeModule;
+import com.facebook.react.bridge.ReactApplicationContext;
+import com.facebook.react.uimanager.ViewManager;
+
+import com.szzc_pda.modules.Module;
+import com.szzc_pda.ui.NaiveButton.NativeButtonSimpleViewManager;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import javax.annotation.Nonnull;
+
+public class MyReactPackage implements ReactPackage {
+    @Nonnull
+    @Override
+    public List<NativeModule> createNativeModules(@Nonnull ReactApplicationContext reactContext) {
+        List<NativeModule> modules = new ArrayList<>();
+
+        // 将新建的 module 实例加入到 List 中完成注册
+        modules.add(new Module(reactContext));
+        return modules;
+    }
+
+    @Nonnull
+    @Override
+    public List<ViewManager> createViewManagers(@Nonnull ReactApplicationContext reactContext) {
+        List<ViewManager> views = new ArrayList<>();
+        // 创建 NativeButtonSimpleViewManager 实例并注册到 ViewManager List 中
+        views.add(new NativeButtonSimpleViewManager());
+        return views;
+    }
+}
+```
+
+#### 在JS端使用组件
+
+通过`requireNativeComponent<T>("组件名称")`即可解析出原生端注册的组件(注意名称一定要对应元素端`getName()`返回的名称): 
+
+```tsx
+import { requireNativeComponent } from "react-native";
+
+// 解析组件
+const NativeButton = requireNativeComponent<{}>("NativeButton");
+```
+
+#### 原生端通过@ReactProps接收JS端传递的组件值
+
+原生端通过`@ReactProps`注解即可接收JS端传递的组件值
+
+```java
+public class MyReactPackage implements ReactPackage {
+    @Nonnull
+    @Override
+    public List<NativeModule> createNativeModules(@Nonnull ReactApplicationContext reactContext) {
+        List<NativeModule> modules = new ArrayList<>();
+
+        // 将新建的 module 实例加入到 List 中完成注册
+        modules.add(new Module(reactContext));
+        return modules;
+    }
+
+    @Nonnull
+    @Override
+    public List<ViewManager> createViewManagers(@Nonnull ReactApplicationContext reactContext) {
+        List<ViewManager> views = new ArrayList<>();
+        // 创建 NativeButtonSimpleViewManager 实例并注册到 ViewManager List 中
+        views.add(new NativeButtonSimpleViewManager());
+        return views;
+    }
+
+    // 暴露给 JS 的参数(text="xxx"), 给定值以后触发这个方法就可以设置按钮的文本了
+    @ReactProp(name = "text")
+    public void setText(NaiveButton view, String text) {
+        view.setText(text);
+    }
+}
+```
+
+JS端可以正常的传递值
+
+```jsx
+import { requireNativeComponent } from "react-native";
+
+// 原生UI控件接收值类型
+export type NativeButtonProps = {
+  text: string; // 按钮文本
+};
+
+// 解析组件
+const NativeButton = requireNativeComponent<NativeButtonProps>("NativeButton");
+
+// 页面使用
+<NativeButton text="按钮文本" />
+```
+
+>   注意: JS端传递给原生端的数据, 如上面的`text`如果在运行时改变了, 原生端是**不会更新**的, 原生端的组件x需要更新状态, 必须要在原生端那边才可以修改
+
+#### 原生端通过注册事件与 JS 端的映射与 JS 端使用
+
+```java
+public class NativeButtonSimpleViewManager extends SimpleViewManager<NaiveButton> {
+    static NaiveButton mBtn;
+    private String btnText;
+
+    @NonNull
+    @Override
+    public String getName() {
+        return "NativeButton";
+    }
+
+    // 创建 view 实例
+    @SuppressLint("ClickableViewAccessibility") // 触摸和监听同时监听
+    @NonNull
+    @Override
+    protected NaiveButton createViewInstance(@NonNull ThemedReactContext themedReactContext) {
+        mBtn = new NaiveButton(themedReactContext);
+
+        // 触摸事件
+        mBtn.setOnTouchListener((view, event) -> {
+            int iAction = event.getAction();
+            // 事件对象(可以传递数据)
+            WritableMap map = Arguments.createMap();
+            if (iAction == MotionEvent.ACTION_DOWN) { // 按下
+                map.putString("msg", "原生按下事件");
+                // 与下面注册的要发送的事件名称必须相同
+                themedReactContext.getJSModule(RCTEventEmitter.class).receiveEvent(mBtn.getId(), "onNativeMousedown", map);
+                mBtn.setText("按下了");
+            } else if (iAction == MotionEvent.ACTION_UP) { // 弹起
+                map.putString("msg", "原生弹起事件");
+                // 与下面注册的要发送的事件名称必须相同
+                themedReactContext.getJSModule(RCTEventEmitter.class).receiveEvent(mBtn.getId(), "onNativeMouseup", map);
+                mBtn.setText("弹起了");
+            }
+            return false; // false 表示系统会继续处理, true 取消冒泡
+        });
+
+        // 绑定点击事件
+        mBtn.setOnClickListener(view -> {
+            WritableMap map = Arguments.createMap();
+            map.putString("msg", "原生click事件");
+            // 与下面注册的要发送的事件名称必须相同
+            themedReactContext.getJSModule(RCTEventEmitter.class).receiveEvent(mBtn.getId(),"onNativeClick", map);
+        });
+        return mBtn;
+    }
+
+    public Map getExportedCustomDirectEventTypeConstants() {
+        // onNativeClick 是原生要发送的 event 名称, onReactClick 是 JS 端组件中注册的属性方法名称, 中间的 registrationName 不可更改
+        Map<String, Map<String, String>> map = MapBuilder.of();
+        map.put("onNativeClick", MapBuilder.of("registrationName", "onReactClick"));
+        map.put("onNativeMousedown", MapBuilder.of("registrationName", "onNativeMousedown"));
+        map.put("onNativeMouseup", MapBuilder.of("registrationName", "onNativeMouseup"));
+        return map;
+    }
+}
+```
+
+##### JS端就可以直接监听对应的事件
+
+```tsx
+import { requireNativeComponent } from "react-native";
+
+// 原生UI控件接收值类型
+export type NativeButtonProps = {
+  text: string; // 按钮文本
+  onReactClick?: (event: any) => void; // 原生点击事件
+  onNativeMousedown?: (event: any) => void; // 原生按下事件
+  onNativeMouseup?: (event: any) => void; // 原生弹起事件
+};
+
+// 解析组件
+const NativeButton = requireNativeComponent<NativeButtonProps>("NativeButton");
+
+// 页面使用
+<NativeButton
+  text="按钮文本"
+  onReactClick={data => {
+    console.log("点击事件: ", data, data.nativeEvent);
+  }}
+  onNativeMousedown={data => {
+    console.log("按下事件: ", data, data.nativeEvent);
+  }}
+  onNativeMouseup={data => {
+    console.log("弹起事件: ", data, data.nativeEvent);
+  }}
+/>
+```
 
 ## 环境或构建问题
 

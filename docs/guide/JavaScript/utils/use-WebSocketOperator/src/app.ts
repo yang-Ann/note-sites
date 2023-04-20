@@ -25,7 +25,7 @@ socketServer.on("connection", (ws: WebSocket, req: IncomingMessage) => {
 		const clientData = message.toString();
 		console.log("server message: ", clientData);
 
-		// 客户端发送心跳数据ping, 则回应 pong
+		// 客户端发送心跳数据, 如果是ping则回应 pong
 		const sendData = (clientData === "ping") 
       ? `pong ${Date.now()}` 
       : `server date ${message}`;

@@ -1,7 +1,7 @@
 // WebSocket 操作类
-export default class WebSocketOperator {
-    ws;
+class WebSocketOperator {
     url;
+    ws;
     heartbeatInterval = 5000; // 心跳间隔
     heartbeatData = "ping"; // 客户端心跳数据
     #heartbeatResult = "pong"; // 服务端心跳回应数据
@@ -15,10 +15,10 @@ export default class WebSocketOperator {
     #isDestroy = false; // 是否已销毁(私有属性)
     // 临时存储重新连接的 WebSocket 实例(类静态属性)
     static reconnectionInstance = null;
-    static isDebug = true; // 是否打印log(类静态属性)
+    static isDebug = false; // 是否打印log(类静态属性)
     constructor(url) {
-        this.ws = new WebSocket(url);
         this.url = url;
+        this.ws = new WebSocket(url);
         this.init();
     }
     // WebSocket 兼容性判断
@@ -358,3 +358,4 @@ export default class WebSocketOperator {
         this.maxReconnectionNum = maxReconnectionNum;
     }
 }
+export default WebSocketOperator;

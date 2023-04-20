@@ -20,6 +20,8 @@
   </p>
   <script type="module">
     import WebSocketOperator from "./dist/WebSocketOperator.js";
+    // 打印日志
+    WebSocketOperator.isDebug = true;
 
     const connectBtn = document.getElementById("connect-btn");
     const sendBtn = document.getElementById("send-btn");
@@ -74,7 +76,7 @@
           sendBtn.disabled = true;
           setTimeout(() => {
             sendBtn.disabled = false;
-          }, 5000);
+          }, 2000);
         });
 
         closeBtn.addEventListener("click", () => {

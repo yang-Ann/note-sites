@@ -1,8 +1,9 @@
+type EventObjType = { event: Event };
+
 // WebSocket 操作类
 export default class WebSocketOperator {
 
   public ws: WebSocket;
-  public url: string;
   public heartbeatInterval: number = 5000; // 心跳间隔
   public heartbeatData: string = "ping"; // 客户端心跳数据
   #heartbeatResult: string = "pong"; // 服务端心跳回应数据
@@ -20,11 +21,10 @@ export default class WebSocketOperator {
   // 临时存储重新连接的 WebSocket 实例(类静态属性)
   private static reconnectionInstance: WebSocket | null = null;
 
-  private static isDebug: boolean = true; // 是否打印log(类静态属性)
+  private static isDebug: boolean = false; // 是否打印log(类静态属性)
 
-  public constructor(url: string) {
+  public constructor(public url: string) {
     this.ws = new WebSocket(url);
-    this.url = url;
 
     this.init();
   }
@@ -54,16 +54,16 @@ export default class WebSocketOperator {
   }
 
   // 默认事件回调(会在 WebSocket 对应的时候被触发)
-  public onopen(ws: WebSocketState & { event: Event }) { }
-  public onmessage(ws: WebSocketState & { event: Event }) { }
-  public onclose(ws: WebSocketState & { event: Event }) { }
-  public onerror(ws: WebSocketState & { event: Event }) { }
+  public onopen(ws: WebSocketState & EventObjType) { }
+  public onmessage(ws: WebSocketState & EventObjType) { }
+  public onclose(ws: WebSocketState & EventObjType) { }
+  public onerror(ws: WebSocketState & EventObjType) { }
 
   // 内部提供事件回调
-  public onheartbeat(ws: WebSocketState & { event: Event }) { } // 心跳事件
-  public onreconnection(ws: WebSocketState & { event: Event }) { } // 连接重试事件
-  public ondestroy(ws: WebSocketState & { event: Event }) { } // 销毁事件
-  public onmaxReconnection(ws: WebSocketState & { event: Event }) { } // 达到最大重试事件
+  public onheartbeat(ws: WebSocketState & EventObjType) { } // 心跳事件
+  public onreconnection(ws: WebSocketState & EventObjType) { } // 连接重试事件
+  public ondestroy(ws: WebSocketState & EventObjType) { } // 销毁事件
+  public onmaxReconnection(ws: WebSocketState & EventObjType) { } // 达到最大重试事件
 
   // 通用绑定事件方法
   protected bindEvent(event: WebSocketEvent, listener: (e: Event | MessageEvent<any> | CloseEvent | any) => void): this {

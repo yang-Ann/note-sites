@@ -915,6 +915,30 @@ export default App;
 
 >   如果想在函数组件的顶层直接调用`setState`请使用`useEffect`
 
+### 简化很多的useState
+
+很多的`useState`不美观并且影响性能, 优化如下: 
+
+```ts
+import { useState } from "react";
+
+const [state, _setState] = useState({
+  repeat: true,
+  muted: false,
+  paused: false,
+  rate: 1,
+  uri: "http://clips.vorwaerts-gmbh.de/big_buck_bunny.mp4",
+  errTip: ""
+});
+
+// 通用更新状态
+const setState = (field: keyof typeof state, val: any) => {
+  _setState(_state => {
+    return { ..._state, [field]: val };
+  });
+};
+```
+
 ### useRef
 
 `class`组件, `React` 元素用 `React.createRef`获取元素或者组件引用, 函数组件则使用 `useRef`
