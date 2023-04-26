@@ -580,6 +580,8 @@ npm config set access public
 |       js-base64       |                         base64编解码                         |
 |       jsencrypt       |                          rsa加解密                           |
 |       nprogress       |                        页面顶部进度条                        |
+|       validator       |                          字符串校验                          |
+|         mitt          |                     最小的事件发射器实现                     |
 
 **服务端工具包**
 
@@ -606,13 +608,17 @@ npm config set access public
 |                exceljs                 |         node操作excel工具库, 支持excel的几乎全部操作         |
 |               node-xlsx                |                     node读取和写入excel                      |
 |                   ws                   |                        用于WebSocket                         |
-|               cross-env                |                       跨端设置环境变量                       |
+|               cross-env                |              使脚本能够跨平台设置和使用环境变量              |
+|                  glob                  |                  使用 shell 的模式匹配文件                   |
 |               fast-glob                |                     根据 global 遍历文件                     |
 |                walkdir                 |                          遍历目录树                          |
 |                piscina                 |                          多线程实现                          |
 |               node-fetch               |                      node中的fetch实现                       |
 |                  tsx                   |                       直接运行 ts文件                        |
 |                  open                  |                可以编程的打开图片, 网站, 应用                |
+|                  ink                   |               命令行反应库(实时更新命令行信息)               |
+|                js-yaml                 |                      js实现解析yaml文件                      |
+|                 dotenv                 |        解析`.env`文件内容到环境变量(`process.env`)中         |
 
 **终端工具**
 

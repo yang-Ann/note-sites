@@ -214,7 +214,7 @@ Andorid的视图层是使用`XML`编写而且是命令式编写的, 类比于前
 - **layout_height**: 组件的高度, 同组件的宽度一样
 - **id**: 为控件设置一个组件id, 格式为: `@+id/xxx`, 用于在Java文件通过`findViewById(R.id.xxx)`获取该控件对象, 类比html中的id
 - **text:** 设置显示的文本内容
-- **textColor**: 设置字体颜色, 格式为`ARGB`, 注意: 透明度(`A`)是在前面的, 如果写成RGB格式的话透明度默认为`FF`
+- **textColor**: 设置字体颜色, 格式为`ARGB`(十六进制), 注意: 透明度(`A`)是在前面的, 如果写成RGB格式的话透明度默认为`FF`(可以使用`Color.parseColor()`解析字符串为十六进制颜色值)
 - **textStyle **: 设置字体风格, 三个可选值: normal(无效果), bold(加粗),italic(斜体)textSize:字体大小, 单位使用`sp`
 - **background**: 控件的背景颜色, 可以理解为填充整个控件的颜色, 可以是图片
 - **gravity**: 设置控件中内容的对齐方向, 常用属性包括: `center`,`center_vertical`,`center_vertical`
@@ -259,6 +259,8 @@ public class MainActivity extends AppCompatActivity {
         TextView myTextView = findViewById(R.id.myTextView);
         // 设置文本为 hello world!
         myTextView.setText("java setText TextView text content");
+        // 文本颜色修改为红色 
+      	myTextView.setTextColor(Color.parseColor("#f00"));
         System.out.println(myTextView);
     }
 }
@@ -2365,6 +2367,20 @@ Button btn1 = findViewById(R.id.btn1);
 
 // 从 res/values/string.xml 中获取 name="app_name" 的值
 String app_name = getString(R.string.app_name);
+
+// 其他的常见用法
+
+// 使用字符串
+getResources().getText(R.string.name);
+  
+// 使用可绘制图片
+getDrawable(R.drawable.icon);
+  
+// 使用颜色
+getResources().getColor(R.color.red);
+  
+// 使用布局
+setContentView(R.layout.main);
 ```
 
 ## 元数据获取
@@ -3831,13 +3847,16 @@ sendBroadcast(intent);
 
 ## 上下文获取
 
-- 直接使用`this`
-- 如果在匿名内部类中, 使用`类名.this`
-- 在Fragment中没有上下文使用, `Fragment类名.this.getContext()`
+- 使用`this`表示当前对象上下文, 也可以使用`getContext();`方法
+- 通过`Activity.this`获取当前**activity**的上下文
+- 通过`getApplicationContext();`获取应用的上下文
+- 在**Fragment**中没有上下文, 可以使用`Fragment类名.this.getContext();`获取
+- `getApplication();`共享全局数据
+- `getBaseContext();`返回由构造函数指定或`setBaseContext()`设置的上下文
 
 ### Context类型
 
-Android应用都是使用Java语言来编写的，Android程序不像Java程序一样，随便创建一个类，写个main()方法就能跑了，而是要有一个完整的Android工程环境，在这个环境下，有像Activity、Service、BroadcastReceiver等系统组件，而这些组件并不是像一个普通的Java对象new一下就能创建实例的了，而是要有它们**各自的上下文环境**，也就是`Contex`t, Context是维持Android程序中各组件能够正常工作的一个核心功能类
+Android应用都是使用Java语言来编写的，Android程序不像Java程序一样，随便创建一个类，写个main()方法就能跑了，而是要有一个完整的Android工程环境，在这个环境下，有像Activity、Service、BroadcastReceiver等系统组件，而这些组件并不是像一个普通的Java对象new一下就能创建实例的了，而是要有它们**各自的上下文环境**，也就是`Context`, Context是维持Android程序中各组件能够正常工作的一个核心功能类
 
 ### getApplication()和getApplicationContext()
 

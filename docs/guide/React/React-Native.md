@@ -249,7 +249,9 @@ const getPermissions = async (per: Permission, msg = "请设置权限") => {
 | 视频播放     | react-native-video                        |
 | 图库控制     | react-native-cameraroll                   |
 
-## 原生端
+## 原生模块
+
+[原生模块](https://reactnative.cn/docs/next/native-modules-android)
 
 ### 上下文获取
 
@@ -258,6 +260,28 @@ Android中的上下文可以直接通过`this`或者是`类名.this`而在React 
 ```java
 Context context = getReactApplicationContext().getBaseContext();
 Toast.makeText(context, "hello world", Toast.LENGTH_SHORT).show();
+```
+
+如果是在一个`ReactContextBaseJavaModule`里面可以直接如下获取： 
+
+```java
+Context context = getCurrentActivity().getApplication().getApplicationContext();
+```
+
+如果是获取`ReactApplicationContext`则可以在`ReactContextBaseJavaModule`里的构造函数中获取： 
+
+```java
+public class Module extends ReactContextBaseJavaModule {
+  
+  	public static ReactApplicationContext ctx;
+
+    public Module(@Nonnull ReactApplicationContext reactContext) {
+        super(reactContext);
+      
+        // 保存上下文的引用
+        ctx = getReactApplicationContext();
+    }
+}
 ```
 
 ### 与原生端通信
@@ -789,7 +813,7 @@ const NativeButton = requireNativeComponent<NativeButtonProps>("NativeButton");
 <NativeButton text="按钮文本" />
 ```
 
->   注意: JS端传递给原生端的数据, 如上面的`text`如果在运行时改变了, 原生端是**不会更新**的, 原生端的组件x需要更新状态, 必须要在原生端那边才可以修改
+>   JS端传递给原生端的数据, 如上面的`text`如果在运行时改变了, 原生端同样会触发**更新**
 
 #### 原生端通过注册事件与 JS 端的映射与 JS 端使用
 

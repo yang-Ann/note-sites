@@ -923,19 +923,26 @@ export default App;
 import { useState } from "react";
 
 const [state, _setState] = useState({
-  repeat: true,
-  muted: false,
-  paused: false,
-  rate: 1,
-  uri: "http://clips.vorwaerts-gmbh.de/big_buck_bunny.mp4",
-  errTip: ""
+	repeat: true,
+	muted: false,
+	paused: false,
+	rate: 1,
+	uri: "http://clips.vorwaerts-gmbh.de/big_buck_bunny.mp4",
+	errTip: ""
 });
 
-// 通用更新状态
-const setState = (field: keyof typeof state, val: any) => {
-  _setState(_state => {
-    return { ..._state, [field]: val };
-  });
+// 通用更新状态(单个)
+const setState = useCallback((field: keyof typeof state, val: any) => {
+	_setState((_state) => {
+		return { ..._state, [field]: val };
+	});
+}, []);
+
+// 更新状态(以对象的形式)
+const setObjState = (obj: Partial<typeof state>) => {
+	_setState((_state) => {
+		return { ..._state, ...obj };
+	});
 };
 ```
 
@@ -1181,6 +1188,117 @@ function App() {
 export default App;
 ```
 
+#### 缓存 useEffect 的引用类型依赖
+
+当`useEffect `的依赖是一个引用类型(对象, 函数)时, 如下: 
+
+```tsx
+import { useEffect } from "react";
+
+export default () => {
+
+  // msg 在每次 render 时都会被创建
+	const msg = {
+		info: "hello world"
+	};
+
+	useEffect(() => {
+		console.log("msg:", msg);
+	}, [msg]); // 依赖是一个引用类型
+};
+```
+
+实际上组件在 **render** 的时候 **msg** 都会被重新创建，**msg** 的引用在每次 **render** 时都是不一样的, 这就会导致`useEffect`在每次都会重新触发, 预期不一致, 正确的用法是使用`useMemo`来缓存对应的引用类型依赖, 如下:
+
+```tsx
+import { useEffect, useMemo } from "react";
+
+export default () => {
+
+  // 将 msg 缓存起来
+  const msg = useMemo(() => {
+    return {
+      info: "hello world"
+    };
+  }, []);
+
+	useEffect(() => {
+		console.log("msg:", msg);
+	}, [msg]);
+};
+```
+
+同理的如果依赖的是一个函数则可以使用`useCallback`, 如下: 
+
+```tsx
+import { useEffect, useCallback } from "react";
+
+export default () => {
+
+  // 函数则使用 useCallback
+	const sayHi = useCallback(() => {
+		console.log("hello");
+	}, []);
+
+	useEffect(() => {
+		sayHi();
+	}, [sayHi]);
+};
+```
+
+#### 缓存子组件 props 中的引用类型
+
+当组件在一下的情况下会重新渲染
+
+1.  组件的 `props` 或 `state` 变化会导致组件重新渲染
+2.  父组件的重新渲染会导致其子组件的重新渲染
+
+在父组件中跟子组件没有关系的状态变更导致的重新渲染可以不渲染子组件, 造成不必要的浪费, 以下是优化思路:
+
+1.   子组件使用`memo()`包裹返回
+2.   引用的`props`父组件使用`useMenu()`缓存以后进行传递
+3.   函数的`props`父组件使用`useCallback`缓存以后进行传递
+
+```tsx
+import { useCallback, useState, memo, useMemo } from "react";
+
+const App = () => {
+	const [count, setCount] = useState(0);
+
+  // 缓存函数
+	const handleChange = useCallback(() => {
+    console.log("handleChange");
+  }, []);
+
+  // 缓存引用对象
+	const list = useMemo(() => {
+		return [1, 2, 3];
+	}, []);
+
+	return (
+		<>
+      {/* 父组件在更新 state 时子组件就不会重新渲染了 */}
+			<button onClick={setCount(count + 1)}>count {count}</button>
+
+      {/* 只传递缓存的值 */}
+			<Child
+				handleChange={handleChange}
+				list={list}
+			/>
+		</>
+	);
+};
+
+// 子组件使用 memo 缓存
+const Child = memo((props) => {
+	return <div>Child</div>;
+});
+
+export default App;
+```
+
+=
+
 ### useReducer
 
 `useReducer`和`redux`中`reducer` 很像, `useReducer`的类型如下:
@@ -1362,6 +1480,40 @@ function Child() {
 export default App;
 ```
 
+缓存传递给子组件的引类型的数据, 减少`render`:
+
+```tsx
+import { useState, memo, useMemo } from "react";
+
+const App = () => {
+	const [count, setCount] = useState(0);
+
+  // 缓存引用对象
+	const list = useMemo(() => {
+		return [1, 2, 3];
+	}, []);
+
+	return (
+		<>
+      {/* 父组件在更新 state 时子组件就不会重新渲染了 */}
+			<button onClick={setCount(count + 1)}>count {count}</button>
+
+      {/* 只传递缓存的值 */}
+			<Child
+				list={list}
+			/>
+		</>
+	);
+};
+
+// 子组件使用 memo 缓存
+const Child = memo((props) => {
+	return <div>Child {props.list.length}</div>;
+});
+
+export default App;
+```
+
 缓存工具类的实例
 
 ```tsx
@@ -1390,31 +1542,35 @@ type ChildProp = { func: (msg: string) => void };
 // 使用 React.memo 缓存的子组件
 // eslint-disable-next-line react/display-name
 const MemoChild = React.memo((prop: ChildProp) => {
-  prop.func("MemoChild render");
-  return <div>MemoChild</div>;
+	prop.func("MemoChild render");
+	return <div>MemoChild</div>;
 });
 
 function App() {
-  const [count, setCount] = useState(0);
-  console.log("app render");
+	const [count, setCount] = useState(0);
+	console.log("app render");
 
-  const myLog = (msg: string) => console.log(msg);
-  const ucb = useCallback(myLog, []);
+	const myLog = (msg: string) => console.log(msg);
+	const ucb = useCallback(myLog, []);
 
-  return (
-    <StrictMode>
-      {/* 更新父组件的状态 */}
-      <button onClick={() => {
-        console.log("app update count");
-        setCount(count + 1);
-      }}>count {count}</button>
-      
-      <MemoChild func={ucb}/>
+	return (
+		<StrictMode>
+			{/* 更新父组件的状态 */}
+			<button
+				onClick={() => {
+					console.log("app update count");
+					setCount(count + 1);
+				}}
+			>
+				count {count}
+			</button>
 
-      {/* 使用普通的函数, 也会重新渲染 */}
-      {/* <MemoChild func={myLog}/> */}
-    </StrictMode>
-  );
+			<MemoChild func={ucb} />
+
+			{/* 使用普通的函数, 也会重新渲染 */}
+			{/* <MemoChild func={myLog}/> */}
+		</StrictMode>
+	);
 }
 
 export default App;
