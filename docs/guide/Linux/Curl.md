@@ -35,22 +35,28 @@ curl --trace-ascii out.txt http://localhost:8100
 # 拼接 get 参数
 curl "http://localhost:8100/get?name=张三&age=18"
 # -G 表示构造URL的查询字符串, 等价于上面
-curl -G -d 'name=张三' -d 'age=18' http://localhost:8100/get -v
+curl -G -d name=张三 -d age=18 http://localhost:8100/get -v
 # --data-urlencode 用于指定 URL 编码
-curl -G --data-urlencode 'name=张三' http://localhost:8100/get -v
+curl -G --data-urlencode name=张三 http://localhost:8100/get -v
 
 # 使用 -d 参数为发送 json 数据, HTTP 请求会自动加上标头 Content-Type:application/x-www-form-urlencoded
 #  并且会自动将请求转为 POST方法, 所以也可以省略 -X POST
-curl -d '{"name":"张三", "age":"18"}' -H "Content-Type:application/json" http://localhost:8100/post -v
-curl -d 'name=张三&age=18' http://localhost:8100/post -v
+curl -d "name=张三&age=18" http://localhost:8100/post -v
+curl -d name=张三 -d age=18 http://localhost:8100/post -v
 
-# 指定表单参数
+# 指定表单参数, 同 -d
 curl -F name=张三 -F age=18 http://localhost:8100/post -v
 # 上传表单文件(formData形式), 注意使用 @表示值是一个文件, 可以指定多个 -F
 curl -F fileName=@data.txt http://localhost:8100/uploadFile -v
 
 # 上传文件, 请求体(body) 就是文件二进制数据
 curl -X POST -T data.json http://localhost:8100/post -v
+
+# 将 name=zhangsan&age=18 上传到 body 中
+curl -X POST "localhost:8100/post" -H "Content-Type:application/json" -d name=zhangsan -d age=18
+
+# 将 data.json 文件的内容作为请求体解析上传
+curl -X POST "localhost:8100/post" -H "Content-Type:application/json" -d "@data.json"
 
 # 设置请求头 referer, 简写 -e
 curl --referer http://www.baidu.com http://localhost:8100/get -v

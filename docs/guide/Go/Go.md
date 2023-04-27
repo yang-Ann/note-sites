@@ -4478,9 +4478,9 @@ func main() {
 }
 ```
 
-### 获取并发线程数量
+### 控制并发线程数量
 
-`runtime.GOMAXPROCS()` 函数可以获得并发的线程数量, 在 CPU 核大于 1 个的情况下，系统会尽可能调度等于核心数的线程并行运行
+`runtime.NumCPU()`可以获取当前最大的线程数量, `runtime.GOMAXPROCS()` 函数设置并发的线程数量, 在 CPU 核大于 1 个的情况下，系统会尽可能调度等于核心数的线程并行运行: 
 
 ```go
 package main
@@ -4491,7 +4491,11 @@ import (
 )
 
 func main() {
-	GOMAXPROCS := runtime.GOMAXPROCS(0)
+  // 设置为单核模式
+  runtime.GOMAXPROCS(1)
+  
+  // 设置为最大
+	GOMAXPROCS := runtime.GOMAXPROCS(runtime.NumCPU())
 	fmt.Println("当前线程的数量是: ", GOMAXPROCS)
 }
 ```
@@ -5307,7 +5311,7 @@ func main() {
 
 ## 同步原语
 
-在前面使用`goroutine`的例子中为了, 让多个`goroutine`可以在`主 goroutine`结束之前都执行完, 会使用`time.Sleep()` 来`主 goroutine`睡眠等待, 
+在前面使用`goroutine`的例子中为了让多个`goroutine`可以在`主 goroutine`结束之前都执行完, 会使用`time.Sleep()` 来`主 goroutine`睡眠等待, 
 
 这样的方式存除了实现不优雅之外, 最大的问题在于: `time.Sleep()` 接受的是一个硬编码的时间参数, 这就要求我们实现必须要指定一个时间可以让每个`goroutine`都执行完成, 这在大多数场景下是没办法做到的
 
@@ -6503,16 +6507,9 @@ func main() {
 	r.StaticFS("/images", http.Dir("./my-images"))
 	// 静态资源自定义文件
 	// r.StaticFile("/favicon.ico", "./resources/favicon.ico")
-  
-  name := c.Query("name")
-  name := c.PostForm("name")
 
-	// r.GET("/", handleHone)
-  
-	// r.POST("/filUpload", FileUpload)
-  
-  // body, _ := c.GetRawData()
-	// fmt.Println("body: ", string(body))
+  // get 请求, 对应地址为 / 则进入 handleHone 函数
+	r.GET("/", handleHone)
 
   // 监听指定的端口
 	r.Run(":8100")
@@ -6524,6 +6521,95 @@ func handleHone(c *gin.Context) {
 		"bar": gin.H{"flog": true},
 	}
 	c.JSON(http.StatusOK, response)
+}
+```
+
+### 参数解析
+
+```go
+package main
+
+import (
+	"fmt"
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
+
+var success = gin.H{
+	"success": true,
+	"msg":     "操作成功",
+}
+
+func main() {
+	r := gin.Default()
+
+	r.GET("/", func(c *gin.Context) {
+		c.JSON(http.StatusOK, success)
+	})
+
+	r.GET("/get", handleGet)
+	r.POST("/post", handlePost)
+
+	r.Run(":8100")
+}
+
+// 参数结构体
+type Params struct {
+	Name string `form:"name" json:"name" binding:"required"`
+	// Age  int    `form:"age" json:"age" binding:"required,gte=0,lte=2"` // 小于0, 大于2
+	Age int `form:"age" json:"age" binding:"required"`
+}
+
+// curl "localhost:8100/get?name=zhangsan&age=18"
+// curl -G -d name=zhangsan -d age=18 http://localhost:8100/get
+func handleGet(c *gin.Context) {
+
+	// 直接解析 query 参数
+	name := c.Query("name")
+	age := c.Query("age")
+	fmt.Println("name: ", name)
+	fmt.Println("age: ", age)
+
+	// 通过结构体绑定
+	var args Params
+	if err := c.ShouldBind(&args); err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+	fmt.Printf("args: %#v\n", args)
+
+	c.JSON(http.StatusOK, success)
+}
+
+// curl -d name=zhangsan -d age=18 localhost:8100/post
+// curl -F name=zhangsan -F age=18 localhost:8100/post
+// curl -X POST "localhost:8100/post" -H "Content-Type:application/json" -d "@data.json"
+func handlePost(c *gin.Context) {
+
+  // 直接解析 post body json 参数
+	name := c.PostForm("name")
+	age := c.PostForm("age")
+
+	fmt.Println("name: ", name)
+	fmt.Println("age: ", age)
+
+	// 通过结构体绑定
+	var args Params
+	if err := c.ShouldBind(&args); err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+	fmt.Printf("args: %#v\n", args)
+
+	// 直接发送文件到 body 中
+	// curl -X POST -T data.json http://localhost:8100/post
+	// 发送指定的字符串到 body 中
+	// curl -H "Content-Type:application/json" -d "body data" http://localhost:8100/post
+	body, _ := c.GetRawData()
+	fmt.Println("body: ", string(body))
+
+	c.JSON(http.StatusOK, success)
 }
 ```
 
@@ -6544,6 +6630,7 @@ import (
 
 func UpdateLog(c *gin.Context) {
 	// 单文件解析
+  // curl -F file=@data.txt localhost:8100/uploadFile
 	uploadFile, handleFile, err := c.Request.FormFile("file")
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
