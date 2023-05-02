@@ -791,6 +791,25 @@ export default App;
 
 ![image-20230323210310692](./images/image-20230323210310692.png) 
 
+`React.memo()`的第二个参数还可以传递一个函数来自定义比较逻辑
+
+```tsx
+import React from "react";
+
+function MyComponent(props: { text: string }) {
+  return <div>{props.text}</div>;
+}
+
+function areEqual(prevProps, nextProps) {
+  if (prevProps.text !== nextProps.text) {
+    return false;
+  }
+  return true;
+}
+
+export default React.memo(MyComponent, areEqual);
+```
+
 ## Hook
 
 [React Hook掘金教程](https://juejin.cn/post/6844903985338400782)
@@ -1575,6 +1594,69 @@ function App() {
 
 export default App;
 ```
+
+## 性能优化
+
+`React`的性能如果是在不优化的前提下是, 没有`Vue`的性能好, 有点类似开车`React`是手动挡, `Vue`是自动挡
+
+-   让组件组件减少`render`可以通过[React.memo](# React.memo), [useMemo](# useMemo)和[useCallback](# useCallback)进行自定义组件的更新
+
+-   对象创建调用分离
+
+    -   事件绑定都写成单独的函数
+
+        ```tsx
+        const CompName = () => {
+        
+          // 这个函数只会被创建一次
+          const handleClick = () => alert("hello");
+        
+          return (
+            <>
+               // bad 每次渲染时都会创建一个箭头函数
+              <button onClick={() => alert("hello")}>Click me</button>;
+            
+            	// good 绑定提前定义好的函数
+            	<button onClick={handleClick}>Click me</button>;
+            </>
+          );
+        };
+        
+        export default CompName;
+        ```
+
+    -   将渲染函数单独定义, 
+
+        ```tsx
+        <FlatList
+          data={items}
+          // bad 同样每次都会创建一个箭头函数
+          renderItem={({ item }) => <Text>{item.title}</Text>}
+        />
+        
+        
+        const renderItem = ({ item }) => <Text>{item.title}</Text>;
+        <FlatList
+          data={items}
+          // good
+          renderItem={renderItem}
+        />
+        ```
+
+-   避免在 `render` 函数里创建新数组/对象
+
+    ```tsx
+    // bad 
+    <ListComponent listData={props.list || []}/>
+    
+    // good
+    const EMPTY_ARRAY = [];
+    <ListComponent listData={props.list || EMPTY_ARRAY}/>
+    ```
+
+    
+
+
 
 ## react-redux
 

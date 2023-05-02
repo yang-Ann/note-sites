@@ -2427,6 +2427,11 @@ try {
 }
 ```
 
+## 其他常量
+
+-   `BuildConfig.DEBUG`判断是否是开发模式
+-   `Build`里面有很多常量, 可以判断安卓版本
+
 ## 动画
 
 [动画](https://developer.android.google.cn/training/animation)

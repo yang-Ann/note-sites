@@ -4373,6 +4373,22 @@ func main() {
 
 `goroutine`也叫**协程**, 是`Go`中的一个特点, `Go`的`goroutine`创建效率非常的高, 可以简单的理解为一个`后台运行`的`超轻量的线程`, 是处理**并发**的一大利器
 
+### 进程, 线程和协程
+
+#### 进程
+
+进程(*Process*)是计算机中程序关于某些数据集合上的一次运行活动, 是系统进行资源分配和调度的基本单元,是操作系统结构的基础, 每个进程都有自己的独立内存空间, 不同进程通过进程间通信机制来通信, 进程间上下文的切换开心比较大, 但相对比较稳定和安全, 简单理解进程是对象正在运行的程序过程的抽象, 比如运行时的微信即可看做是一个进程
+
+#### 线程
+
+线程(*Thread*)一个标准的线程有线程ID, 当前指令指针(PC), 寄存器集合和堆栈所组成, 另外, 线程是进程的一个实体, 拥有自己独立的栈和共享的堆, 线程切换一般也是由操作系统调度的, 进程和线程是一对多的关系, 一个进程是由多个线程构成的, 而一个线程必属于一个进程
+
+#### 协程
+
+协程(*Goroutine*)又称微线程, 可以看做是一个特殊的函数, 和线程类型, 共享堆, 但不共享栈, 协程是一个用户态的轻量级线程, 调度完全由用户控制, 写成拥有自己的寄存器上下文和栈, 上下文切换非常快, 一个线程可以有多个协程组成, 一个线程内的多个协程虽然可以切换, 但是多个线程是串联执行的, 只能在一个线程内运行, 因此无法利用CPU多核的并行执行能力
+
+>   `Go`的协程和一般的协程类似, 但是`Go`的协程是一种特殊的协程, 就是支持**并发**
+
 ### main 函数就是 一个 goroutine
 
 当一个程序启动时, 只有一个 `goroutine` 调用 `main` 函数，称为`主 goroutine`, 当 `main` 函数返回时, 所有 `goroutine` 都会终止 (不论其是否运行完成与否), 然后程序退出
@@ -4436,7 +4452,7 @@ func sleepHi(index int) {
 
 #### 匿名无法goroutine直接使用外部变量
 
-下面的`i`永远都是5, 因为goroutine是后台启动的, 当goroutine开始执行时, for循环已经结束了: 
+下面的`i`永远都是5, 因为`goroutine`是后台启动的, 当`goroutine`开始执行时, `for`循环已经结束了: 
 
 ```go
 package main
@@ -4457,7 +4473,7 @@ func main() {
 }
 ```
 
-正确的写法是将需要访问的变量通过函数调用进行传递, 这样每个goroutine内部都会存在对应的值的, 如下: 
+正确的写法是将需要访问的变量通过函数调用进行传递, 这样每个`goroutine`内部都会存在对应的值的, 如下: 
 
 ```go
 package main
@@ -4497,6 +4513,79 @@ func main() {
   // 设置为最大
 	GOMAXPROCS := runtime.GOMAXPROCS(runtime.NumCPU())
 	fmt.Println("当前线程的数量是: ", GOMAXPROCS)
+}
+```
+
+>   `runtime.NumGoroutine()`可以获取当前的协程数量
+
+### goroutine异常处理
+
+当我们同时运行多个`goroutine`, 假如其中一个`goroutine`发生了异常且没有对异常进行处理, 那么整个`Go`程序都是终止退出, 如下: 
+
+```go
+package main
+
+import (
+	"fmt"
+	"sync"
+)
+
+var wg sync.WaitGroup
+
+func main() {
+
+	for i := 0; i < 10; i++ {
+		wg.Add(1) // 添加一个同步
+		go test(i)
+	}
+
+	wg.Wait() // 等待
+}
+
+func test(n int) {
+	// Error 除以 0 会报错
+	fmt.Printf("10 / %v = %v\n", n, 10/n)
+
+	wg.Done() // 释放一个同步
+}
+```
+
+`goroutine`添加`recover`异常处理则不会退出, 如下: 
+
+```go
+package main
+
+import (
+	"fmt"
+	"sync"
+)
+
+var wg sync.WaitGroup
+
+func main() {
+
+	for i := 0; i < 10; i++ {
+		wg.Add(1) // 添加一个同步
+		go test(i)
+	}
+
+	wg.Wait() // 等待
+}
+
+func test(n int) {
+
+	defer func() {
+		err := recover() // 捕获错误
+
+		if err != nil {
+			fmt.Println("发生了错误: ", err)
+		}
+
+		wg.Done() // 释放一个同步
+	}()
+
+	// Error 除以 0 会报错
+	fmt.Printf("10 / %v = %v\n", n, 10/n)
 }
 ```
 
@@ -4600,6 +4689,109 @@ func main() {
 	time.Sleep(1 * time.Second)
 	fmt.Println("map 的最终值为: ", m)
 }
+```
+
+## 数据竞争
+
+当并发的去修改一个变量时, 而这个变量不是线程安全的前提下, 就很容易出现数据竞争问题, 使用`-race`参数去运行可以检查代码中是否存在数据竞争, 下面是有数据竞争的一个例子:
+
+```go
+package main
+
+import (
+	"fmt"
+	"sync"
+)
+
+var wg sync.WaitGroup
+
+func main() {
+	var count = 0
+
+	for i := 0; i < 2000; i++ {
+		wg.Add(1)
+		go func() {
+			count++
+			wg.Done()
+		}()
+	}
+	wg.Wait()
+
+	fmt.Println("count: ", count)
+}
+```
+
+上面的代码当并发数比较小时是不会出现数据竞争的, 只有在循环的次数比较大时, 最后得到的`count`一定是小于最大循环数的
+
+```sh
+➜ go run main.go
+count:  1968
+```
+
+检测数据竞争, 如下: 
+
+```sh
+❯ go run -race main.go
+==================
+WARNING: DATA RACE
+Read at 0x00c000128078 by goroutine 8:
+  main.main.func1()
+      F:/study/learn-go/main/main.go:16 +0x30
+
+Previous write at 0x00c000128078 by goroutine 7:
+  main.main.func1()
+      F:/study/learn-go/main/main.go:16 +0x44
+
+Goroutine 8 (running) created at:
+  main.main()
+      F:/study/learn-go/main/main.go:15 +0x4f
+
+Goroutine 7 (finished) created at:
+  main.main()
+      F:/study/learn-go/main/main.go:15 +0x4f
+==================
+count:  20
+Found 1 data race(s)
+exit status 66
+```
+
+### 原子化操作
+
+`Go`提供的原子化操作是非侵入式的, 由标准库`sync/atomic`提供, 相对于锁机制原子化开销更小, 性能更高, `sync/atomic`提供了几个函数来对基本数据类型进行加或减, 这些类型是`int32`,`int64`,`uint32`,`uint64`,`uintptr64`和`unsage.Pointer`, 如下是基本使用: 
+
+```go
+package main
+
+import (
+	"fmt"
+	"sync"
+	"sync/atomic"
+)
+
+var wg sync.WaitGroup
+
+func main() {
+  // 注意: 这里指定了类型为 int32, 因为原子化没有提供对 int 类型的操作
+	var count int32 = 0
+
+	for i := 0; i < 2000; i++ {
+		wg.Add(1)
+		go func() {
+			atomic.AddInt32(&count, 1) // 原子化操作加1
+			wg.Done()
+		}()
+	}
+	wg.Wait()
+
+	fmt.Println("count: ", count)
+}
+```
+
+运行结果: 
+
+```sh
+➜ go run -race main.go
+count:  2000
 ```
 
 ## channel(通道)
@@ -5319,10 +5511,21 @@ func main() {
 
 ### sync.WaitGroup
 
-`sync.WaitGroup`实例提供了三个方法: `Add()` ,`Done()` 和`Wait()`
+`sync.WaitGroup`等待组, 每个`sync.WaitGroup`值在内部维护着一个计数, 此计数的初始默认值为零
 
--   `Add()` 和 `Done()` 方法必须配对使用, `Wait()` 方法必须在程序退出前调用
--   `Add()`, `Done()`, `Wait()` 三者必须同属一个作用域
+`sync.WaitGroup`实例提供了三个方法, 如下: 
+
+
+| 方法名           | 说明                                  |
+| ---------------- | ------------------------------------- |
+| `Add(delta int)` | 等待组的计数器`+delta`, 一般参数给`1` |
+| `Done()`         | 等待组的计数器`-1`                    |
+| `Wait()`         | 当等待组计数器不等于0时阻塞直到变 0   |
+
+使用注意点: 
+
+-   `Add()`和`Done()`方法必须配对使用, `Wait()`方法必须在程序退出前调用
+-   `Add()`, `Done()`, `Wait()`三者必须同属一个作用域
 
 基本使用如下:
 
@@ -5483,6 +5686,420 @@ func main() {
 ```
 
 ## 反射
+
+反射是值程序可以访问, 检测和修改它本身的状态或行为的一种能力, 通俗点讲就是可以动态的获取和修改变量的值或者类型, 反射技术在`Java`中使用的很多, `Go`标准库中的`reflect`包就是与反射相关的包
+
+### 变量的基本信息
+
+在`Go`中任意的一个变量是有两部分组成的:
+
+-   `Type`: 变量的类型, 比如: `int`, `string`
+-   `Value`: 变量的值, 比如: `1`, `hello`
+
+一个变量只有在`Type`和`Value`都是相等的情况下才是相等的, 这也就是`Go`中为什么会有`nul != nil`的原因
+
+### 空接口 interface{}
+
+在`Go`中, 空接口`interface{}`可以作为一切变量的类型来使用, 类比`Java`中的`object`, `TS`中的`any`, 可以存储任意的值, 其中`Go`的类型可以细分为两类:
+
+-   `静态类型`: 在编码阶段即可确定的类型, 比如: 字符串或整形
+-   `具体类型`: 在运行阶段才能确定的类型, 比如: `interface{}类型`
+
+[类型断言](# 类型断言)能否成功取决于变量的`具体类型`, 而不是`静态类型`, 如果一个变量的具体类型实现了`T`类型的方法就能将类型断言为`T`类型
+
+`interface{}`就是整个`Go`语言类型的基础:
+
+- 非侵入式: 一个类只要实现了即可约定的一组方法, 就实现了该接口
+- 接口赋值: 可以将对象实例赋值给接口, 也可以将一个接口赋值给另外一个接口
+- 类型获取: 可以方便的获取接口执行的对象实例的类型
+- 即可组合: 接口也是可以进行匿名组合的
+- 任意类型: 由于空接口约定了零个方法, 因此任意类型都实现空接口`interface{}`
+
+### 反射获取变量的类型和值
+
+-   `reflect.TypeOf()`返回一个`reflect.Type`类型, 可以获取一个变量的类型
+-   `reflect.ValueOf()`返回一个`reflect.Value`类型, 可以获取一个变量的值
+
+```go
+package main
+
+import (
+	"fmt"
+	"reflect"
+)
+
+func main() {
+	// 空接口类型
+	var n interface{}
+	fmt.Println("n 的类型是: ", reflect.TypeOf(n)) // <nil>
+	fmt.Println("n 的值是: ", reflect.ValueOf(n)) // <invalid reflect.Value>
+
+	// 空接口类型可以赋值给任意的类型
+	n = 1
+	fmt.Println("n 的类型是: ", reflect.TypeOf(n))          // int
+	fmt.Println("n 的类型种类是: ", reflect.TypeOf(n).Kind()) // int
+	fmt.Println("n 的值是: ", reflect.ValueOf(n))          // 1
+}
+```
+
+### 反射获取结构体的字段和方法
+
+利用发射技术可以动态的获取结构体的字段和方法, 如下: 
+
+```go
+package main
+
+import (
+	"fmt"
+	"reflect"
+	"strings"
+)
+
+// 定义一个结构体
+type Persion struct {
+	// 私有属性
+	id string
+
+	// 公有属性
+	Name string
+	Age  int
+}
+
+// 公有方法(普通接收者)
+func (p Persion) GetName() string {
+	return p.Name
+}
+
+// 公有方法(指针接收者)
+func (p *Persion) GetAge() int {
+	return p.Age
+}
+
+// 私有方法
+func (p Persion) getId() string {
+	return p.id
+}
+
+func main() {
+	persion := Persion{
+		Name: "张三",
+		Age:  18,
+	}
+
+	// 接收者的话可以获取到字段和方法
+	GetStructInfo(persion)
+
+	fmt.Println(strings.Repeat("=", 50))
+
+	// 指针的话只能获取到方法
+	GetStructInfo(&persion)
+}
+
+// 获取结构体的信息
+func GetStructInfo(o interface{}) {
+	valueOf := reflect.ValueOf(o)
+
+	// typeOf  := reflect.TypeOf(o)
+
+	// reflect.ValueOf 类型的 Type() 方法也是可以获取到类型的
+	typeOf := valueOf.Type()
+
+	fmt.Println("类型种类: ", typeOf.Kind())
+
+	// 类型种类是结构体或是指针类型
+	if typeOf.Kind() == reflect.Struct {
+		fmt.Printf("结构体名称: %T\n", o)
+
+		// typeOf.NumField() 获取字段的数量
+		for i := 0; i < typeOf.NumField(); i++ {
+			// 获取 type 字段
+			field := typeOf.Field(i)
+			// 获取 value 字段
+			valueOfField := valueOf.Field(i)
+
+			// 判断是否可以正常使用 interface{}, 否则会发生 panic
+			if valueOfField.CanInterface() {
+				// 获取具体的值
+				value := valueOfField.Interface()
+				fmt.Printf("字段名: %s, 类型: %v, 值: %v\n", field.Name, field.Type, value)
+			} else {
+				fmt.Printf("字段名: %s, 类型: %v, 值: %v\n", field.Name, field.Type, "私有字段无法获取值")
+			}
+		}
+	}
+
+  // typeOf.NumMethod() 获取方法的数量
+	for i := 0; i < typeOf.NumMethod(); i++ {
+    // 获取方法(不能获取私有方法)
+		method := typeOf.Method(i)
+		fmt.Printf("方法名: %s, 方法类型: %v\n", method.Name, method.Type)
+	}
+}
+
+```
+
+运行结果:
+
+```go
+➜ go run main.go
+类型种类:  struct
+结构体名称: main.Persion
+字段名: id, 类型: string, 值: 私有字段无法获取值
+字段名: Name, 类型: string, 值: 张三
+字段名: Age, 类型: int, 值: 18
+方法名: GetName, 方法类型: func(main.Persion) string
+==================================================
+类型种类:  ptr
+方法名: GetAge, 方法类型: func(*main.Persion) int
+方法名: GetName, 方法类型: func(*main.Persion) string
+```
+
+反射获取结构体的字段和方法的注意点:
+
+-   结构体中私有字段或者方法在反射时默认是获取不到信息的
+-   结构体指针类型可以获取到指针结构者方法, 而结构体类型不能获取到指针接收者方法
+
+### 反射动态修改值
+
+反射除了可以在运行时动态获取对象的类型和值之外, 在某些条件(反射对象的值必须是可设置的)下还可以修改对象的值, 这个功能是反射强大的一个表现, 如下: 
+
+```go
+package main
+
+import (
+	"fmt"
+	"reflect"
+)
+
+func main() {
+	msg := "hello"
+
+	// Elem() 返回一个类型的元素类型, 如果类型的 Kind 不是 Array, Chan, Map, Pointer 或 Slice, 则会出现 panic
+	fmt.Println("Elem(): ", reflect.TypeOf(&msg).Elem()) // string
+	// fmt.Println(reflect.TypeOf(msg).Elem())  // 会 pacic
+
+	v := reflect.ValueOf(&msg)
+	fmt.Println(v) // 0xc000052260
+	// Elem() 返回接口v包含的值或指针v指向的值, 如果v的类型不是接口或指针, 它会恐慌, 如果v为nil, 则返回零值
+	el := v.Elem()
+	fmt.Println("el: ", el) // hello
+
+	if el.CanInterface() {
+		vs := el.Interface().(string) // 转换为字符串类型
+		// vs := el.Interface().(int) // 这里会报错: panic: interface conversion: interface {} is string, not int
+
+		fmt.Println("vs: ", vs) // hello
+	}
+
+	// 是否可以修改值
+	if el.CanSet() {
+		el.SetString("我是通过反射修改的")
+	}
+
+	fmt.Println(msg) // 我是通过反射修改的
+
+	v2 := reflect.ValueOf(msg)
+	// 非指针类型的值是不可修改的
+	fmt.Println("非指针类型的值是否可以修改: ", v2.CanSet())
+}
+```
+
+运行结果:
+
+```sh
+➜ go run main.go
+Elem():  string
+0xc000088230
+el:  hello
+vs:  hello
+我是通过反射修改的
+非指针类型的值是否可以修改:  false
+```
+
+>   只有`Value`对象才有`Interface()`方法, `Type`对象没有
+
+#### 修改结构体的字段值
+
+```go
+package main
+
+import (
+	"fmt"
+	"reflect"
+)
+
+// 定义一个结构体
+type Persion struct {
+	// 私有属性
+	id string
+
+	// 公有属性
+	Name string
+	Age  int
+}
+
+func main() {
+	persion := Persion{
+		Name: "张三",
+		Age:  18,
+	}
+
+  // 参数必须是指针类型
+	v := reflect.ValueOf(&persion.Name)
+	el := v.Elem()
+
+	// 是否可以修改值
+	if el.CanSet() {
+		el.SetString("我是通过反射修改的")
+	}
+	fmt.Printf("%+v\n", persion) // {id: Name:我是通过反射修改的 Age:18}
+
+	// 在一个包内的话就可以修改, 如果是在包外的话就不可以修改私有字段
+	v = reflect.ValueOf(&persion.id)
+	el = v.Elem()
+	if el.CanSet() {
+		el.SetString("999")
+	}
+	fmt.Printf("%+v\n", persion) // {id:999 Name:我是通过反射修改的 Age:18}
+}
+```
+
+### 获取结构体字段的标识
+
+在`Go`语言中, 支持在结构体中定义一些字段的标识`Tag`, 这样在解决结构体序列化成其他的格式, 如: `JSON`, `XML`时可以进行一些灵活的配置, 而不用强制字段和序列化之后的字段同名
+
+在`Java`等语言中, 同样可以通过在类上定义一个注解类自动生成代码, 这也是`ORM`框架必须要借助的语言特征之一:
+
+```go
+package main
+
+import (
+	"fmt"
+	"reflect"
+)
+
+// 定义一个结构体
+type Persion struct {
+	// 私有属性
+	id string `json:"id" isKey:"1"`
+
+	// 公有属性
+	Name string `json:"name" other:"hello"`
+	Age  int    `json:"age"`
+}
+
+func main() {
+	persion := Persion{
+		Name: "张三",
+		Age:  18,
+	}
+
+	t := reflect.TypeOf(&persion).Elem()
+	m := make(map[string]string)
+
+	for i := 0; i < t.NumField(); i++ {
+		field := t.Field(i)
+		// 字段名
+		name := field.Name
+		// 获取指定标识对应的值
+		tag := field.Tag.Get("json")
+		m[name] = tag
+	}
+
+	fmt.Printf("json 标识的值有: %+v\n", m)
+
+	// 也可以通过 FieldByName() 的方式去获取
+	if f, ok := t.FieldByName("id"); ok {
+		fmt.Println("字段 id 的 isKey 标识值是: ", f.Tag.Get("isKey"))
+	}
+
+	if f, ok := t.FieldByName("Name"); ok {
+		fmt.Println("字段 Name 的 other 标识值是: ", f.Tag.Get("other"))
+	}
+}
+```
+
+运行结果:
+
+```sh
+➜ go run main.go
+json 标识的值有: map[Age:age Name:name id:id]
+字段 id 的 isKey 标识值是:  1
+字段 Name 的 other 标识值是:  hello
+```
+
+### 反射判断结构体是否实现接口
+
+在`Go`中判断一个变量是否实现了接口, 可以使用类型断言, 如下: 
+
+```
+变量名.(接口名)
+```
+
+这种类型验证的方式很方便, 其实使用反射的方式也是可以判断的如下: 
+
+```go
+package main
+
+import (
+	"fmt"
+	"reflect"
+)
+
+// 定义一个结构体
+type Persion struct {
+	id   string
+	Name string
+	Age  int
+}
+
+// 自定义接口
+type MyInterface interface {
+	add(a, b int) int
+}
+
+func main() {
+	persion := Persion{
+		Name: "张三",
+		Age:  18,
+	}
+
+	// 获取指针接口类型
+	intf := new(MyInterface)
+	// 获取接口的 Type
+	intfType := reflect.TypeOf(intf).Elem()
+
+	// 获取结构体的 Type
+	srcType := reflect.TypeOf(&persion)
+
+	// 判断是否实现了接口
+	if srcType.Implements(intfType) {
+		fmt.Printf("%v 实现了 %v 接口\n", srcType, intfType)
+	} else {
+		fmt.Printf("%v 没有实现了 %v 接口\n", srcType, intfType)
+	}
+
+  // 任何类型都实现了 interface{}
+	intfType = reflect.TypeOf(new(interface{})).Elem()
+	if srcType.Implements(intfType) {
+		fmt.Printf("%v 实现了 %v 接口\n", srcType, intfType)
+	} else {
+		fmt.Printf("%v 没有实现了 %v 接口\n", srcType, intfType)
+	}
+}
+```
+
+运行结果: 
+
+```sh
+➜ go run main.go
+*main.Persion 没有实现了 main.MyInterface 接口
+*main.Persion 实现了 interface {} 接口
+```
+
+>   判断一个对象是否实现了某个接口, 需要区分接口实现的方法是值接收者还是指针类型的接收者, 二者在判断实现接口上存在差异
+
+### 动态调用方法
 
 TODO
 
@@ -6729,4 +7346,14 @@ func DownloadFileControl(c *gin.Context) {
 | resty   | github.com/go-resty/resty/v2     | http网络请求                                                 |
 | goquery | github.com/PuerkitoBio/goquery   | 解析网页, 可以使用JQuery语法选择指定的元素                   |
 | gin     | github.com/gin-gonic/gin         | web框架                                                      |
+
+## AOT和JIT
+
+### JIT
+
+Just-in-time 动态(即时)编译, 边运行边编译, 吞吐量高, 有运行时性能加成, 程序可以越跑越快, 并可以做到动态生成代码等, 但是相对启动速度较慢, 并需要一定时间和调用频率才能触发`JIT`的分层机制
+
+### AOT
+
+Ahead Of Time, 指运行前编译, 内存占用低, 启动速度快, 可以无需 `runtime` 运行, 直接将 `runtime` 静态链接至最终的程序中, 但是无运行时性能加成, 不能根据程序运行情况做进一步的优化
 

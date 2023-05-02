@@ -591,6 +591,7 @@ module.exports = {
 | 设备信息       | react-native-device-info                                     |
 | 本地存储       | @react-native-async-storage/async-storage                    |
 | 截图操作       | react-native-view-shot                                       |
+| 图片组件       | react-native-fast-image                                      |
 | 视频播放       | react-native-video                                           |
 | 相机控制       | react-native-vision-camera                                   |
 | 图库控制       | react-native-cameraroll                                      |
@@ -598,6 +599,7 @@ module.exports = {
 | 侧滑按钮list   | react-native-swipe-list-view                                 |
 | 自定义toast    | react-native-toast-message                                   |
 | webview        | react-native-webview                                         |
+| 将html作为组件 | react-native-htmlview                                        |
 | 图片选择       | react-native-image-picker                                    |
 | 图片预览       | react-native-image-zoom-viewer                               |
 | 图片操作(裁剪) | react-native-image-crop-picker                               |
