@@ -2720,17 +2720,43 @@ package main
 import "fmt"
 
 func main() {
-	// 声明 p 变量为对应的机构体类型
+	// 先声明匿名机构体类型, 后赋值
 	var p struct {
-		name string
-		age  int
+		Name  string
+		Age   int
+		Hobby []string
+
+		// 还可以嵌套声明
+		Info struct {
+			a int
+			b bool
+			c string
+		}
 	}
 
-	p.name = "张三"
-	p.age = 18
+	p.Name = "张三"
+	p.Age = 18
+	p.Hobby = []string{"看书", "写代码", "打游戏"}
+	p.Info.a = 1
+	p.Info.b = true
+	p.Info.c = "hello"
 
-	fmt.Println(p)      // {张三 18}
-	fmt.Println(p.name) // 张三
+	fmt.Printf("p = %v\n", p)
+	// p = {张三 18 [看书 写代码 打游戏] {1 true hello}}
+
+	//////////////////////////////////
+
+	// 声明机构体类型并赋值
+	u := struct {
+		UserName string
+		Email    string
+	}{
+		UserName: "张三",
+		Email:    "12345@qq.com",
+	}
+
+	fmt.Printf("u = %v\n", u)
+	// u = {张三 12345@qq.com}
 }
 ```
 
@@ -2918,40 +2944,9 @@ func main() {
 }
 ```
 
-## type
+### 组合和转发
 
-`type`关键字不仅可以定义结构体类型, 还可以定义一个别名, 这样可以在这个别名之上绑定方法:
-
-```go
-package main
-
-import "fmt"
-
-func main() {
-	var m MyString = "hello"
-	fmt.Println(m.getLen()) // 5
-  
-	// 实际底层类型还是字符串
-	m = "hi"
-
-	// 但是打印出来的类型会显示成别名类型
-	fmt.Printf("%v, %T", m.getLen(), m) // 2, main.MyString
-}
-
-// 定义一个别名 MyString 实际还是 string 类型
-type MyString string
-
-// 利用定义的别名就可以绑定方法了
-func (m MyString) getLen() int {
-	return len(m)
-}
-```
-
->   标准库的`int`或者`string`是不能直接绑定方法的, 如果需要只能间接的通过`type`得到一个别名的方式来进行绑定方法
-
-## 组合和转发
-
-### 组合
+#### 组合
 
 在面向对象的世界中, 对象由更小的对象组合而成, `Go`中没有面向对象中的**继承**, 但是提供了更灵活的方式**组合**:
 
@@ -2990,7 +2985,7 @@ type UserInfo struct {
 }
 ```
 
-### 转发
+#### 转发
 
 利用**组合**的类型可以很轻松的使用**转发**进行搭积木一样进行搭建实现类型**继承**的效果:
 
@@ -3042,7 +3037,7 @@ func (i UserInfo) showUserInfo() {
 }
 ```
 
-### struct嵌入
+#### struct嵌入
 
 当使用**组合**的时候可以直接写一个类型, 这时**该类型的方法和字段可以直接被转发到目标类型上面**实现类似于**继承**的效果:
 
@@ -3069,7 +3064,7 @@ func main() {
 	// 可以直接调用 UserInfo 上的字段
 	fmt.Println(u.height, u.weight) // 180 100
 
-	// 手动调用 UserInfo 上面的方法
+	// 也可以手动调用 UserInfo 上面的方法
 	u.UserInfo.showUserInfo() // {height:180 weight:100}
 }
 
@@ -3092,7 +3087,7 @@ func (i UserInfo) showUserInfo() {
 
 >   转发可以转发**任意类型**, 包括内置的类型(不推荐)
 
-### 命名冲突
+#### 命名冲突
 
 当使用`struct 嵌入`时, 如果**组合**类型中存在同名的方法, 就会出现命名冲突, 这时就必须使用对应类型上面的方法了, **不能直接使用自动转发的方法**:
 
@@ -3140,6 +3135,37 @@ func (i UserInfo2) showUserInfo() {
 ```
 
 >   注意: 如果本身定义有和**转发**同名的方法则**本身的方法优先级最高**
+
+## type
+
+`type`关键字不仅可以定义结构体类型, 还可以定义一个别名, 这样可以在这个别名之上绑定方法:
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+	var m MyString = "hello"
+	fmt.Println(m.getLen()) // 5
+  
+	// 实际底层类型还是字符串
+	m = "hi"
+
+	// 但是打印出来的类型会显示成别名类型
+	fmt.Printf("%v, %T", m.getLen(), m) // 2, main.MyString
+}
+
+// 定义一个别名 MyString 实际还是 string 类型
+type MyString string
+
+// 利用定义的别名就可以绑定方法了
+func (m MyString) getLen() int {
+	return len(m)
+}
+```
+
+>   标准库的`int`或者`string`是不能直接绑定方法的, 如果需要只能间接的通过`type`得到一个别名的方式来进行绑定方法
 
 ## 接口
 
@@ -6306,8 +6332,42 @@ func main() {
 运行结果
 
 ```sh
-go run main.go isBool true n 1
-# create: 默认值, isBool: false, n: 10
+# 用空格连接值
+➜ go run main.go -n 999 -create hello1 -isBool true
+# create: hello1, isBool: true, n: 999
+
+# 用=号连接值
+➜ go run main.go -create=hello -isBool=true -n=999
+# create: hello, isBool: true, n: 999
+```
+
+直接将值保存到指定的变量中
+
+```go
+package main
+
+import (
+	"flag"
+	"fmt"
+)
+
+func main() {
+	var create string
+
+	// 注意传递的是一个指针
+	flag.StringVar(&create, "create", "默认值", "-create 的描述")
+	// 必须要先解析
+	flag.Parse()
+
+	fmt.Printf("create: %s\n", create)
+}
+```
+
+运行结果:
+
+```go
+➜ go run main.go -create abcd 
+create: abcd
 ```
 
 ### os
@@ -6400,9 +6460,58 @@ func main() {
 
 ### JSON
 
-JSON一般都是和结构体进行互相转换的使用`encoding/json`包
+使用`encoding/json`包可以将普通数据类型, `map`, `slice`和`struct`转换为`JSON`或者从`JSON`转换回来
 
-#### 将struct编码为JSON
+#### map和slice转换为JSON
+
+```go
+package main
+
+import (
+	"encoding/json"
+	"fmt"
+)
+
+func main() {
+	// 普通的 map
+	p := make(map[string]string)
+
+	p["name"] = "张三"
+	p["age"] = "18"
+
+	bytes, err := json.MarshalIndent(p, "  ", "")
+
+	if err != nil {
+		fmt.Println("json转换失败了: ", err)
+		return
+	}
+	fmt.Println(string(bytes))
+	// {
+	// 	"age": "18",
+	// 	"name": "张三"
+	// 	}
+
+	///////////////////
+
+	// map 里面嵌套 slice
+	list := make(map[string][]string)
+
+	list["colors"] = []string{"red", "yellow", "blue"}
+	list["hobby"] = []string{"看书", "打代码", "打游戏"}
+
+	bytes, err = json.Marshal(list)
+
+	if err != nil {
+		fmt.Println("json转换失败了: ", err)
+		return
+	}
+
+	fmt.Println(string(bytes))
+	// {"colors":["red","yellow","blue"],"hobby":["看书","打代码","打游戏"]}
+}
+```
+
+#### 将struct为JSON
 
 使用`Marshal(T)`方法来将`struct`中的数据转换为`JSON`格式(**只有被导出的字段才可以转换**):
 
@@ -6438,7 +6547,7 @@ func main() {
 }
 ```
 
-如果想格式化的字段重命名的话, 就需要特地的标签注明
+如果想格式化的字段重命名的话, 就需要使用`json`标签特地的注明
 
 ```go
 // 自定义json化的字段名
@@ -6448,7 +6557,7 @@ type Persion struct {
 }
 ```
 
-#### JSON 字符串转为结构体
+#### JSON 字符串转为struct
 
 使用`Unmarshal([]byte, &T)`方法即可, 也支持自定义字段名: 
 
@@ -6461,8 +6570,8 @@ import (
 )
 
 type Persion struct {
-	Name string `json:"name"` // 也可以自定义json化的字段名
-	Age  int
+	Name string `json:"name"`
+	Age  int `json:"age"`
 }
 
 func main() {
@@ -6609,7 +6718,41 @@ func main() {
 }
 ```
 
-#### json业务对接技巧
+#### json使用技巧
+
+##### 临时创建结构体
+
+有时接口只用到一次, 返回的`json`又没有准备好结构体, 这时可以临时声明一个使用, 如下: 
+
+```go
+client := resty.New()
+resp, err := client.R().
+  SetHeader("Content-Type", "application/json").
+  SetBody(map[string]string{
+    "username":    "admin",
+    "password":    "123456",
+  }).
+  Post("localhost:8100/login")
+
+if err != nil {
+  fmt.Println("登录失败: ", err)
+  return
+}
+
+// 临时声明一个匿名结构体变量
+var loginResp struct {
+  Code    int    `json:"code"`
+  Success bool   `json:"success"`
+  Msg     string `json:"msg"`
+  Data struct {
+    Token string `json:"token"`
+  } `json:"data"`
+}
+
+// json 将响应转换到结构体
+json.Unmarshal(resp.Body(), &loginResp)
+fmt.Println("登录成功: %v", loginResp)
+```
 
 ##### 临时忽略某个字段
 
@@ -6859,6 +7002,60 @@ func main() {
 }
 ```
 
+### 文本模板
+
+文本模式使用`text/template`包
+
+```go
+package main
+
+import (
+	"os"
+	"text/template"
+)
+
+type Parent struct {
+	Name string
+	Age  int
+	List []string
+}
+
+func main() {
+	p := Parent{
+		Name: "张三",
+		Age:  18,
+		List: []string{"hello", "world", "golang"},
+	}
+
+	// 从字符串中解析
+	tmpl, err := template.New("test").Parse(`
+名称: {{.Name}} 年龄: {{.Age}}
+
+{{ range .List }}
+	循环
+{{ end }}`)
+
+	// 从文件中解析
+	// tmpl, err := template.ParseFiles("./text.go.templte")
+	if err != nil {
+		panic(err)
+	}
+
+	// 输出到标准输出
+	err = tmpl.Execute(os.Stdout, p)
+
+	file, err := os.OpenFile("demo.txt", os.O_CREATE|os.O_WRONLY, 0755)
+	if err != nil {
+		panic(err)
+	}
+
+	defer file.Close()
+
+	// 输出到文件
+	err = tmpl.Execute(file, p)
+}
+```
+
 ### 常见加密算法
 
 #### base64
@@ -7005,25 +7202,16 @@ import (
 	"github.com/go-resty/resty/v2"
 )
 
-const LOGIN_URL = "https://www.xjfw.top/api/sys/auth/login"
-
-// 接口请求体数据(注意字段要大写并且指定转换为 json)
-type LoginBody struct {
-	CaptchaCode string `json:"captchaCode"`
-	Password    string `json:"password"`
-	Username    string `json:"username"`
-}
-
 // 响应结构体数据(注意字段要大写并且指定转换为 json)
-type HttpSuccess struct {
+type BaseResp struct {
 	Code    int               `json:"code"`
-	Success bool              `json:"success"`
 	Msg     string            `json:"msg"`
 	Data    map[string]string `json:"data"`
+	Success bool              `json:"success"`
 }
 
 func main() {
-  // 创建实例
+	// 创建实例
 	client := resty.New()
 
 	// 设置实例超时时间
@@ -7034,10 +7222,14 @@ func main() {
 	// 设置实例代理
 	// client.SetProxy("http://proxyserver:8888")
 
-  // 成功响应数据结构体
-	successRsp := &HttpSuccess{}
-  // 失败响应数据结构体
-	errorRsp := &HttpSuccess{}
+	// 成功响应数据结构体
+	successRsp := BaseResp{}
+
+	// 失败响应数据结构体
+	errorRsp := struct {
+		BaseResp
+		ErrorCode string `json:"errorCode"`
+	}{}
 
 	resp, err := client.R().
 
@@ -7053,10 +7245,10 @@ func main() {
 
 		// 添加 cookie
 		// SetCookie(&http.Cookie{}).
-    
-        // 添加 pathParam 参数
-        // SetPathParam("bizCode", bizCode).
-    
+
+		// 添加 pathParam 参数
+		// SetPathParam("bizCode", bizCode).
+
 		// 添加 params 参数
 		// SetQueryParam("id", "1").
 		// SetQueryParams(map[string]string { "name": "张三" }).
@@ -7065,21 +7257,20 @@ func main() {
 		// SetFormData(map[string]string{ "access_token": "xxx" }).
 
 		// 添加 body 参数
-		SetBody(LoginBody{
-			CaptchaCode: "",
-			Password:    "0ded074c4189673a9f4b4456e1f2cbcd",
-			Username:    "admin",
+		SetBody(map[string]string{
+			"Username": "admin",
+			"Password": "123456",
 		}).
 		// SetBody(`"name": "张三"`).
 
-		// 将成功响应自动转换为 json
-		SetResult(successRsp).
+		// 响应码 200 ~ 299 时并且响应类型是 json 或 xml 时自动绑定值
+		SetResult(&successRsp).
 
-		// 将失败响应自动转换为 json
-		SetError(errorRsp).
+		// 响应码大于 399 并且响应类型是 json 或 xml 时自动绑定值
+		SetError(&errorRsp).
 
 		// 发送 post 请求, 其他的请求方法则调用其他的请求方法
-		Post(LOGIN_URL)
+		Post("/login")
 
 	if err != nil {
 		panic(err)
@@ -7087,15 +7278,20 @@ func main() {
 
 	fmt.Println("StatusCode", resp.StatusCode())
 	// fmt.Println("resp.Body", string(resp.Body()))
+	fmt.Println("Request Info", resp.Request.TraceInfo())
 
 	if successRsp.Code != 200 {
 		fmt.Println(successRsp.Msg)
 	} else {
-		bytes, err := json.MarshalIndent(successRsp, "", "  ")
-		if err != nil {
-			panic(err)
-		}
-		fmt.Println(string(bytes))
+    // 手动将 body 转换为 结构体, 更快捷的方式是使用 SetResult
+		var loginResp struct {
+      BaseResp
+      Data struct {
+        Token string `json:"token"`
+      } `json:"data"`
+    }
+    json.Unmarshal(resp.Body(), &loginResp)
+    fmt.Println("登录成功", loginResp)
 	}
 }
 ```
@@ -7187,6 +7383,9 @@ func handleGet(c *gin.Context) {
 	age := c.Query("age")
 	fmt.Println("name: ", name)
 	fmt.Println("age: ", age)
+  
+  // url 参数, 比如路由 /echo/:message, 请求 /echo/hello 则获取到 hello
+	// message := c.Param("message")
 
 	// 通过结构体绑定
 	var args Params
@@ -7210,6 +7409,16 @@ func handlePost(c *gin.Context) {
 
 	fmt.Println("name: ", name)
 	fmt.Println("age: ", age)
+  
+  // 请求体源数据
+  // body, err := c.GetRawData();
+	// fmt.Println("GetRawData: ", string(body))
+  
+  // 单文件解析(见下面的例子)
+  // uploadFile, handleFile, err := c.Request.FormFile("file")
+  
+  // 多文件和多字段解析(见下面的例子)
+	// files, err := c.MultipartForm()
 
 	// 通过结构体绑定
 	var args Params
@@ -7256,9 +7465,28 @@ func UpdateLog(c *gin.Context) {
 		return
 	}
 
-	// 多文件解析
+  // 解析 formData 里面的所有数据(多文件和多字段)
 	// files, err := c.MultipartForm()
+	// if err == nil {
+	// 	// formData 里的键值对数据
+	// 	for key, value := range files.Value {
+	// 		fmt.Printf("key: %v, value: %v\n", key, value)
+	// 	}
 
+	// 	// formData 里的文件数据
+	// 	for key, value := range files.File {
+	// 		// 循环获取文件
+	// 		for _, file := range value {
+	// 			mimiType := file.Header["Content-Type"][0]
+	// 			fmt.Printf("%v %v %v %v\n",
+	// 				key,           // formData 里面的键
+	// 				file.Filename, // 文件名
+	// 				mimiType,      // 文件的 mimiType
+	// 				file.Size)     // 文件大小
+	// 		}
+	// 	}
+	// }
+  
 	// 关闭文件
 	if uploadFile != nil {
 		defer func() {
@@ -7336,16 +7564,21 @@ func DownloadFileControl(c *gin.Context) {
 
 汇总的资源可见[awesome-go](https://github.com/avelino/awesome-go)
 
-| 包名    | 源地址引用                       | 说明                                                         |
-| ------- | -------------------------------- | ------------------------------------------------------------ |
-| Survey  | github.com/AlecAivazis/survey/v2 | 命令行交互                                                   |
-| go-sh   | github.com/codeskyblue/go-sh     | 执行shell命令                                                |
-| color   | github.com/fatih/color           | 终端彩色输出                                                 |
-| copy    | github.com/otiai10/copy          | 递归复制目录                                                 |
-| wails   |                                  | 桌面开发框架(类比tauri, 都是使用[webview2](https://developer.microsoft.com/en-us/microsoft-edge/webview2/#download-section)来渲染前端页面) |
-| resty   | github.com/go-resty/resty/v2     | http网络请求                                                 |
-| goquery | github.com/PuerkitoBio/goquery   | 解析网页, 可以使用JQuery语法选择指定的元素                   |
-| gin     | github.com/gin-gonic/gin         | web框架                                                      |
+| 包名      | 源地址引用                                                   | 说明                                                         |
+| --------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
+| Survey    | github.com/AlecAivazis/survey/v2                             | 命令行交互                                                   |
+| go-sh     | github.com/codeskyblue/go-sh                                 | 执行shell命令                                                |
+| color     | github.com/fatih/color                                       | 终端彩色输出                                                 |
+| copy      | github.com/otiai10/copy                                      | 递归复制目录                                                 |
+| wails     | 全局安装: go install github.com/wailsapp/wails/v2/cmd/wails@latest<br />命令行初始化项目 | 桌面开发框架(类比tauri, 都是使用[webview2](https://developer.microsoft.com/en-us/microsoft-edge/webview2/#download-section)来渲染前端页面) |
+| resty     | github.com/go-resty/resty/v2                                 | http网络请求                                                 |
+| goquery   | github.com/PuerkitoBio/goquery                               | 解析网页, 可以使用JQuery语法选择指定的元素                   |
+| gin       | github.com/gin-gonic/gin                                     | web框架                                                      |
+| gosseract | github.com/otiai10/gosseract/v2                              | ocr                                                          |
+| bubbletea | github.com/charmbracelet/bubbletea                           | 命令行ui库                                                   |
+| lipgloss  | github.com/charmbracelet/lipgloss                            | 自定义命令行布局和样式                                       |
+| pterm     | go get github.com/pterm/pterm                                | 控制台渲染图表, 进度条, 表格, 文本输入, 选择菜单, 树等       |
+| docconv   |                                                              | 将PDF、DOC、DOCX、XML、HTML、RTF、ODT、Pages 文档和图像()需要[tesseract](https://github.com/tesseract-ocr/tesseract)支持转换为纯文本 |
 
 ## AOT和JIT
 

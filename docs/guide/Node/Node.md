@@ -3797,6 +3797,29 @@ app.use(async (ctx, next) => {
 - **DELETE** - 用于删除数据
 - **POST** - 用于添加数据
 
+## 命令行输出颜色
+
+终端命令行输出颜色除了使用第三方库还可以使用ANSI Escape Code(ANSI转义码)实现, 常用的ANSI转义码如下:
+
+```
+\x1b[30m黑色文本\x1b[0m
+\x1b[31m红色文本\x1b[0m
+\x1b[32m绿色文本\x1b[0m
+\x1b[33m黄色文本\x1b[0m
+\x1b[34m蓝色文本\x1b[0m
+\x1b[35m紫色文本\x1b[0m
+\x1b[36m青色文本\x1b[0m
+\x1b[37m白色文本\x1b[0m
+```
+
+基本使用: 
+
+```ts
+console.log("\x1b[31m%s\x1b[0m", "红色文本");
+console.log("\x1b[33m%s\x1b[0m", "黄色文本");
+console.log("\x1b[36m青色文本\x1b[0m");
+```
+
 ## Node 连接 MySQL
 
 安装 [**MySql**](https://www.npmjs.com/package/mysql) `npm install mysql -S`

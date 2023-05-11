@@ -247,10 +247,14 @@ npx react-native init projectName --template react-native-template-typescript
     ```
 
 -   `Modal`提供全部遮罩, `onRequestClose`事件则控制返回按钮操作
+
 -   `StatusBar`状态栏操作
+
 -   `KeyboardAvoidingView`控制键盘
+
 -   `DrawerLayoutAndroid`原生抽题
--   
+
+-   `AppState`可以知道应用当前是在前台还是在后台，并且能在状态变化的时候进行通知
 
 ## 样式
 
