@@ -3739,7 +3739,9 @@ func main() {
 -   `os.MkdirAll("/tmp/1/2/3", 0755)`: 创建**多级**目录
 -   `os.RemoveAll()`: 删除目录
 
-- `os.Stat()`+`os.IsExist()`: 判断文件(目录)是否存在
+- `os.Stat()`+`os.IsExist()`: 判断文件(目录)是否**不存在**
+
+- `os.Stat()`+`os.IsNotExist()`: 判断文件(目录)是否**存在**
 
   ```go
   package main
@@ -3750,10 +3752,16 @@ func main() {
   )
   
   func main() {
-      // os.IsExist() 判断文件存在
-      // os.IsNotExist() 判断文件不存在
-  	if f, err := os.Stat("./test.txt"); os.IsExist(err) {
-  		fmt.Println("文件不存在", err.Error())
+  	// os.IsExist() 判断文件不存在
+  	if f, err := os.Stat("./demo.txt"); os.IsExist(err) {
+  		fmt.Println("文件不存在: ", err)
+  	} else {
+  		fmt.Println("文件是否为目录: ", f.IsDir())
+  	}
+  
+  	// os.IsNotExist() 判断文件存在
+  	if f, err := os.Stat("./demo.txt"); os.IsNotExist(err) {
+  		fmt.Println("文件不存在", err)
   	} else {
   		fmt.Println("文件是否为目录: ", f.IsDir())
   	}
@@ -4003,6 +4011,73 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+}
+```
+
+###### 写入带目录的文件
+
+如果要写入带目录的文件时, `Go`不会自动创建父目录, 需要手动调用`os.Mkdir`或`os.MkdirAll`先创建父目录, 如下是一个简单的示例:
+
+```go
+package main
+
+import (
+	"fmt"
+	"io/fs"
+	"os"
+	"path/filepath"
+)
+
+
+func main() {
+	err := writeFile("./a/b/c.txt", []byte("hello"))
+  // err := writeFile("./c.txt", []byte("hello"))
+	if err != nil {
+		fmt.Println("文件写入失败: ", err)
+		return
+	}
+	fmt.Println("文件写入成功")
+}
+
+
+// 写入文件
+// - filePath 写入文件的地址
+// - bytes 写入数据
+func writeFile(filePath string, bytes []byte) error {
+
+	// 获取父目录
+	dir := filepath.Dir(filePath)
+  // 创建父目录
+	err := os.MkdirAll(dir, fs.ModeDir)
+	if err != nil {
+		return err
+	}
+
+	// 创建源文件
+	file, err := os.OpenFile(filePath, os.O_CREATE|os.O_WRONLY, 0755)
+	if err != nil {
+		return err
+	}
+
+	defer func() {
+		err := file.Close()
+		if err != nil {
+			panic(err)
+		}
+	}()
+
+	if err != nil {
+		return err
+	}
+
+  // 写入数据
+	_, err = file.Write(bytes)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 ```
 
@@ -7004,7 +7079,7 @@ func main() {
 
 ### 文本模板
 
-文本模式使用`text/template`包
+文本模式使用[`text/template`](https://pkg.go.dev/text/template)包
 
 ```go
 package main
@@ -7036,7 +7111,7 @@ func main() {
 {{ end }}`)
 
 	// 从文件中解析
-	// tmpl, err := template.ParseFiles("./text.go.templte")
+	// tmpl, err := template.ParseFiles("./test.go.tmp")
 	if err != nil {
 		panic(err)
 	}
@@ -7044,7 +7119,7 @@ func main() {
 	// 输出到标准输出
 	err = tmpl.Execute(os.Stdout, p)
 
-	file, err := os.OpenFile("demo.txt", os.O_CREATE|os.O_WRONLY, 0755)
+	file, err := os.OpenFile("test.txt", os.O_CREATE|os.O_WRONLY, 0755)
 	if err != nil {
 		panic(err)
 	}
@@ -7053,6 +7128,72 @@ func main() {
 
 	// 输出到文件
 	err = tmpl.Execute(file, p)
+}
+```
+
+简单封装一下, 可以从一个文件中读取模板渲染输出到另一个文件中, 如下: 
+
+```go
+package main
+
+import (
+	"fmt"
+	"html/template"
+	"io/fs"
+	"os"
+	"path/filepath"
+)
+
+func main() {
+	d := map[string]string{
+		"Name": "张三",
+	}
+
+	err := renderTemplte(d, "./test.go.tmp", "./a/c/d.txt")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	fmt.Println("成功")
+}
+
+// data 模板数据
+// src 源文件地址
+// dist 渲染后文件地址
+func renderTemplte(data interface{}, src, dist string) error {
+	// 创建父目录
+	dir := filepath.Dir(dist)
+	err := os.MkdirAll(dir, fs.ModeDir)
+	if err != nil {
+		return err
+	}
+
+	// 创建源文件
+	file, err := os.OpenFile(dist, os.O_CREATE|os.O_WRONLY, 0755)
+	if err != nil {
+		return err
+	}
+
+  // 从文件中解析模板
+	tpl, err := template.ParseFiles(src)
+	if err != nil {
+		return err
+	}
+
+	defer func() {
+		err := file.Close()
+		if err != nil {
+			panic(err)
+		}
+	}()
+
+	// 渲染
+	err = tpl.Execute(file, data)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 ```
 
@@ -7566,7 +7707,9 @@ func DownloadFileControl(c *gin.Context) {
 
 | 包名      | 源地址引用                                                   | 说明                                                         |
 | --------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
-| Survey    | github.com/AlecAivazis/survey/v2                             | 命令行交互                                                   |
+| cobra     | github.com/spf13/cobra<br />cli包则安装: go install github.com/spf13/cobra-cli@latest | 提供一个简单的界面来创建强大的现代 cli                       |
+| survey    | github.com/AlecAivazis/survey/v2                             | 命令行交互                                                   |
+| go-prompt | github.com/c-bata/go-prompt                                  | 命令行交互, 很强大, 还带自动完成和键盘快捷键                 |
 | go-sh     | github.com/codeskyblue/go-sh                                 | 执行shell命令                                                |
 | color     | github.com/fatih/color                                       | 终端彩色输出                                                 |
 | copy      | github.com/otiai10/copy                                      | 递归复制目录                                                 |
