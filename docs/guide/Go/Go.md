@@ -6200,9 +6200,121 @@ func main() {
 
 >   判断一个对象是否实现了某个接口, 需要区分接口实现的方法是值接收者还是指针类型的接收者, 二者在判断实现接口上存在差异
 
+### 动态调用结构体方法
+
+```go
+package main
+
+import (
+	"fmt"
+	"reflect"
+)
+
+type Person struct {
+	Name string
+}
+
+// 指针接收者
+func (p *Person) GayName() string {
+	return p.Name
+}
+
+// 值接收者
+func (p Person) Add(a, b int) int {
+	return a + b
+}
+
+func main() {
+	// 创建一个 Person 对象
+	p := &Person{Name: "张三"}
+
+	// 这里传递指针类型在 1.19 版本会报错
+	// vt := reflect.ValueOf(&p)
+
+	vt := reflect.ValueOf(p)
+	// 根据方法名获取方法
+	vm := vt.MethodByName("GayName")
+	// 调用, 不传递的参数
+	res := vm.Call(nil)
+	fmt.Printf("GayName 的返回值: %#v\n", res[0])
+
+	/////////////////
+	vm = vt.MethodByName("Add")
+	// 传递的参数
+	in := []reflect.Value{reflect.ValueOf(1), reflect.ValueOf(2)}
+	// 调用并给定参数
+	res = vm.Call(in)
+	fmt.Printf("Add 的返回值: %#v\n", res[0].Int())
+}
+```
+
 ### 动态调用方法
 
-TODO
+下面是一个通过反射调用方法的简单封装例子: 
+
+```go
+package main
+
+import (
+	"errors"
+	"fmt"
+	"reflect"
+)
+
+type Person struct {
+	Name string
+}
+
+func GetHi(msg string) {
+	fmt.Printf("hello %s\n", msg)
+}
+
+func Add(a, b int) int {
+	return a + b
+}
+
+func main() {
+
+  // 需要调用的方法map
+	fns := map[string]interface{}{
+		"GetHi": GetHi,
+		"Add":   Add,
+	}
+
+	funcCall(fns, "GetHi", "张三")
+
+	res, err := funcCall(fns, "Add", 1, 2)
+	if err == nil {
+		fmt.Println("Add 返回值: ", res[0])
+	} else {
+		fmt.Println("Add 调用失败: ", err)
+	}
+}
+
+// 封装方法的调用
+func funcCall(methods map[string]interface{}, fnName string, args ...interface{}) ([]reflect.Value, error) {
+	// 获取到对应的 ValueOf
+	fv := reflect.ValueOf(methods[fnName])
+
+	argsLen := len(args)
+
+	// 传递的参数和方法本身的参数个数是否一致
+	if argsLen != fv.Type().NumIn() {
+		return nil, errors.New("参数个数错误")
+	}
+
+	// 构造反射调用时的参数
+	in := make([]reflect.Value, argsLen)
+	for k, v := range args {
+		in[k] = reflect.ValueOf(v)
+	}
+
+	// 调用并传参
+	return fv.Call(in), nil
+}
+```
+
+
 
 ## 常用标准库
 
@@ -7328,6 +7440,68 @@ func main() {
 */
 ```
 
+#### http服务
+
+http服务可以使用`met/http`包
+
+```go
+package main
+
+import (
+	"fmt"
+	"net/http"
+)
+
+func main() {
+	// 添加路由处理
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Println("Method: ", r.Method)
+		fmt.Println("Header: ", r.Header)
+		fmt.Println("Proto: ", r.Proto)
+		fmt.Println("Host: ", r.Host)
+		fmt.Println("Query: ", r.URL.Query())
+		fmt.Println("Body: ", r.Body)
+
+		if r.Method == "POST" {
+			r.ParseForm()
+			v := r.Form.Get("name")
+			fmt.Println("name: ", v)
+		}
+
+		w.Write([]byte("响应体数据"))
+		w.Header().Set("My-Header", "自定义响应头")
+	})
+
+	// 监听服务
+	err := http.ListenAndServe("127.0.0.1:8100", nil)
+	if err != nil {
+		fmt.Println(err)
+	}
+}
+```
+
+##### 配置https
+
+https证书一般都是要专门的机构颁发的这里为了测试方便, 使用`openssl`生成私钥和自签名
+
+```sh
+# 生成私钥, 长度是 2048
+openssl genrsa -out server.key 2048
+
+# 生成根证书 并且 自签名
+openssl req -new -x509 -key server.key -out server.crt
+```
+
+使用`http.ListenAndServeTLS`监听服务即可
+
+```go
+// 监听服务
+err := http.ListenAndServeTLS("127.0.0.1:8100", "server.crt", "server.key", nil)
+if err != nil {
+  fmt.Println(err)
+}
+```
+
 ## 网络请求
 
 可以使用`resty`库, 基本使用如下: 
@@ -7700,6 +7874,183 @@ func DownloadFileControl(c *gin.Context) {
 	c.File("./main.go")
 }
 ```
+
+### 回声服务
+
+基于gin可以很简单的实现一个echo服务, 它可以将请求URL, 请求方法, 请求参数和上传的文件都原因的响应, 如下: 
+
+```go
+package main
+
+import (
+	"flag"
+	"fmt"
+	"net/http"
+	"strings"
+	"time"
+
+	"github.com/fatih/color"
+	"github.com/gin-gonic/gin"
+)
+
+var (
+	// 服务端口
+	PORT *int
+
+	// 服务URL
+	SERVE_URL string
+
+	// 返回 body 数据的长度
+	BODY_DATA_LENGTH = 100
+)
+
+func init() {
+	// 可以通过命令行参数控制服务的端口
+	// go run . -port 8200
+	// go run . -port=8200
+	PORT = flag.Int("port", 8100, "端口号")
+	flag.Parse()
+
+	SERVE_URL = fmt.Sprintf("http://localhost:%v", *PORT)
+}
+
+func main() {
+	gin.SetMode(gin.ReleaseMode)
+	r := gin.Default()
+
+	LogTip()
+
+	// 任意请求
+	r.Any("/*action", handleEcho)
+
+	s := &http.Server{
+		Addr:           fmt.Sprintf(":%v", *PORT),
+		Handler:        r,
+		ReadTimeout:    30 * time.Second,
+		WriteTimeout:   30 * time.Second,
+		MaxHeaderBytes: 1 << 20,
+	}
+	s.ListenAndServe()
+}
+
+// 打印提示
+func LogTip() {
+	fmt.Println()
+	color.New(color.FgGreen, color.Bold, color.Underline).Print(SERVE_URL)
+	fmt.Print(" 服务启动成功")
+	fmt.Printf("\n\n")
+}
+
+// 响应数据类型
+type EchoData struct {
+	Url           string            `json:"url"`
+	Method        string            `json:"method"`
+	Header        map[string]string `json:"header"`
+	Body          *string           `json:"body,omitempty"`
+	Query         map[string]string `json:"query,omitempty"`
+	FormDataValue map[string]string `json:"formData.values,omitempty"`
+	FormDataFile  []FormFileData    `json:"formData.files,omitempty"`
+	Explain       []string          `json:"explain"`
+}
+
+// 文件类型的数据
+type FormFileData struct {
+	FormDataField string `json:"formField"`
+	FileName      string `json:"fileName"`
+	MiniType      string `json:"miniType"`
+	Size          int64  `json:"size"`
+}
+
+// 处理 echo
+func handleEcho(c *gin.Context) {
+
+	// 响应的数据
+	echoData := EchoData{
+		Url:    fmt.Sprintf("%s%s", c.Request.Host, c.Request.URL.String()),
+		Method: c.Request.Method,
+		Body:   nil,
+		Explain: []string{
+			"以下是上面的参数说明: ",
+			"url: 表示请求地址",
+			"method: 表示请求方法",
+			"header: 表示请求头",
+			"body: 表示请求体数据",
+			"query: 表示地址 ? 之后的查询参数",
+			"formData.values: 表示 formData 里面的普通数据",
+			"formData.files: 表示 formData 里面上传的文件数据",
+		},
+	}
+
+	// 请求头
+	header := make(map[string]string)
+	for k, v := range c.Request.Header {
+		header[k] = v[0]
+	}
+	echoData.Header = header
+
+	// fmt.Printf("PostForm: %#v\n", c.Request.PostForm)
+
+	// query 数据
+	rawQuery := c.Request.URL.RawQuery
+	if len(rawQuery) > 0 {
+		query := make(map[string]string)
+		for _, q := range strings.Split(rawQuery, "&") {
+			items := strings.Split(q, "=")
+			query[items[0]] = items[1]
+		}
+		echoData.Query = query
+	}
+
+	// formData 数据
+	files, err := c.MultipartForm()
+	if err == nil {
+
+		// formData 里的键值对数据
+		formDataValue := make(map[string]string)
+		for key, value := range files.Value {
+			// 相同的键值对使用 , 号连接
+			formDataValue[key] = strings.Join(value, ",")
+		}
+		echoData.FormDataValue = formDataValue
+
+		// formData 里的文件数据
+		formDataFile := []FormFileData{}
+		for key, value := range files.File {
+			// 循环获取文件
+			for _, file := range value {
+				mimiType := file.Header["Content-Type"][0]
+				fd := FormFileData{
+					FormDataField: key,           // formData 里面的键
+					FileName:      file.Filename, // 文件名
+					MiniType:      mimiType,      // 文件的 mimiType
+					Size:          file.Size,     // 文件大小
+				}
+				formDataFile = append(formDataFile, fd)
+			}
+		}
+		echoData.FormDataFile = formDataFile
+	}
+
+	// body 数据
+	bytes, err := c.GetRawData()
+	if err == nil {
+		if len(bytes) > 0 {
+			body := new(string)
+			// 如果 body 数据太长则截取
+			if len(bytes) < BODY_DATA_LENGTH {
+				*body = string(bytes)
+			} else {
+				*body = string(bytes[:BODY_DATA_LENGTH]) + "..."
+			}
+			echoData.Body = body
+		}
+	}
+
+	c.JSON(http.StatusOK, echoData)
+}
+```
+
+
 
 ## 第三方库
 

@@ -65,7 +65,7 @@ npx react-native init projectName --template react-native-template-typescript
 
 -   布局使用[`View`](https://reactnative.cn/docs/next/view)组件, 相当于是WEB里的`div`
 
--   图片使用[`Image`](https://reactnative.cn/docs/next/image)组件
+-   图片使用[`Image`](https://reactnative.cn/docs/next/image)组件, 背景图片则使用[`ImageBackground`](https://reactnative.cn/docs/next/imagebackground)(支持内部嵌套)
 
     -   `resizeMode`属性设置填充模式
 
@@ -97,7 +97,9 @@ npx react-native init projectName --template react-native-template-typescript
         
         // 也可以直接使用本机存储图片
         <Image
-          source={{ uri: "file:///data/0/xxx" }}
+          source={{ uri: "file:///data/0/xxx" }} // Android
+          // source={{ uri: "content:///data/0/xxx" }} // IOS
+          // source={{ uri: "data:imgage/png;base64,xxx" }} // 也支持base64
           style={{ width: 40, height: 40 }} // 必须要指定宽高
         />
         ```
@@ -263,6 +265,7 @@ npx react-native init projectName --template react-native-template-typescript
 ```tsx
 import { useState } from "react";
 import { ScrollView, Text, View, StyleSheet, Button } from "react-native";
+import type { StyleProp, ViewStyle, TextStyle } from "react-native";
 
 const CompNamp = () => {
 
@@ -295,6 +298,16 @@ export default CompNamp;
 ### 不支持简写
 
 React Native中是只行实现了一个比较小的CSS的, 里面不支持WEB里面属性简写的用法, 除了`flex: 1`是支持的, 其他比如: `padding: 10`, `margin: 10`都是不支持的
+
+### 样式类型
+
+当封装一个组件时, 元素的样式需要外部传递进来时, 就需要定义对应的样式类型, 如下: 
+
+-   `Text`的样式类型是`TextStyle`
+
+-   `View`的样式类型是`ViewStyle`
+
+如果要实现数组样式的元素类型可以使用`StyleProp`泛型包裹, 比如: `StyleProp<ViewStyle>`, `StyleProp<TextStyle>`, 具体的使用如[指定多个样式](# 指定多个样式)
 
 ### 指定多个样式
 
@@ -396,6 +409,8 @@ export default Btn;
 
 ### 动画
 
+大部分动画都可以使用`useNativeDriver: true`来设置使用原生端来计算动画(默认是JS端计算动画的)
+
 [动画](https://reactnative.cn/docs/next/animations)
 
 -   变换
@@ -432,9 +447,11 @@ const styles = StyleSheet.create({
 
 ## 布局
 
-React Native 只提供了[FlexBox](https://reactnative.cn/docs/next/flexbox)布局, **不支持浮动, 网格布局**, 定位只支持绝对定位和相对定位
+React Native 只提供了[FlexBox布局](https://reactnative.cn/docs/next/flexbox)和**绝对布局**, **不支持浮动和网格布局**
 
->   React Native 中的 Flexbox 的工作原理和 WEB上的 CSS 基本一致，当然也存在少许差异。首先是默认值不同：`flexDirection`的默认值为`column`(而不是`row`)，`alignContent`默认值为 `flex-start`(而不是 `stretch`), `flexShrink` 默认值为`0` (而不是`1`), 而`flex`只能指定一个数字值
+-   React Native 中的 Flexbox 的工作原理和 WEB上的 CSS 基本一致，当然也存在少许差异。首先是默认值不同：`flexDirection`的默认值为`column`(而不是`row`)，`alignContent`默认值为 `flex-start`(而不是 `stretch`), `flexShrink` 默认值为`0` (而不是`1`), 而`flex`只能指定一个数字值
+
+-   React Native中的元素`posttion`的默认值都为`relative`, 所以元素的设置了`posttion: absolute`都是相对于父元素进行定位的
 
 ## 调试
 
@@ -597,6 +614,7 @@ module.exports = {
 | 截图操作       | react-native-view-shot                                       |
 | 图片组件       | react-native-fast-image                                      |
 | 视频播放       | react-native-video                                           |
+| 音频播放       | react-native-audio-toolkit                                   |
 | 相机控制       | react-native-vision-camera                                   |
 | 图库控制       | react-native-cameraroll                                      |
 | 原生dialog     | react-native-dialogs, @react-native-picker/picker            |
@@ -837,16 +855,14 @@ export default App;
 
 参数类型对应如下: 
 
-| JavaScript | Java                                                 |
-| ---------- | ---------------------------------------------------- |
-| Bool       | Boolean                                              |
-| Number     | Integer                                              |
-| Number     | Double                                               |
-| Number     | Float                                                |
-| String     | String                                               |
-| Function   | Callback                                             |
-| Object     | ReadableMap, 可以通过`Arguments.createMap()`获得     |
-| Array      | ReadableArray, 可以通过`Arguments.createArray()`获得 |
+| JavaScript | Java                                                         |
+| ---------- | ------------------------------------------------------------ |
+| Bool       | Boolean                                                      |
+| Number     | Integer, Double, Float                                       |
+| String     | String                                                       |
+| Function   | Callback                                                     |
+| Object     | `ReadableMap`(原生端接收JS端), 可以通过`Arguments.toHashMap()`创建<br />`WritableMap`(原生端传递JS端), 可以通过`Arguments.createMap()`创建 |
+| Array      | `ReadableArray`(原生端接收JS端), 可以通过`Arguments.toArrayList()`创建<br />`WritableArray`(原生端传递JS端), 可以通过`Arguments.createArray()`创建 |
 
 ##### 原生端通过 Callback 回调函数返回数据给 JS 端
 
@@ -1047,7 +1063,7 @@ public class NaiveButton extends androidx.appcompat.widget.AppCompatButton {
 
 #### 创建对应的ViewManager类
 
-简单的 `View` 可以创建 `ViewManager` 类继承 `SimpleViewManager` ，而通过布局生成的复杂 `View` 可以继承自 `ViewGroupManager` 类:
+简单的 `View` 可以创建 `ViewManager` 类继承 `SimpleViewManager` , 如果要在这个原生UI下嵌套子UI组件时则需要使用  `ViewGroupManager` :
 
 ```java
 // ... 省略导入
@@ -1197,6 +1213,8 @@ public class NativeButtonSimpleViewManager extends SimpleViewManager<NaiveButton
     @Override
     protected NaiveButton createViewInstance(@NonNull ThemedReactContext themedReactContext) {
         mBtn = new NaiveButton(themedReactContext);
+        // 需要设置一个id, 用于原生 view 向 react native 发送事件
+      	mBtn.setId(R.id.Mbtn);
 
         // 触摸事件
         mBtn.setOnTouchListener((view, event) -> {
