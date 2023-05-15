@@ -1494,12 +1494,14 @@ function test() {
 }
 ```
 
-`toLocaleString()`
+`toLocalexxx()`
 
 根据本地时间把 Date 对象转换为字符串, 格式化类型可见[Intl.DateTimeFormat](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat)
 
 ```js
-new Date().toLocaleString() // "2021/8/22 9:18:51"
+new Date().toLocaleString(); // "2021/8/22 9:18:51"
+new Date().toLocaleDateString(); // "2021/8/22"
+new Date().toLocaleTimeString(); // "9:18:51"
 new Date().toLocaleString().replace(/\//g, "-"); // "2021-8-22 9:18:51"
 new Date().toLocaleString("zh-CN", { year: "numeric", month: "numeric" }); // 2021年8月
 ```
@@ -1508,7 +1510,43 @@ new Date().toLocaleString("zh-CN", { year: "numeric", month: "numeric" }); // 20
 
 将时间对象转换为 **国际标准时间/格林威治** 标准时间
 
+## 相对日期格式
+
+使用[`Intl.RelativeTimeFormat`](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Intl/RelativeTimeFormat)即可实现
+
+```js
+// 指定语言
+// const rtf = new Intl.RelativeTimeFormat("en");
+const rtf = new Intl.RelativeTimeFormat('zh-Hans');
+
+console.log(rtf.format(2, "second")); // 2秒钟后
+console.log(rtf.format(-15, "minute")); // 15分钟前
+console.log(rtf.format(8, "hour")); // 8小时后
+console.log(rtf.format(-2, "day")); // 2天前
+console.log(rtf.format(2, "week")); // 2周后
+console.log(rtf.format(-5, "month")); // 5个月前
+console.log(rtf.format(2, "quarter")); // 2个季度后
+console.log(rtf.format(-10, "year")); // 10年前
+```
+
+### 指定格式化
+
+```js
+const rtf1 = new Intl.RelativeTimeFormat("zh-Hans");
+console.log(rtf1.format(-1, "day")); // 1天前
+
+
+// 指定格式化
+const rtf2 = new Intl.RelativeTimeFormat("zh-Hans", {
+	numeric: "auto" // or "always"
+});
+console.log(rtf2.format(-1, "day")); // 昨天
+```
+
+
+
 ## Math对象
+
 ```
 Math和其他的对象不同, 它不是一个构造函数, 
 它属于工具类不用创建对象, 它里边封装了数学运算相关的属性和方法
