@@ -4564,3 +4564,11 @@ implementation("com.squareup.retrofit2:adapter-rxjava3:2.9.0")
 // 安卓项目再引入一个依赖
 implementation("io.reactivex.rxjava3:rxandroid:3.0.0")
 ```
+
+## UI框架
+
+-   [material-components-android](https://github.com/material-components/material-components-android): 专门根据`Material Design`标准设计的, 只不过文档是英文的
+
+-   [XUI](https://xuexiangjys.github.io/XUI/): 文档中文, 组件很全, 还带Demo
+-   [QMUI_Android](https://github.com/Tencent/QMUI_Android): QQ开源, 组件很全, 缺点文档写的不好, 也没人维护
+-   [emo](https://emo.qhplus.cn/): 基于Jetpack Compose的组件库, 中文文档
