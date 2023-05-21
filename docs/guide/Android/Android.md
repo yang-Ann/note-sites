@@ -17,6 +17,8 @@ tags:
 - [界面](https://developer.android.google.cn/guide/topics/ui)
 - [Gradle](https://gradle.org/#close-notification)
 - [Android Studio开发实战 从零基础到App上线](https://item.jd.com/13481239.html)
+- [Androd零基础入门](https://www.w3cschool.cn/uawnhh/)
+- [Android教程](https://www.an.rustfisher.com/)
 
 ## Android Studio
 
@@ -188,7 +190,47 @@ gradle/gradle-wrapper.properties
 distributionUrl=https\://mirrors.cloud.tencent.com/gradle/gradle-7.5-all.zip
 ```
 
+### 全局镜像配置
 
+`c:/users/用户名/.gradle/init.gradle`
+
+```groovy
+allprojects{
+    repositories {
+        def ALIYUN_REPOSITORY_URL = 'https://maven.aliyun.com/repository/public'
+        def ALIYUN_JCENTER_URL = 'https://maven.aliyun.com/repository/public'
+        def ALIYUN_GOOGLE_URL = 'https://maven.aliyun.com/repository/google'
+        def ALIYUN_GRADLE_PLUGIN_URL = 'https://maven.aliyun.com/repository/gradle-plugin'
+        all { ArtifactRepository repo ->
+            if(repo instanceof MavenArtifactRepository){
+                def url = repo.url.toString()
+                if (url.startsWith('https://repo1.maven.org/maven2/')) {
+                    project.logger.lifecycle "Repository ${repo.url} replaced by $ALIYUN_REPOSITORY_URL."
+                    remove repo
+                }
+                if (url.startsWith('https://jcenter.bintray.com/')) {
+                    project.logger.lifecycle "Repository ${repo.url} replaced by $ALIYUN_JCENTER_URL."
+                    remove repo
+                }
+                if (url.startsWith('https://dl.google.com/dl/android/maven2/')) {
+                    project.logger.lifecycle "Repository ${repo.url} replaced by $ALIYUN_GOOGLE_URL."
+                    remove repo
+                }
+                if (url.startsWith('https://plugins.gradle.org/m2/')) {
+                    project.logger.lifecycle "Repository ${repo.url} replaced by $ALIYUN_GRADLE_PLUGIN_URL."
+                    remove repo
+                }
+            }
+        }
+        maven { url ALIYUN_REPOSITORY_URL }
+        maven { url ALIYUN_JCENTER_URL }
+        maven { url ALIYUN_GOOGLE_URL }
+        maven { url ALIYUN_GRADLE_PLUGIN_URL }
+    }
+}
+```
+
+TODO
 
 ## 常用XML控件
 
@@ -1113,6 +1155,21 @@ public class NotificationActivity extends Activity {
 
 应用的`<stye>`标签的属性`parent="Theme.MaterialComponents.DayNight.NoActionBar"`可以去掉默认的Toolbar
 
+```xml
+<!-- app/src/main/res/values/themes.xml -->
+
+
+<!-- 默认 -->
+<style name="Theme.Learn_androd" parent="Theme.MaterialComponents.DayNight.DarkActionBar"></style>
+  
+<!-- 去除默认标题栏 -->
+<style name="Theme.Learn_androd" parent="Theme.MaterialComponents.DayNight.NoActionBar"></style>
+ 
+  
+<!-- 去除默认标题栏并且可以去除按钮默认颜色 -->
+<style name="Theme.Learn_androd" parent="Theme.MaterialComponents.DayNight.NoActionBar.Bridge"></style>
+```
+
 ![image-20220522203207445](./images/image-20220522203207445.png) 
 
 而使用自定义的Toolbar使用的是`androidx.appcompat.widget.Toolbar`而不是默认的Toolbar
@@ -1867,7 +1924,7 @@ public void handleClick(View view) {
 
 ### ListView
 
-ListView类似于前端的虚拟列表, ListView布局里的每一项都是一个item(可以自定义布局)
+`ListView`类似于前端的虚拟列表, `ListView`布局里的每一项都是一个`item`作用是**定义布局**, 然后还需要一个`Adapter`一般都是继承`BaseAdapter`作用是**填充数据**
 
 页面布局**activity_main.xml**
 
@@ -1887,7 +1944,7 @@ ListView类似于前端的虚拟列表, ListView布局里的每一项都是一�
 </LinearLayout>
 ```
 
-创建Item布局**list_item.xml**
+创建Item`布局`**list_item.xml**
 
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
@@ -1966,15 +2023,15 @@ public class MainActivity extends AppCompatActivity {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                System.out.println(id == position);
-                Log.e("click", "onItemClick: " + position);
+              	Log.e("test", id == position);
+                Log.e("test", "onItemClick: " + position);
             }
         });
     }
 }
 ```
 
-创建辅助(适配器)类**MyAdapter**需要继承**BaseAdapter**
+创建辅助适配器类**MyAdapter**(作用是填充数据)需要继承**BaseAdapter**
 
 ```java
 package com.example.learn_android;
@@ -1988,6 +2045,7 @@ import android.widget.BaseAdapter;
 import android.widget.TextView;
 
 import java.util.ArrayList;
+
 
 public class MyAdapter extends BaseAdapter {
     // 存储数据
@@ -2003,7 +2061,7 @@ public class MyAdapter extends BaseAdapter {
     // 获取数据的总数
     @Override
     public int getCount() {
-        return dataList == null ? 0 :dataList.size();
+        return dataList == null ? 0 : dataList.size();
     }
 
     // 获取item
@@ -2041,14 +2099,16 @@ public class MyAdapter extends BaseAdapter {
         // position 就是第n个item的索引, 根据索引拿数据
         DataBean data = dataList.get(position);
 
-        // 填充给控件
+        // 给 ListView 里面的 Iitem 填充数据
         viewHolder.tv.setText(data.getText());
 
         Log.e("test", "getView: " + position);
+      
+      	// 这里一定要返回
         return convertView;
     }
 
-    // 这个类专门用来获取item里的控件
+    // 这个类专门用来获取 ListView 里的控件
     private final class ViewHolder {
         TextView tv;
     }
@@ -2200,7 +2260,7 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.myViewHolder> {
     public void onBindViewHolder(@NonNull myViewHolder holder, int position) {
         // 获取到对应的数据
         DataBean data = dataList.get(position);
-        // 设置数据
+        // 填充数据
         holder.tv.setText(data.getText());
         Log.e("test", "onBindViewHolder: " + position);
     }
@@ -2239,7 +2299,7 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.myViewHolder> {
         mOnRecyclerItemClickListener = listener;
     }
 
-    // 创建接口用于item点击事件
+    // 创建接口用于Item点击事件
     public interface OnRecyclerItemClickListener {
         void OnRecyclerItemClick(int position);
     }
@@ -2377,8 +2437,11 @@ getResources().getText(R.string.name);
 getDrawable(R.drawable.icon);
   
 // 使用颜色
-getResources().getColor(R.color.red);
-  
+txtName.setTextColor(getResouces().getColor(R.color.red));
+
+// 图片
+imgIcon.setBackgroundDrawableResource(R.drawable.icon);
+
 // 使用布局
 setContentView(R.layout.main);
 ```
@@ -4446,7 +4509,7 @@ Gson gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
 
 ## Retrofit
 
-进一步封装了OkHttp的网络请求库
+进一步封装了`OkHttp`的网络请求库
 
 `app/build.gradle`文件的`dependencies`里面添加依赖:
 
@@ -4565,10 +4628,62 @@ implementation("com.squareup.retrofit2:adapter-rxjava3:2.9.0")
 implementation("io.reactivex.rxjava3:rxandroid:3.0.0")
 ```
 
-## UI框架
+## 定时器
 
--   [material-components-android](https://github.com/material-components/material-components-android): 专门根据`Material Design`标准设计的, 只不过文档是英文的
+```java
+Timer timer = new Timer();
 
--   [XUI](https://xuexiangjys.github.io/XUI/): 文档中文, 组件很全, 还带Demo
--   [QMUI_Android](https://github.com/Tencent/QMUI_Android): QQ开源, 组件很全, 缺点文档写的不好, 也没人维护
--   [emo](https://emo.qhplus.cn/): 基于Jetpack Compose的组件库, 中文文档
+timer.schedule(new TimerTask() {
+    @Override
+    public void run() {
+        // 类比前端延时器
+        Log.d(Const.TAG, "1000ms后执行");
+    }
+}, 1000);
+
+
+timer.schedule(new TimerTask() {
+    @Override
+    public void run() {
+        // 类比前端定时器
+        Log.d(Const.TAG, "3000ms后执行第一次, 后续 1000ms执行一次");
+    }
+}, 3000, 1000);
+
+
+// 停止
+timer.cancel();
+```
+
+## Support 和 AndroidX
+
+`Support` 和 `AndroidX`表示android的[两种项目](https://www.jianshu.com/p/3b60aa04cdfc)
+
+## 第三方库
+
+### UI框架
+
+更多UI库可见[awesome-github-android-ui](https://github.com/opendigg/awesome-github-android-ui)和[awesome-android](https://github.com/stars/yang-Ann/lists/android)
+
+| 库名                                                         | 说明                                                    |
+| ------------------------------------------------------------ | ------------------------------------------------------- |
+| [material-components-android](https://github.com/material-components/material-components-android) | 专门根据`Material Design`标准设计的, 只不过文档是英文的 |
+| [XUI](https://xuexiangjys.github.io/XUI/)                    | 文档中文, 组件很全, 还带Demo                            |
+| [QMUI_Android](https://github.com/Tencent/QMUI_Android)      | QQ开源, 组件很全, 缺点文档写的不好, 也没人维护          |
+| [emo](https://emo.qhplus.cn/)                                | 基于Jetpack Compose的组件库, 中文文档, 组件不够完善     |
+
+### 其他
+
+| 库名             | 说明                       |
+| ---------------- | -------------------------- |
+| okhttp           | 网络请求                   |
+| AndroidUtilCode  | 强大易用的安卓工具类库     |
+| butterknife      | 使用注解获取控件和绑定事件 |
+| material-dialogs | dialog封装                 |
+| XXPermissions    | 权限获取                   |
+| afinal           |                            |
+| zxing            | 扫码                       |
+| glide            | 图像加载和缓存库           |
+| gson             | Java序列化/反序列化库      |
+| ExoPlayer        | 音视频播放器               |
+

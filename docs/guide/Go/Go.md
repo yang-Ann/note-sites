@@ -1234,7 +1234,9 @@ func main() {
 }
 ```
 
+### 其他方法
 
+-   `strings.EqualFold`: 判断两个字符串是否相等(不区分大小写)
 
 ## 内置函数
 
@@ -7440,9 +7442,41 @@ func main() {
 */
 ```
 
+#### net
+
+`net`可以获取网络相关的信息, 下面是一个获取ipv4地址的示例: 
+
+```go
+package main
+
+import (
+	"errors"
+	"net"
+)
+
+// 获取本机的ipv4地址
+func getIPV4Addrs() ([]string, error) {
+	addrs, err := net.InterfaceAddrs()
+	ipaddr := []string{}
+
+	if err != nil {
+		return ipaddr, err
+	}
+	for _, address := range addrs {
+		// 检查ip地址判断是否回环地址
+		if ipnet, ok := address.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
+			if ipnet.IP.To4() != nil {
+				ipaddr = append(ipaddr, ipnet.IP.String())
+			}
+		}
+	}
+	return ipaddr, errors.New("没有获取到id地址")
+}
+```
+
 #### http服务
 
-http服务可以使用`met/http`包
+http服务可以使用`net/http`包
 
 ```go
 package main
@@ -8050,7 +8084,121 @@ func handleEcho(c *gin.Context) {
 }
 ```
 
+## websocket
 
+websocket的基本使用, 如下: 
+
+```go
+package main
+
+import (
+	"flag"
+	"fmt"
+	"log"
+	"net/http"
+
+	"github.com/fatih/color"
+	"github.com/gorilla/websocket"
+)
+
+var (
+	// 服务端口
+	PORT *int
+
+	// 服务URL
+	SERVE_URL string
+
+	// websocket 地址
+	WS_URL = "/ws"
+
+	// 彩色输出
+	GREEN  = color.New(color.FgGreen, color.Bold)
+	YELLOW = color.New(color.FgYellow, color.Bold)
+	RED    = color.New(color.FgRed, color.Bold)
+)
+
+func init() {
+	// 可以通过命令行参数控制服务的端口
+	PORT = flag.Int("port", 8100, "端口号")
+	flag.Parse()
+
+	SERVE_URL = fmt.Sprintf(":%v", *PORT)
+}
+
+func main() {
+
+	LogTip()
+
+	http.HandleFunc(WS_URL, handleWebSocket)
+	err := http.ListenAndServe(SERVE_URL, nil)
+	if err != nil {
+		log.Fatal("ListenAndServe: ", err)
+	}
+}
+
+func handleWebSocket(w http.ResponseWriter, r *http.Request) {
+	upgrader := websocket.Upgrader{
+		// 解决跨域
+		CheckOrigin: func(r *http.Request) bool {
+			return true
+		},
+	}
+
+	conn, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		RED.Println(err)
+		return
+	}
+	defer conn.Close()
+
+	GREEN.Println("连接成功")
+	fmt.Println()
+
+	for {
+		messageType, message, err := conn.ReadMessage()
+		if err != nil {
+			RED.Println("接收异常: ", err)
+			fmt.Println()
+			break
+		}
+		GREEN.Printf("<<< %v 接收消息内容: %v\n", getTime(), string(message))
+
+		switch messageType {
+		case websocket.TextMessage:
+			YELLOW.Printf(">>> 写入字符串消息: %s\n\n", message)
+			echoMsg := fmt.Sprintf("server data -> %s", message)
+			err = conn.WriteMessage(websocket.TextMessage, []byte(echoMsg))
+			if err != nil {
+				RED.Println("字符串消息发送异常: ", err)
+			}
+		case websocket.BinaryMessage:
+			YELLOW.Printf(">>> 写入二进制消息: %s\n\n", message)
+			echoMsg := []byte("server data -> ")
+			echoMsg = append(
+				echoMsg,
+				message...,
+			)
+			err = conn.WriteMessage(websocket.BinaryMessage, echoMsg)
+			if err != nil {
+				RED.Println("二进制消息发送异常: ", err)
+			}
+		}
+	}
+}
+
+// 打印提示
+func LogTip() {
+	fmt.Println()
+	GREEN.Print(SERVE_URL + WS_URL)
+	fmt.Print(" 服务启动成功")
+	fmt.Printf("\n\n")
+}
+
+// 获取时间
+func getTime() string {
+	return time.Now().Format("15:04:05")
+}
+```
 
 ## 第三方库
 
@@ -8068,6 +8216,7 @@ func handleEcho(c *gin.Context) {
 | resty     | github.com/go-resty/resty/v2                                 | http网络请求                                                 |
 | goquery   | github.com/PuerkitoBio/goquery                               | 解析网页, 可以使用JQuery语法选择指定的元素                   |
 | gin       | github.com/gin-gonic/gin                                     | web框架                                                      |
+| websocket | github.com/gorilla/websocket                                 | websocket的golang实现                                        |
 | gosseract | github.com/otiai10/gosseract/v2                              | ocr                                                          |
 | bubbletea | github.com/charmbracelet/bubbletea                           | 命令行ui库                                                   |
 | lipgloss  | github.com/charmbracelet/lipgloss                            | 自定义命令行布局和样式                                       |

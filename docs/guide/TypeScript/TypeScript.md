@@ -4609,6 +4609,23 @@ type IndexOfType = ""["indexOf"]; // 对应 string.proptype.indexOf 的类型
 type ToFixedType = 1["toFixed"]; // 对应 number.proptype.toFixed 的类型
 ```
 
+### 指定键名
+
+有的时候需要一个类型, 可以取任意的键, 但是其中指定了已知的键名是必须的, 就可以按如下定义: 
+
+```ts
+type TableDataType = {
+	// 这里定死了键和值的类型都是 string
+	[k: string]: string;
+
+	// 这里加了一个指定的键名
+	id: string;
+
+	// Error 不能这样写, 类型不匹配, 只能写 string
+	// key: number;
+}
+```
+
 ### 非空断言 !
 
 非空断言运算符(`!`)可以用在变量名或者函数名之后, 用来强调对应的元素是非`null | undefined`的
@@ -4697,6 +4714,20 @@ const obj: MyPartial<Person> = { name: "张三" };
 ### 遍历属性 in
 
 `in`只能用在类型的定义中，可以对枚举类型进行遍历，如下：
+
+```ts
+// 这个类型表示 键的类型是 string, 值的类型是 any
+type MyObject1 = {
+	[key in string]: any
+}
+
+// 这个类型表示 键的类型是 string 或者 number, 值的类型是 any
+type MyObject2 = {
+	[key in string | number]: any
+}
+```
+
+利用`in`+泛型可以实现一些通用的类型转换
 
 ```ts
 // TypeToNumber 类型可以将任何类型的键值转化成 number 类型

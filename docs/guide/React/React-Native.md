@@ -1358,3 +1358,93 @@ allprojects {
 ### kotlin-compiler-embeddable 下载很慢
 
 自己手动下载[kotlin-compiler-embeddable](https://repo1.maven.org/maven2/org/jetbrains/kotlin/kotlin-compiler-embeddable)然后放到`[user]/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-compiler-embeddable/[版本号]/[pom.sha1文件内容]`下面
+
+## 打包
+
+[打包](https://reactnative.cn/docs/next/signed-apk-android)
+
+需要使用`keytool`命令生成一个私有密钥, 命令如下:
+
+```sh
+# 生成的文件: myAlias.keystore
+# 别名: myAlias
+# 过期时间: 36500天(十年)
+keytool -genkeypair -v -storetype PKCS12 -keystore myAlias.keystore -alias myAlias -keyalg RSA -keysize 2048 -validity 36500
+```
+
+然后就需要输入密钥库(keystore)和对应密钥的密码, 然后输入一些发行信息(国家, 地区, 组织)等然后将会生成一个证书
+
+将生成的证书放到`android/app`中, 在`android/gradle.properties`中添加证书相关的 gradle 变量, 如下:
+
+```properties
+# ...
+
+# 证书文件名
+MYAPP_RELEASE_STORE_FILE=myAlias.keystore
+# 证书别名
+MYAPP_RELEASE_KEY_ALIAS=myAlias
+# 证书密钥(写生成证书时的密钥)
+MYAPP_RELEASE_STORE_PASSWORD=***
+MYAPP_RELEASE_KEY_PASSWORD=***
+```
+
+修改`android/app/build.gradle`文件, 加入签名配置, 如下: 
+
+```groovy
+// ...
+android {
+    // ...
+    defaultConfig { 
+    	// ...
+      
+      // 打包如果报 Execution failed for task ':app:mergeReleaseResources'. 则添加下面这两行
+      aaptOptions.cruncherEnabled = false
+      aaptOptions.useNewCruncher = false
+    }
+    signingConfigs {
+        release {
+            if (project.hasProperty('MYAPP_RELEASE_STORE_FILE')) {
+                storeFile file(MYAPP_RELEASE_STORE_FILE)
+                storePassword MYAPP_RELEASE_STORE_PASSWORD
+                keyAlias MYAPP_RELEASE_KEY_ALIAS
+                keyPassword MYAPP_RELEASE_KEY_PASSWORD
+            }
+        }
+    }
+    buildTypes {
+        release {
+            // ...
+            signingConfig signingConfigs.release
+        }
+    }
+}
+// ...
+```
+
+执行打包命令如下: 
+
+```sh
+cd android
+
+# PowerShell 环境下需要加 ./
+./gradlew assembleRelease
+
+# cmd, base shell, 则不需要
+gradlew assembleRelease
+```
+
+打包生成的`APK`文件会在`android/app/build/outputs/apk/release`目录下, 叫`app-release.apk`
+
+>   注意：请确保`android/gradle.properties` 中`没有`包含`_org.gradle.configureondemand=true_`，否则会跳过 js 打包的步骤，导致最终生成的是一个无法运行的空壳
+
+### 测试应用的发行版本
+
+可以执行以下的命令把发行(`release`)版本的应用直接安装到`模拟机`或`use连接的真机`上
+
+```sh
+npx react-native run-android --variant=release
+```
+
+`--variant=release`参数只能在完成了上面的签名配置之后才可以使用
+
+>   注意: 在`debug`和 `release`版本间来回切换安装时可能会报错签名不匹配, 此时需要先卸载前一个版本再重新安装
