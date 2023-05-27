@@ -254,9 +254,11 @@ npx react-native init projectName --template react-native-template-typescript
 
 -   `KeyboardAvoidingView`控制键盘
 
--   `DrawerLayoutAndroid`原生抽题
+-   `DrawerLayoutAndroid`原生抽屉页面
 
--   `AppState`可以知道应用当前是在前台还是在后台，并且能在状态变化的时候进行通知
+-   [`AppState`](https://reactnative.dev/docs/appstate)可以知道应用当前是在前台还是在后台，并且能在状态变化的时候进行通知
+
+-   [`Linking`](https://reactnative.dev/docs/linking.html)可以打开`Uri`, 发送意图
 
 ## 样式
 
@@ -629,6 +631,8 @@ module.exports = {
 | 对话界面       | react-native-gifted-chat                                     |
 | 启动屏         | react-native-splash-screen                                   |
 | 使用svg        | react-native-svg                                             |
+| 热更新         | CodePush                                                     |
+| 热更新         | react-native-pushy                                           |
 
 ## 原生模块
 
@@ -1358,6 +1362,34 @@ allprojects {
 ### kotlin-compiler-embeddable 下载很慢
 
 自己手动下载[kotlin-compiler-embeddable](https://repo1.maven.org/maven2/org/jetbrains/kotlin/kotlin-compiler-embeddable)然后放到`[user]/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-compiler-embeddable/[版本号]/[pom.sha1文件内容]`下面
+
+## adb
+
+adb的全称为Android Debug Bridge，就是起到调试桥的作用, 通过adb我们直接通过命令行来调试Android程序
+
+### 无线连接
+
+### 无线调试
+
+电脑和手机连接同一个局域网, 然后手机开启无线调试后, 就可以看到IP地址和端口了, 电脑使用`abd`可以直接连接: 
+
+```sh
+# 连接指定IP地址的设备
+adb connect 192.168.1.102:44625
+
+# 查看到已授权的手机设备
+adb devices
+
+# 断开连接
+adb disconnect 192.168.1.102:44625
+```
+
+### 其他命令
+
+```sh
+# 获取 adb 的 错误日志输出到指定文件中
+adb logcat -v time *:E > run.log
+```
 
 ## 打包
 

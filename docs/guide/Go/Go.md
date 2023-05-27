@@ -3741,9 +3741,9 @@ func main() {
 -   `os.MkdirAll("/tmp/1/2/3", 0755)`: 创建**多级**目录
 -   `os.RemoveAll()`: 删除目录
 
-- `os.Stat()`+`os.IsExist()`: 判断文件(目录)是否**不存在**
+- `os.Stat()`+`os.IsExist()`: 判断文件是否**存在**
 
-- `os.Stat()`+`os.IsNotExist()`: 判断文件(目录)是否**存在**
+- `os.Stat()`+`os.IsNotExist()`: 判断目录是否**不存在**
 
   ```go
   package main
@@ -3754,18 +3754,27 @@ func main() {
   )
   
   func main() {
-  	// os.IsExist() 判断文件不存在
-  	if f, err := os.Stat("./demo.txt"); os.IsExist(err) {
+    
+    // 直接使用 os.Stat
+    f, err := os.Stat("./index.html")
+  	if err != nil {
   		fmt.Println("文件不存在: ", err)
   	} else {
-  		fmt.Println("文件是否为目录: ", f.IsDir())
+  		fmt.Printf("文件信息 %#v\n", f)
+  	}
+    
+    // os.IsExist() 是在 os.Stat() 报错时判断判断文件路径是否存在
+  	if f, err := os.Stat("./index.html"); os.IsExist(err) {
+  		fmt.Println("文件不存在: ", err)
+  	} else {
+  		fmt.Printf("文件信息 %#v\n", f)
   	}
   
-  	// os.IsNotExist() 判断文件存在
-  	if f, err := os.Stat("./demo.txt"); os.IsNotExist(err) {
-  		fmt.Println("文件不存在", err)
+  	// os.IsNotExist() 是在 os.Stat() 报错时判断判断判断目录是否存在
+  	if f, err := os.Stat("../main"); os.IsNotExist(err) {
+  		fmt.Println("目录不存在", err)
   	} else {
-  		fmt.Println("文件是否为目录: ", f.IsDir())
+  		fmt.Printf("目录信息 %#v\n", f)
   	}
   }
   ```

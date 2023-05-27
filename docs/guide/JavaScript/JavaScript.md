@@ -3958,6 +3958,39 @@ window.addEventListener('mouseup', () => {
 
 提取请求参数, 参考[MDN](https://developer.mozilla.org/zh-CN/docs/Web/API/URLSearchParams)
 
+## 打印
+
+`window.open()`新建一个窗口, 然后往窗口中写入HTML字符串即可(`newWindow.document.write()`), 如下: 
+
+```ts
+const el = document.querySelect(".print");
+const newWindow = window.open("打印标题", "about:blank");
+
+if (newWindow) {
+  newWindow.document.write(el.outerHTML);
+  newWindow.window.print();
+  newWindow.window.close();
+} else {
+  console.warn("打印失败");
+}
+```
+
+原生js打印会丢失样式, 解决的办法是使用**内联样式**或者是把样式写到打印元素的下面, 如下: 
+
+```html
+<div class="print">
+  <style>
+    .box {
+      width: 100px;
+      height: 100px;
+      border: 1px solid #000;
+    }
+  </style>
+  <div>需要被打印的区域</div>
+  <div class="box">box</div>
+</div>
+```
+
 ## File
 
 在web中使用文件可以参考[MDN](https://developer.mozilla.org/zh-CN/docs/Web/API/File_API/Using_files_from_web_applications#example.3a_using_object_urls_to_display_images)
@@ -4307,38 +4340,37 @@ console.log(crypto.randomUUID());
 // '79bff95e-2abd-410b-a578-9f5f79b06158'
 ```
 
-## 打印
+## TextEncoder 和 TextDecoder
 
-`window.open()`新建一个窗口, 然后往窗口中写入HTML字符串即可(`newWindow.document.write()`), 如下: 
+`TextDecoder`可以对`UintArray`, `IntArray`等字节数组转换为字符串
 
-```ts
-const el = document.querySelect(".print");
-const newWindow = window.open("打印标题", "about:blank");
+```js
+const utf8decoder = new TextDecoder(); // 默认编码为 "utf-8" 或 "utf8"
 
-if (newWindow) {
-  newWindow.document.write(el.outerHTML);
-  newWindow.window.print();
-  newWindow.window.close();
-} else {
-  console.warn("打印失败");
-}
+const u8arr = new Uint8Array([240, 160, 174, 183]);
+const i8arr = new Int8Array([-16, -96, -82, -73]);
+const u16arr = new Uint16Array([41200, 47022]);
+const i16arr = new Int16Array([-24336, -18514]);
+const i32arr = new Int32Array([-1213292304]);
+
+console.log(utf8decoder.decode(u8arr)); // 𠮷
+console.log(utf8decoder.decode(i8arr)); // 𠮷
+console.log(utf8decoder.decode(u16arr)); // 𠮷
+console.log(utf8decoder.decode(i16arr)); // 𠮷
+console.log(utf8decoder.decode(i32arr)); // 𠮷
 ```
 
-原生js打印会丢失样式, 解决的办法是使用**内联样式**或者是把样式写到打印元素的下面, 如下: 
+`TextEncoder`可以对字符串转换为`Uint8Array`(二级制数组)
 
-```html
-<div class="print">
-  <style>
-    .box {
-      width: 100px;
-      height: 100px;
-      border: 1px solid #000;
-    }
-  </style>
-  <div>需要被打印的区域</div>
-  <div class="box">box</div>
-</div>
+```js
+const encoder = new TextEncoder()
+const view = encoder.encode("!@#")
+console.log(view); // Uint8Array(3) [33, 64, 35]
 ```
+
+## Uint8Array
+
+[`Uint8Array`](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array), `Int8Array`, `Uint16Array`, `Int16Array`, [`ArrayBuffer`](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer)等这些都是用来存储二进制数据的
 
 ## ES6 简介
 

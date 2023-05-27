@@ -890,7 +890,21 @@ arr.push(false); // 可以添加指定值
 arr.push(true); // Error 类型“true”的参数不能赋给类型“string | number | false”的参数
 ```
 
+### 可选元组
 
+元组也是支持可选的, 具体的效果可以见`Parameters`泛型工具的, 如下: 
+
+```ts
+type test = Parameters<(a: number, b: string, c?: boolean) => void>;
+// type test = [a: number, b: string, c?: boolean | undefined]
+
+type SqlintCustomQueryParamsType<T = any> = [
+  query: Partial<T>,
+  where?: WhereType,
+  queryFields?: string,
+  group?: string
+];
+```
 
 ## 函数的类型
 

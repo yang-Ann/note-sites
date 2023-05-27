@@ -3797,6 +3797,187 @@ app.use(async (ctx, next) => {
 - **DELETE** - 用于删除数据
 - **POST** - 用于添加数据
 
+## 网络请求
+
+node中也可以使用`axios`来发送网络请求, 因为`axios`是一个异构项目, 同时兼容js的浏览器端和node服务端, 下面是一个分片文件下载的例子: 
+
+```ts
+import * as fs from "node:fs";
+import axios from "axios";
+
+/** 文件信息 */
+type FileInfoType = {
+  /** 文件大小 */
+  size: number;
+
+  /** 文件名称 */
+  name: string
+};
+
+/**
+ * 获取文件的大小
+ * @param url 请求地址
+ * @returns
+ */
+const getFileLength = (url: string): Promise<FileInfoType> => {
+	return new Promise((resolve, reject) => {
+		axios
+			.get(url)
+			.then((res) => {
+				// const contentLength = res.headers["content-length"];
+				if (res.data) {
+					resolve(res.data.data);
+				} else {
+					reject(new Error("文件长度获取失败"));
+				}
+			})
+			.catch((err) => {
+				reject(err);
+			});
+	});
+};
+
+/**
+ * 分片获取文件内容
+ * @param url 请求地址
+ * @param startIndex 开始位置
+ * @param endIndex 结束位置
+ * @returns
+ */
+const getRangeContent = (url: string, startIndex: number, endIndex: number) => {
+	return axios.get(url, {
+		headers: {
+			Range: `bytes=${startIndex}-${endIndex}`
+		},
+		responseType: "arraybuffer"
+	});
+};
+
+/**
+ * 连接 arraybuffer
+ * @param arrayBufferArray
+ * @returns
+ */
+const concatArrayBuffer = (arrayBufferArray: ArrayBuffer[]) => {
+	// 获取总长度
+	const totalLength = arrayBufferArray.reduce((pre, cur) => {
+		pre += cur.byteLength;
+		return pre;
+	}, 0);
+
+	// 构建结果
+	const result = new Uint8Array(totalLength);
+
+	// 偏移量
+	let offset = 0;
+	arrayBufferArray.forEach((item) => {
+		// 向后拼接
+		result.set(new Uint8Array(item), offset);
+		// 偏移量追加
+		offset += item.byteLength;
+	});
+
+	return result;
+};
+
+// 一份分为 100 字节
+const RANGE_SIZE = 100;
+// 文件信息接口
+const GET_FILE_INFO = "http://localhost:8100/getFileInfo?file=test.txt";
+// 文件下载接口
+const DOWNLOAD_FILE = "http://localhost:8100/downloadFile?file=test.txt";
+// 记录执行时间
+let time = Date.now();
+
+(async () => {
+	try {
+		// 获取文件信息
+		const fileInfo: FileInfoType = await getFileLength(GET_FILE_INFO);
+		// 切分
+		const num = Math.ceil(fileInfo.size / RANGE_SIZE);
+
+		// 临时文件存储的目录
+		const tempFileDir = `./rangeTemp/${fileInfo.name}`;
+		const isExists = fs.existsSync(tempFileDir);
+		if (!isExists) fs.mkdirSync(tempFileDir, { recursive: true });
+
+		// 存储已经保存的文件路径
+		const files: string[] = [];
+
+		//// 单个请求
+		for (let i = 0; i < num; i++) {
+			const startIndex = i * RANGE_SIZE;
+			const endIndex = startIndex + RANGE_SIZE - 1;
+			const res = await getRangeContent(DOWNLOAD_FILE, startIndex, endIndex);
+			console.log(`\n第${i + 1}次请求, 本次的数据: `);
+			console.log(res.data);
+			console.log("-".repeat(100));
+
+			const filePath = `${tempFileDir}/${i + 1}`;
+			fs.appendFileSync(filePath, res.data, { encoding: "binary" });
+
+			// 保存文件路径
+			files.push(filePath);
+		}
+		////
+
+		//// 并行请求
+		// const apis = [];
+		// for (let i = 0; i < num; i++) {
+		// 	const startIndex = i * RANGE_SIZE;
+		// 	const endIndex = startIndex + RANGE_SIZE - 1;
+		//   apis.push(getRangeContent(DOWNLOAD_FILE, startIndex, endIndex))
+		// }
+		// const resList = await Promise.allSettled(apis);
+		// resList.forEach((item, idx) => {
+		//   if (item.status === "fulfilled") {
+		//     console.log(`\n第${idx + 1}次请求, 本次的数据: `);
+		//     console.log(item.value.data);
+		//     console.log("-".repeat(100));
+		//     const filePath = `${tempFileDir}/${idx + 1}`;
+		//     fs.appendFileSync(filePath, item.value.data, { encoding: "binary" });
+		//     // 保存文件路径
+		//     files.push(filePath);
+		//   } else {
+		//     console.error(`第${idx}个索引的分片数据请求失败:`, item.reason);
+		//     // TODO 重新请求失败的分片数据
+		//   }
+		// });
+		////
+
+		// 读取临时文件合并成最终文件
+		const ws = fs.createWriteStream(`./${fileInfo.name}`, { encoding: "binary" });
+		files.forEach((item, idx) => {
+			const rs = fs.createReadStream(item, { encoding: "binary" });
+			// 复制数据
+			rs.pipe(ws);
+
+			rs.on("end", () => {
+				// 删除临时文件
+				fs.rm(item, (err) => {
+					if (err) throw err;
+
+					// 删除临时文件目录
+					if (idx === files.length - 1) {
+						fs.rmdir(tempFileDir, (err) => {
+							if (err) throw err;
+
+							console.log("共用时: ", Date.now() - time);
+						});
+					}
+				});
+			});
+		});
+	} catch (err) {
+		if (err instanceof Error) {
+			console.log("err: ", err.message);
+		} else {
+			console.log("err: ", err);
+		}
+	}
+})();
+```
+
 ## 命令行输出颜色
 
 终端命令行输出颜色除了使用第三方库还可以使用ANSI Escape Code(ANSI转义码)实现, 常用的ANSI转义码如下:
@@ -3819,6 +4000,20 @@ console.log("\x1b[31m%s\x1b[0m", "红色文本");
 console.log("\x1b[33m%s\x1b[0m", "黄色文本");
 console.log("\x1b[36m青色文本\x1b[0m");
 ```
+
+## TypeScript
+
+node环境下不能直接运行`.ts`文件, 还是需要将`.ts`文件编译为`.js/.cjs/.mjs`才可以被node直接执行, 好在可以使用一些工具库来直接运行`.ts`文件, 比较常用的是`ts-node`和`tsx`, 基本使用如下:
+
+```sh
+# ts-node 
+node --loader ts-node/esm ./index.ts
+
+# tsx
+tsx ./index.ts
+```
+
+>    `tsx`这个库比较好用可以直接运行`.ts`文件, 但是因为比较新, 有时会出现一些`BUG`
 
 ## Node 连接 MySQL
 

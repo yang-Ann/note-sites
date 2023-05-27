@@ -1435,7 +1435,7 @@ export default App;
 
 ### useMemo
 
-`useMemo`可以在函数组件 `render` 上下文中同步执行一个函数逻辑, 这个函数的返回值可以作为一个新的状态缓存起来, 常用于缓存需要进行大量复杂计算的值, 语法如下:
+`useMemo`可以在函数组件 `render` 上下文中同步执行一个函数逻辑, 这个函数的返回值可以作为一个新的状态缓存起来, 常用于缓存需要进行大量复杂计算的值, 说白点就是`Vue`里的计算属性, 语法如下:
 
 ```tsx
 // create 为一个函数, 函数的返回值作为缓存值
@@ -1552,7 +1552,7 @@ useEffect(() => {
 
 ### useCallback
 
-`useCallback`和`useMemo`接受到的参数是一样的, 都是在依赖项变量之后才执行函数, 返回缓存的值, 区别在于`useMemo`返回的是**函数运行的结果**，`useCallback`返回的是**函数本身**, `useCallback`经常被滥用, 其正确的应用场景是**在往子组件传入了一个函数并且子组件被`React.momo`缓存了的时候使用, 如果是普通的函数即使是被`React.momo`缓存了的子组件也会更新**: 
+`useCallback`和`useMemo`接受到的参数是一样的, 都是在依赖项变量之后才执行函数, 返回缓存的值, 区别在于`useMemo`返回的是**函数运行的结果**, `useCallback`返回的是**函数本身**, `useCallback`经常被滥用, 其正确的应用场景是**在往子组件传入了一个函数并且子组件被`React.momo`缓存了的时候使用, 如果是普通的函数即使是被`React.momo`缓存了的子组件也会更新**: 
 
 ```tsx
 import React, { StrictMode, useCallback, useState } from "react";
