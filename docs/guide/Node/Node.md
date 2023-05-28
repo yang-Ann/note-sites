@@ -1044,102 +1044,6 @@ mime.getType("md"); // "text/markdown"
 Content-Disposition: attachment; filename="filename.txt"
 ```
 
-## Node发送网络请求
-
-在Node.js中也是可以发起网络请求的, 可以使用一些知名的库, 比如: `axios`,`request`等, `axios`和前端使用方式是一样的, 这里以`request `为例
-
-安装 `npm install request -S` 
-
-### GET请求
-
-```js
-const request = require("request");
-
-request("https://www.baidu.com/", (err, response, body) => {
-  if (err) {
-    console.log("请求失败", err);
-    return;
-  }
-  // console.log(response); // 响应信息的集合
-
-  if (response.statusCode == 200) { 
-    // 响应体
-    console.log(body);
-  }
-})
-```
-
-### POST请求
-
-**application/x-www-form-urlencoded (普通表单)**
-
-```js
-const request = require("request");
-
-request.post(
-  {
-    url: url,
-    form: { key: 'value' }
-  },
-  (error, response, body) => {
-    // 返回的结果和 GET请求 一样
-  })
-```
-
-**application/json (JSON表单)**
-
-```js
-request({
-  url: url,
-  method: "POST",
-  json: true,
-  headers: {
-    "content-type": "application/json",
-  },
-  body: JSON.stringify({ key: 'value' })
-}, (error, response, body) => {
-  // 返回的结果和 GET请求 一样
-})
-```
-
-**multipart/form-data (上传文件)**
-
-```js
-const url = 'https://www.baidu.com/';
-const formData = {
-  // 普通文本
-  field: 'value',
-  // 文件
-  file: fs.createReadStream('./img.jpg'),
-}
-
-request.post(
-  {
-    url: url,
-    formData: formData
-  },
-  (error, response, body) => {
-    // 返回的结果和 GET请求 一样F
-  })
-```
-
-**保存文件**
-
-```js
-const request = require('request');
-const fs = require('fs');
-const EventEmitter = require('events');
-
-// request 会返回文件流实例
-const instance = request('https://www.jmjc.tech/public/home/img/flower.png');
-console.log(instance instanceof EventEmitter); // true
-
-
-// 通过 可写流+pipe 就可以实现文件下载到本地
-request('https://www.jmjc.tech/public/home/img/flower.png')
-  .pipe(fs.createWriteStream('./flower.png')) // 下载文件到本地
-```
-
 ## zlib
 
 用于压缩文件, 可以减少数据传输的大小
@@ -3799,7 +3703,40 @@ app.use(async (ctx, next) => {
 
 ## 网络请求
 
-node中也可以使用`axios`来发送网络请求, 因为`axios`是一个异构项目, 同时兼容js的浏览器端和node服务端, 下面是一个分片文件下载的例子: 
+node中也可以使用`axios`来发送网络请求, 因为`axios`是一个异构项目, 同时兼容js的浏览器端和node服务端: 
+
+### axios
+
+#### 文件上传
+
+```ts
+import axios from "axios";
+import { fileFromSync } from "fetch-blob/from.js";
+import { FormData } from "formdata-polyfill/esm.min.js";
+
+const serverUrl = "http://localhost:8100"; // 服务器地址
+const file = fileFromSync("./package.json"); // 文件路径
+
+const formData = new FormData(); // 创建一个FormData对象
+formData.append("file", file); // 将文件内容添加到FormData中
+
+axios({
+	url: `${serverUrl}/uploadFile`,
+	method: "POST",
+	headers: {
+		"Content-Type": "multipart/form-data" // 设置请求头中的Content-Type为multipart/form-data
+	},
+	data: formData
+})
+	.then((res) => {
+		console.log("上传成功: ", res.data);
+	})
+	.catch((err) => {
+		console.error("error: ", err.data);
+	});
+```
+
+####  分片下载文件
 
 ```ts
 import * as fs from "node:fs";
@@ -3978,6 +3915,98 @@ let time = Date.now();
 })();
 ```
 
+### request
+
+#### GET请求
+
+```js
+const request = require("request");
+
+request("https://www.baidu.com/", (err, response, body) => {
+  if (err) {
+    console.log("请求失败", err);
+    return;
+  }
+  // console.log(response); // 响应信息的集合
+
+  if (response.statusCode == 200) { 
+    // 响应体
+    console.log(body);
+  }
+})
+```
+
+#### POST请求
+
+**application/x-www-form-urlencoded (普通表单)**
+
+```js
+const request = require("request");
+
+request.post(
+  {
+    url: url,
+    form: { key: 'value' }
+  },
+  (error, response, body) => {
+    // 返回的结果和 GET请求 一样
+  })
+```
+
+**application/json (JSON表单)**
+
+```js
+request({
+  url: url,
+  method: "POST",
+  json: true,
+  headers: {
+    "content-type": "application/json",
+  },
+  body: JSON.stringify({ key: "value" })
+}, (error, response, body) => {
+  // 返回的结果和 GET请求 一样
+})
+```
+
+**multipart/form-data (上传文件)**
+
+```js
+const url = "https://www.baidu.com/";
+const formData = {
+  // 普通文本
+  field: "value",
+  // 文件
+  file: fs.createReadStream("./img.jpg"),
+}
+
+request.post(
+  {
+    url: url,
+    formData: formData
+  },
+  (error, response, body) => {
+    // 返回的结果和 GET请求 一样F
+  })
+```
+
+#### 保存文件
+
+```js
+const request = require("request");
+const fs = require("fs");
+const EventEmitter = require("events");
+
+// request 会返回文件流实例
+const instance = request("https://www.jmjc.tech/public/home/img/flower.png");
+console.log(instance instanceof EventEmitter); // true
+
+
+// 通过 可写流+pipe 就可以实现文件下载到本地
+request("https://www.jmjc.tech/public/home/img/flower.png")
+  .pipe(fs.createWriteStream("./flower.png")) // 下载文件到本地
+```
+
 ## 命令行输出颜色
 
 终端命令行输出颜色除了使用第三方库还可以使用ANSI Escape Code(ANSI转义码)实现, 常用的ANSI转义码如下:
@@ -4024,15 +4053,15 @@ tsx ./index.ts
 > [Node 集成数据库](https://www.expressjs.com.cn/guide/database-integration.html)
 
 ```js
-const mysql = require('mysql');
+const mysql = require("mysql");
 
 // 获取连接对象
 const pool = mysql.createPool({
-    host: 'localhost', // 地址
+    host: "localhost", // 地址
     port: 3306,
-    user: 'root', // 用户
-    password: '123456', // 密码
-    database: 'test', // 数据库
+    user: "root", // 用户
+    password: "123456", // 密码
+    database: "test", // 数据库
     connectionLimit: 10, // 线程数
 });
 
