@@ -16,6 +16,8 @@ tags:
 
 [React-Native(中)](https://reactnative.cn/)
 
+[各种学习资料](https://github.com/reactnativecn/react-native-guide)
+
 ```sh
 # 初始化项目
 npx react-native init projectName
@@ -603,36 +605,46 @@ module.exports = {
 
 汇总的第三方库可以从[awesome-react-native](https://www.awesome-react-native.com/)这个仓库获取, 下面是一些常用的库: 
 
-| 名称           | 说明                                                         |
-| -------------- | ------------------------------------------------------------ |
-| 组件库         | `react-native-paper`, `native-base`, `react-native-elements`, `react-native-ui-lib`, `rn.mobile.ant.design`, `teaset`, `react-native-ui-kitten` |
-| 图标库         | react-native-vector-icons                                    |
-| 导航           | React-Navigation                                             |
-| SQLine         | react-native-sqlite-storage                                  |
-| 文件操作       | react-native-fs                                              |
-| 文件上传下载   | rn-fetch-blob                                                |
-| 设备信息       | react-native-device-info                                     |
-| 本地存储       | @react-native-async-storage/async-storage                    |
-| 截图操作       | react-native-view-shot                                       |
-| 图片组件       | react-native-fast-image                                      |
-| 视频播放       | react-native-video                                           |
-| 音频播放       | react-native-audio-toolkit                                   |
-| 相机控制       | react-native-vision-camera                                   |
-| 图库控制       | react-native-cameraroll                                      |
-| 原生dialog     | react-native-dialogs, @react-native-picker/picker            |
-| 侧滑按钮list   | react-native-swipe-list-view                                 |
-| 自定义toast    | react-native-toast-message                                   |
-| webview        | react-native-webview                                         |
-| 将html作为组件 | react-native-htmlview                                        |
-| 图片选择       | react-native-image-picker                                    |
-| 图片预览       | react-native-image-zoom-viewer                               |
-| 图片操作(裁剪) | react-native-image-crop-picker                               |
-| 轮播           | react-native-swiper                                          |
-| 对话界面       | react-native-gifted-chat                                     |
-| 启动屏         | react-native-splash-screen                                   |
-| 使用svg        | react-native-svg                                             |
-| 热更新         | CodePush                                                     |
-| 热更新         | react-native-pushy                                           |
+| 名称                      | 说明                                                         |
+| ------------------------- | ------------------------------------------------------------ |
+| 组件库                    | `react-native-paper`, `native-base`, `react-native-elements`, `react-native-ui-lib`, `rn.mobile.ant.design`, `teaset`, `react-native-ui-kitten` |
+| 图标库                    | react-native-vector-icons                                    |
+| 导航                      | React-Navigation                                             |
+| SQLine                    | react-native-sqlite-storage                                  |
+| 文件操作                  | react-native-fs                                              |
+| 文件上传下载              | rn-fetch-blob                                                |
+| 设备信息                  | react-native-device-info                                     |
+| 本地存储                  | @react-native-async-storage/async-storage                    |
+| 截图操作                  | react-native-view-shot                                       |
+| 高性能图片组件            | react-native-fast-image                                      |
+| 视频播放                  | react-native-video                                           |
+| 音频播放                  | react-native-audio-toolkit                                   |
+| 相机控制                  | react-native-vision-camera                                   |
+| 图库控制                  | react-native-cameraroll                                      |
+| 原生dialog                | react-native-dialogs, @react-native-picker/picker            |
+| 侧滑按钮list              | react-native-swipe-list-view                                 |
+| tab可滚动                 | react-native-scrollable-tab-view                             |
+| 自定义toast               | react-native-toast-message                                   |
+| 拟态框                    | react-native-modalfy                                         |
+| actions                   | react-native-actions-sheet                                   |
+| webview                   | react-native-webview                                         |
+| 将html作为组件            | react-native-htmlview                                        |
+| 图片选择                  | react-native-image-picker                                    |
+| 图片预览                  | react-native-image-zoom-viewer                               |
+| 图片操作(裁剪)            | react-native-image-crop-picker                               |
+| 轮播                      | react-native-swiper                                          |
+| 对话界面                  | react-native-gifted-chat                                     |
+| 启动屏                    | react-native-splash-screen                                   |
+| 日历选择                  | react-native-calendars                                       |
+| svg                       | react-native-svg                                             |
+| 聊天界面库                | react-native-gifted-chat                                     |
+| 自定义通知                | react-native-push-notification                               |
+| 图表库                    | react-native-echarts                                         |
+| 热更新                    | CodePush                                                     |
+| 热更新                    | react-native-pushy                                           |
+| react-native 开发 windows | react-native-windows                                         |
+
+>   更多第三方库可以在`GitHub`使用条件搜索`react native stars:>9999`进行搜索
 
 ## 原生模块
 
@@ -1172,7 +1184,8 @@ public class MyReactPackage implements ReactPackage {
     }
 
     // 暴露给 JS 的参数(text="xxx"), 给定值以后触发这个方法就可以设置按钮的文本了
-    @ReactProp(name = "text")
+    // 默认值为 hello
+    @ReactProp(name = "text", defaultString = "hello")
     public void setText(NaiveButton view, String text) {
         view.setText(text);
     }
@@ -1195,6 +1208,8 @@ const NativeButton = requireNativeComponent<NativeButtonProps>("NativeButton");
 // 页面使用
 <NativeButton text="按钮文本" />
 ```
+
+除了`name`，`@ReactProp`注解还接受这些可选的参数：`defaultBoolean`, `defaultInt`, `defaultFloat`。这些参数必须是对应的基础类型的值（也就是`boolean`, `int`, `float`），这些值会被传递给 setter 方法，以免 JavaScript 端某些情况下在组件中移除了对应的属性。注意这个"默认"值只对基本类型生效，对于其他的类型而言，当对应的属性删除时，`null`会作为默认值提供给方法
 
 >   JS端传递给原生端的数据, 如上面的`text`如果在运行时改变了, 原生端同样会触发**更新**
 

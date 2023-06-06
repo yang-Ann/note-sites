@@ -967,16 +967,26 @@ const setObjState = (obj: Partial<typeof state>) => {
 
 ### useRef
 
-`class`组件, `React` 元素用 `React.createRef`获取元素或者组件引用, 函数组件则使用 `useRef`
+`useRef`返回一个可变的 ref 对象, 该对象只有个 curr`e`nt 属性，初始值为传入的参数( initialValue )
 
-`useRef` 返回一个可变的 `ref` 对象, 其 `current` 属性会在**元素或组件挂载完成时**填充`ref`标记的DOM或者组件
+返回的 ref 对象在组件的整个生命周期内保持不变
 
-```typescript
+当更新 `current` 值时**并不会** `re-render` ，这是与 `useState` 不同的地方
+
+更新 `useRef`一般是在 side effect (副作用)的情况下，所以一般写在 `useEffect` 或`event handler`里
+
+`useRef` 类似于类组件的 `this`, 语法如下: 
+
+```ts
 import { useRef } from "react";
 const ref = useRef(initialValue);
 ```
 
-基本使用: 
+#### 获取元素对象
+
+在`class`组件中, `React` 元素用 `React.createRef`获取元素或者组件引用, 函数组件则使用 `useRef`
+
+`useRef` 返回一个可变的 `ref` 对象, 其 `current` 属性会在**元素或组件挂载完成时**填充`ref`标记的DOM或者组件, 如下: 
 
 ```typescript
 import { useRef } from "react";
@@ -1141,6 +1151,119 @@ const Child = forwardRef((props: any, ref: any) => {
 });
 
 export default Child;
+```
+
+#### 充当全局变量
+
+`useRef`可以定义一个充当全局变量的值
+
+```tsx
+import { useRef, useState } from "react";
+
+const MyButton = () => {
+  // 定义一个实例变量
+  const refCount = useRef(0);
+  const [count, setCount] = useState(0);
+  
+  return (
+    <>
+      <button
+        onClick={() => {
+          // 这里点击并不会触发组件 re-render
+          refCount.current = refCount.current + 1;
+        }}
+      >
+        refCount {refCount.current}
+      </button>
+    
+      // 这里的每次点击都会触发组件重新 re-render
+      <button onClick={() => setCount(count + 1)}>count {count}</button>
+    </>
+  );
+};
+
+export default MyButton;
+```
+
+如果我们想`useRef`里的值更新一般是在副作用中或者事件处理函数中更新的, 如下: 
+
+```tsx
+import { useRef, useEffect } from "react";
+
+const MyComp = () => {
+  // 定义一个实例变量
+  const dataRef = useRef(null);
+  
+  useEffect(() => {
+    if (!dataRef.current) {
+      // 如果 dataRef 为空，则从 API 获取数据并更新 dataRef
+      const res = await axios.get("http://localhost:8100/getData");
+      
+      // 保存数据
+      dataRef.current = res.data;
+    } 
+  }, []);
+  
+  // 然后就可以快乐的使用 dataRef.current
+  
+  return ...;
+};
+
+export default MyComp;
+```
+
+#### useRef + useState性能优化
+
+使用`useRef `来存储值, 然后使用`useState`来更新`useRef `里面存储的值, 可以跳过该组件的re-render, 下面是一个`react native`监听app状态的例子, 这个例子中可以实时的返回应用的状态(这个状态会实时的更新, 但是这个hook不会重新渲染): 
+
+```tsx
+import { useEffect, useRef, useState } from "react";
+import { AppState } from "react-native";
+import type { AppStateStatus, NativeEventSubscription } from "react-native";
+
+// app状态监听实例
+let appstateLinstener: NativeEventSubscription | null = null;
+
+// useAppstate.tsx
+export default () => {
+  console.log("useAppstate render");
+
+  // 存储 app 的状态
+  const appState = useRef(AppState.currentState);
+  //
+  const [appStateVisible, setAppStateVisible] = useState(appState.current);
+
+  const _handleAppStateChange = (nextAppState: AppStateStatus) => {
+    if (appState.current.match(/inactive|background/) && nextAppState === "active") {
+      console.log("应用回到前台");
+    } else {
+      console.log("应用回到后台");
+    }
+		
+    // 这里修改 useRef 里的状态
+    appState.current = nextAppState;
+    
+    // 然后在利用 useState 的 set函数更新
+    setAppStateVisible(appState.current);
+  };
+
+  useEffect(() => {
+    console.log("useAppstate useEffect run");
+    // 监听应用是在前台还是后台
+    appstateLinstener = AppState.addEventListener("change", _handleAppStateChange);
+
+    return () => {
+      console.log("useAppstate unUseEffect run");
+      if (appstateLinstener) {
+        appstateLinstener.remove();
+        appstateLinstener = null;
+      }
+    };
+  }, []);
+
+  // 返回应用的状态(这个状态会实时的更新, 但是这个hook不会重新渲染)
+  return { appStateVisible };
+};
 ```
 
 ### useEffect
@@ -1653,9 +1776,6 @@ export default App;
     const EMPTY_ARRAY = [];
     <ListComponent listData={props.list || EMPTY_ARRAY}/>
     ```
-
-    
-
 
 
 ## react-redux
