@@ -12,6 +12,8 @@ tags:
 
 [MDN CSS](https://developer.mozilla.org/zh-CN/docs/Web/CSS)
 
+[张鑫旭的博客](https://www.zhangxinxu.com/wordpress/category/css/)
+
 [jsbin](https://jsbin.com/?html,css,output)
 
 ## css选择器
@@ -1189,7 +1191,11 @@ mix-width 视口的最大宽度 （视口小于指定宽度时生效）
 
 > [mdn](https://developer.mozilla.org/zh-CN/docs/Web/CSS/::-webkit-scrollbar)
 
-## 常用的css
+## content 属性
+
+`content` 属性一般与 `:before` 及 `:after` 伪元素配合使用，来插入生成内容
+
+## 常用的css片段
 
 **固定宽度居中布局**
 
@@ -1337,6 +1343,31 @@ p {font-variant: small-caps}   // 将字体变成小型的大写字母
 user-select: none;
 ```
 
+**空数据提示**
+
+```css
+/* :empty为空时匹配 */
+div:empty:after {
+  content: "暂无数据";
+  color: red;
+}
+
+div {
+  border: 1px solid blue;
+  width: 100px;
+  height: 50px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 10px 0;
+}
+
+
+<!--html-->
+<div>有内容数据</div>
+<div></div>
+```
+
 **元素点击事件失效**
 
 ```css
@@ -1371,35 +1402,45 @@ pre {
 }
 ```
 
+**插入图片**
+
+```css
+.loading:before {
+  content: url("./test.jpg");
+  vertical-align: middle;
+}
+```
+
 **省略号loading**
 
 ```css
 .loading:after {
-    overflow: hidden;
-    display: inline-block;
-    vertical-align: bottom;
-    animation: ellipsis 2s infinite;
-    content: "\2026"; /* ascii code for the ellipsis character */
+    content: ".";
+    animation: loading 2s ease infinite;
 }
-@keyframes ellipsis {    
-  from {
-      width: 2px;
-  }
-  to {
-      width: 15px;
-  }
+ 
+@keyframes loading {
+    33% {
+        content: "..";
+    }
+    66% {
+        content: "...";
+    }
 }
+
+<!--html-->
+<div class="loading">加载中</div>
 ```
 
 **圆环loading**
 
 ```css
-.loader {
-  border: 16px solid #f3f3f3;
+.loading {
+  border: 10px solid #f3f3f3;
   border-radius: 50%;
-  border-top: 16px solid #3498db;
-  width: 40px;
-  height: 40px;
+  border-top: 10px solid #3498db;
+  width: 30px;
+  height: 30px;
   -webkit-animation: spin 2s linear infinite;
   animation: spin 2s linear infinite;
 }
@@ -1421,6 +1462,45 @@ pre {
     transform: rotate(360deg);
   }
 }
+```
+
+**计算章节数**
+
+```css
+ul {
+  counter-reset: section;
+}
+
+li {
+  list-style-type: none;
+  counter-increment: section;
+}
+
+li:before {
+  content: counters(section, '-') '.';
+}
+
+
+<!--html-->
+<ul>
+  <li>章节一</li>
+  <li>章节二
+    <ul>
+      <li>章节二一</li>
+      <li>章节二二</li>
+      <li>章节二三</li>
+    </ul>
+  </li>
+  <li>章节三</li>
+  <li>章节四</li>
+  <li>章节五
+    <ul>
+      <li>章节五一</li>
+      <li>章节五二</li>
+    </ul>
+  </li>
+  <li>章节六</li>
+</ul>
 ```
 
 **全屏背景**
@@ -1512,6 +1592,20 @@ li:before {
 }
 ```
 
+**面包屑菜单**
+
+```css
+ul > li {
+  display: inline-block;
+  font-weight: bold;
+}
+
+ul > li:not(:last-child):after {
+  content: "\276D";
+  margin: 5px;
+}
+```
+
 **可点击的元素上强制手型**
 
 ```css
@@ -1519,6 +1613,40 @@ a[href], input[type='submit'], input[type='image'],
 label[for], select, button, .pointer {
     cursor: pointer;
 }
+```
+
+**气泡提示**
+
+```css
+/* css */
+body {
+  background-color: #ccc;
+}
+
+.box {
+  width: 180px;
+  height: 80px;
+  padding: 10px;
+  border-radius: 5px;
+  background: #fff;
+  position: relative;
+  /* overflow-y: auto; */
+}
+
+.box:after {
+  content: '';
+  position: absolute;
+  bottom: -20px;
+  right: 20px;
+  width: 0;
+  height: 0;
+  border: 10px solid transparent;
+  border-top-color: #fff;
+}
+
+
+<!--html-->
+<div class="box">这里提示消息</div>
 ```
 
 **对话气泡**
@@ -1832,8 +1960,6 @@ img{
     object-fit: cover;
 }
 ```
-
-
 
 ## less
 

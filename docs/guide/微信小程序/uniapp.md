@@ -16,12 +16,15 @@ tags:
 ## 常用功能
 
 - 微信小程序的api只需要将`wx`改成`uni`即可, 其他常见api将[官方api](https://uniapp.dcloud.io/api/)文档
+
 - 生命周期
 	- [应用生命周期](https://uniapp.dcloud.io/collocation/App.html)
+	
 - 常用配置
 	- [page.json](https://uniapp.dcloud.io/collocation/pages.html): 页面配置
 	- [manifest.json](https://uniapp.dcloud.io/collocation/manifest-app.html): 打包相关配置
 	- [uni.scss](https://uniapp.dcloud.io/collocation/uni-scss.html): uniapp内置的scss文件, 该文件自动引入, 如需要使用其他组件的scss样式需在这个文件中引入该组件的scss
+	
 - 路由与页面跳转
 	- [编程跳转](https://uniapp.dcloud.io/api/router.html)
 	- [组件跳转](https://uniapp.dcloud.io/component/navigator.html)
@@ -55,6 +58,50 @@ tags:
 
 - uniapp内置vuex
 
+- 获取`openId`
+
+    ```ts
+    uni.login({
+    	provider: "weixin",
+    	success: (wxLoginRes) => {
+    		if (wxLoginRes.code) {
+    			getOpenid(uni.getSystemInfoSync().appId, "小程序密钥", wxLoginRes.code)
+    				.then(openRes => {
+    					if (openRes.openid) {
+    						console.log("openid: ", openRes.openid);
+    					} else {
+    						uni.showToast({ title: "openid获取失败", icon: "none" });
+    						return Promise.reject("openid获取失败");
+    					}
+    				}).catch(err => {
+    					console.log("err: ", err);
+    				});
+    		}
+    	},
+    	fail(err) {
+    		console.log("fail: ", err);
+    	}
+    });
+    
+    
+    export const getOpenid = (
+    	appId: string,
+    	secret: string,
+    	code: string
+    ): Promise<{
+    	openid: string;
+    	session_key: string;
+    }> => {
+    	return request({
+    		url: `https://api.weixin.qq.com/sns/jscode2session?appid=${appId}&secret=${secret}&js_code=${code}&grant_type=authorization_code`,
+    		method: "GET",
+    		skipProxy: true
+    	});
+    };
+    ```
+
+    
+
 - 生成Android证书相关命令:
 
   ```sh
@@ -65,4 +112,4 @@ tags:
   keytool -genkey -alias [别名] -keyalg RSA -keysize 2048 -validity 36500 -keystore [文件名].keystore
   ```
 
-  
+

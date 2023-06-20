@@ -4303,12 +4303,16 @@ onDestroy() -> onDetach()
 
 ## OkHttp
 
+[网络操作](https://developer.android.google.cn/training/basics/network-ops?hl=zh-cn)
+
+[OkHttp完整使用](https://juejin.cn/post/7068162792154464264)
+
 网络请求框架
 
 `app/build.gradle`文件的`dependencies`里面添加依赖:
 
 ```java
-implementation("com.squareup.okhttp3:okhttp:4.9.0")
+implementation "com.squareup.okhttp3:okhttp:4.9.0"
 ```
 
 ### 配置请求权限
@@ -4340,6 +4344,8 @@ implementation("com.squareup.okhttp3:okhttp:4.9.0")
 	
   	<!-- 网络请求权限 -->
     <uses-permission android:name="android.permission.INTERNET" />
+  
+  	<!-- 允许应用访问有关网络的信息 -->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
   
   
@@ -4358,14 +4364,12 @@ implementation("com.squareup.okhttp3:okhttp:4.9.0")
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.qmui">
-		
-  	<!-- 网络请求权限 -->
+
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
   
     <!-- 直接定义允许 HTTP -->
-    <application android:usesCleartextTraffic="true">
-    </application>
+    <application android:usesCleartextTraffic="true"></application>
 
 </manifest>
 ```
@@ -4413,19 +4417,19 @@ Call call = okHttpClient.newCall(request);
 
 // 发送异步请求(内部自动创建子线程)
 call.enqueue(new Callback() {
-    // 失败回调
-    @Override
-    public void onFailure(@NonNull Call call, @NonNull IOException e) {
-        Log.e(TAG, "异步get请求失败: " + e.getMessage());
-    }
-
-    // 响应回调
+  	// 响应回调
     @Override
     public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
         // 成功回调
         if (response.isSuccessful()) {
-            Log.e(TAG, "异步get请求: " + response.body().string());
+            Log.e(TAG, "异步get请求响应: " + response.body().string());
         }
+    }
+  
+    // 失败回调
+    @Override
+    public void onFailure(@NonNull Call call, @NonNull IOException e) {
+        Log.e(TAG, "异步get请求失败: " + e.getMessage());
     }
 });
 ```
@@ -4443,6 +4447,24 @@ Request request = new Request.Builder()
         .post(formBody)
         .build();
 Call call = okHttpClient.newCall(request);
+
+// 发送异步请求(内部自动创建子线程)
+call.enqueue(new Callback() {
+    // 响应回调
+    @Override
+    public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
+        // 成功回调
+        if (response.isSuccessful()) {
+            Log.e(TAG, "异步post请求响应: " + response.body().string());
+        }
+    }
+
+    // 失败回调
+    @Override
+    public void onFailure(@NonNull Call call, @NonNull IOException e) {
+        Log.e(TAG, "异步post请求失败: " + e.getMessage());
+    }
+});
 ```
 
 指定数据格式
@@ -4460,7 +4482,7 @@ Gson可以完成Java对象的序列化和反序列化
 `app/build.gradle`文件的`dependencies`里面添加依赖:
 
 ```java
-implementation("com.google.code:gson-gson:2.8.6")
+implementation 'com.google.code.gson:gson:2.8.9'
 ```
 
 基本使用
