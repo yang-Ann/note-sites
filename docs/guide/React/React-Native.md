@@ -613,6 +613,7 @@ module.exports = {
 | SQLine                    | react-native-sqlite-storage                                  |
 | 文件操作                  | react-native-fs                                              |
 | 文件上传下载              | rn-fetch-blob                                                |
+| 滑块                      | @react-native-community/slider                               |
 | 设备信息                  | react-native-device-info                                     |
 | 本地存储                  | @react-native-async-storage/async-storage                    |
 | 截图操作                  | react-native-view-shot                                       |
@@ -620,11 +621,13 @@ module.exports = {
 | 视频播放                  | react-native-video                                           |
 | 音频播放                  | react-native-audio-toolkit                                   |
 | 相机控制                  | react-native-vision-camera                                   |
+| 解析二维码                | vision-camera-code-scanner(作用于`react-native-vision-camera`) |
 | 图库控制                  | react-native-cameraroll                                      |
 | 原生dialog                | react-native-dialogs, @react-native-picker/picker            |
 | 侧滑按钮list              | react-native-swipe-list-view                                 |
 | tab可滚动                 | react-native-scrollable-tab-view                             |
 | 自定义toast               | react-native-toast-message                                   |
+| modal组件的增强           | react-native-modal                                           |
 | 拟态框                    | react-native-modalfy                                         |
 | actions                   | react-native-actions-sheet                                   |
 | webview                   | react-native-webview                                         |
@@ -637,6 +640,7 @@ module.exports = {
 | 启动屏                    | react-native-splash-screen                                   |
 | 日历选择                  | react-native-calendars                                       |
 | svg                       | react-native-svg                                             |
+| 动画库                    | react-native-animatable                                      |
 | 聊天界面库                | react-native-gifted-chat                                     |
 | 自定义通知                | react-native-push-notification                               |
 | 图表库                    | react-native-echarts                                         |
