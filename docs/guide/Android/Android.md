@@ -627,11 +627,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 }
 ```
 
-### StateListDrawable
+### Drawable
 
-StateListDrawable是Drawable资源的一种, 可以根据使用它的控件的不同状态, 设置不同的图片效果, 关键节点`<selector>`, 只需要将Button的background属性设置为该drawable资源即可轻松实现, 按下按钮时不同的按钮颜色或背景, 常用属性如下: 
+#### StateListDrawable
 
-**drawable**: 引用的Drawable位图
+`StateListDrawable`是`Drawable`资源的一种, 可以根据使用它的控件的不同状态, 设置不同的图片效果, 关键节点`<selector>`, 只需要将`Button`的`background`属性设置为该`drawable`资源即可轻松实现, 按下按钮时不同的按钮颜色或背景, 常用属性如下: 
+
+**drawable**: 引用的`Drawable`位图
 
 **state_focused**: 是否获得焦点
 
@@ -645,17 +647,17 @@ StateListDrawable是Drawable资源的一种, 可以根据使用它的控件的�
 
 **state_checkable**:控件可否被勾选
 
-state_window_focused:是否获得窗口焦点
+**state_window_focused**:是否获得窗口焦点
 
-state_active:控件是否处于活动状态
+**state_active**:控件是否处于活动状态
 
-state_single:控件包含多个子控件时,确定是否只显示一个子控件
+**state_single**:控件包含多个子控件时,确定是否只显示一个子控件
 
-state_first:控件包含多个子控件时,确定第一个子控件是否处于显示状态
+**state_first**:控件包含多个子控件时,确定第一个子控件是否处于显示状态
 
-state_middle:控件包含多个子控件时,确定中间一个子控件是否处于显示状态
+**state_middle**:控件包含多个子控件时,确定中间一个子控件是否处于显示状态
 
-state_last:控件包含多个子控件时,确定最后一个子控件是否处于显示状态
+**state_last**:控件包含多个子控件时,确定最后一个子控件是否处于显示状态
 
 #### 新建Drawble
 
@@ -672,7 +674,7 @@ state_last:控件包含多个子控件时,确定最后一个子控件是否处�
 </selector>
 ```
 
-Android Studio自带了一些内置的Drawable位图, 如下方式新建: 
+**Android Studio**自带了一些内置的**Drawable**位图, 如下方式新建: 
 
 ![image-20220522095230628](./images/image-20220522095230628.png) 
 
@@ -713,6 +715,42 @@ Android Studio自带了一些内置的Drawable位图, 如下方式新建:
 `res`下新建`color`目录在该目录下新建`Color Resource File`里面的每个`item`标签使用`android:color="#xxx"`, 页面使用时使用`android:backgroundTint="@color/xxx"`引用即可
 
 > 很多控件都支持使用`android:background`属性设置成`drawable`, 只是各自的根节点和`item`或子节点的属性不一样
+
+#### 背景色, 边距, 渐变, 圆角
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android" >
+    <!--背景颜色-->
+    <solid android:color="#E8E8E8" />
+ 
+    <!--设置边距-->
+    <padding
+            android:bottom="10dp"
+            android:left="10dp"
+            android:right="10dp"
+            android:top="10dp" />
+ 
+    <!--控制边界线颜色和大小-->
+    <stroke
+            android:width="1dp"
+            android:color="#969696" />
+ 
+    <!--控制界面颜色渐变
+    <gradient
+            android:startColor="#E9E9E9"
+            android:endColor="#FFFFFF"
+            android:type="linear"
+            android:angle="90"/>
+    -->
+ 
+    <!--控制圆角大小-->
+    <corners android:radius="10dp" />
+ 
+</shape>
+```
+
+
 
 ### EditText
 

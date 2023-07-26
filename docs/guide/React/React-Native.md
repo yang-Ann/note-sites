@@ -622,10 +622,14 @@ module.exports = {
 | 音频播放                  | react-native-audio-toolkit                                   |
 | 相机控制                  | react-native-vision-camera                                   |
 | 解析二维码                | vision-camera-code-scanner(作用于`react-native-vision-camera`) |
+| 高性能flatlist            | @shopify/flash-list                                          |
 | 图库控制                  | react-native-cameraroll                                      |
 | 原生dialog                | react-native-dialogs, @react-native-picker/picker            |
 | 侧滑按钮list              | react-native-swipe-list-view                                 |
-| tab可滚动                 | react-native-scrollable-tab-view                             |
+| tab可滚动                 | `react-native-scrollable-tab-view`, `react-native-tab-view`  |
+| 渐变                      | react-native-linear-gradient                                 |
+| 地图                      | react-native-maps                                            |
+| 表单                      | tcomb-form-native                                            |
 | 自定义toast               | react-native-toast-message                                   |
 | modal组件的增强           | react-native-modal                                           |
 | 拟态框                    | react-native-modalfy                                         |
