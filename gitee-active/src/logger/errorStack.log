@@ -1,3 +1,9 @@
-2023-03-29 22:27:24 >>> F:\project\note-sites\gitee-active\src\logger\images\1680100044198.png
-page.waitForSelector: Target page, context or browser has been closed
-    at file:///F:/project/note-sites/gitee-active/src/index.ts:61:20
+2023-08-01 23:07:42 >>> F:\project\note-sites\gitee-active\src\logger\images\1690902462079.png
+locator.click: Error: strict mode violation: getByRole('button', { name: '登 录' }) resolved to 2 elements:
+    1) <input value="登 录" type="submit" name="commit" sa_evt="…/> aka locator('form').filter({ hasText: '记住我 短信验证登录 登 录 已有帐号，忘记密码？' }).getByRole('button', { name: '登 录' })
+    2) <input value="登 录" type="submit" name="commit" sa_evt="…/> aka locator('form').filter({ hasText: '发送验证码 收不到验证码？ 获取帮助 记住我 用户名密码登录 登 录 已有帐号，忘记密码？' }).getByRole('button', { name: '登 录' })
+
+=========================== logs ===========================
+waiting for getByRole('button', { name: '登 录' })
+============================================================
+    at file:///F:/project/note-sites/gitee-active/src/index.ts:36:57
