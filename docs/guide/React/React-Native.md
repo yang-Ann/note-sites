@@ -614,6 +614,7 @@ module.exports = {
 | 文件操作                  | react-native-fs                                              |
 | 文件上传下载              | rn-fetch-blob                                                |
 | 滑块                      | @react-native-community/slider                               |
+| 权限请求                  | react-native-permissions                                     |
 | 设备信息                  | react-native-device-info                                     |
 | 本地存储                  | @react-native-async-storage/async-storage                    |
 | 截图操作                  | react-native-view-shot                                       |
@@ -625,32 +626,44 @@ module.exports = {
 | 高性能flatlist            | @shopify/flash-list                                          |
 | 图库控制                  | react-native-cameraroll                                      |
 | 原生dialog                | react-native-dialogs, @react-native-picker/picker            |
+| 网格布局                  | react-native-super-grid                                      |
+| popup弹出菜单             | react-native-popup-menu                                      |
+| 文档选择                  | react-native-document-picker                                 |
 | 侧滑按钮list              | react-native-swipe-list-view                                 |
 | tab可滚动                 | `react-native-scrollable-tab-view`, `react-native-tab-view`  |
+| 样式增强                  | react-native-extended-stylesheet                             |
+| 下拉选择                  | siemiatj/react-native-modal-dropdown                         |
 | 渐变                      | react-native-linear-gradient                                 |
 | 地图                      | react-native-maps                                            |
 | 表单                      | tcomb-form-native                                            |
 | 自定义toast               | react-native-toast-message                                   |
 | modal组件的增强           | react-native-modal                                           |
 | 拟态框                    | react-native-modalfy                                         |
-| actions                   | react-native-actions-sheet                                   |
+| actions menu              | react-native-actions-sheet                                   |
+| 底部划出菜单              | react-native-bottom-sheet                                    |
+| 按钮弹出更多              | react-native-action-button                                   |
+| 日期选择                  | react-native-modal-datetime-picker                           |
 | webview                   | react-native-webview                                         |
+| 渲染html为原生组件        | react-native-render-html                                     |
 | 将html作为组件            | react-native-htmlview                                        |
 | 图片选择                  | react-native-image-picker                                    |
 | 图片预览                  | react-native-image-zoom-viewer                               |
 | 图片操作(裁剪)            | react-native-image-crop-picker                               |
 | 轮播                      | react-native-swiper                                          |
+| 抽屉组件                  | react-native-drawer                                          |
 | 对话界面                  | react-native-gifted-chat                                     |
 | 启动屏                    | react-native-splash-screen                                   |
-| 日历选择                  | react-native-calendars                                       |
+| 日历选择                  | `react-native-calendars`, `react-native-datepicker`, `react-day-picker` |
 | svg                       | react-native-svg                                             |
 | 动画库                    | react-native-animatable                                      |
 | 聊天界面库                | react-native-gifted-chat                                     |
-| 自定义通知                | react-native-push-notification                               |
-| 图表库                    | react-native-echarts                                         |
+| 自定义通知                | react-native-push-notification, notifee                      |
+| 图表库                    | `react-native-chart-kit`,`react-native-charts-wrapper`,`react-native-echarts` |
+| 进度条                    | react-native-progress                                        |
 | 热更新                    | CodePush                                                     |
 | 热更新                    | react-native-pushy                                           |
 | react-native 开发 windows | react-native-windows                                         |
+| 项目配置文件读取          | react-native-config                                          |
 
 >   更多第三方库可以在`GitHub`使用条件搜索`react native stars:>9999`进行搜索
 

@@ -582,6 +582,7 @@ npm config set access public
 |       nprogress       |                        页面顶部进度条                        |
 |       validator       |                          字符串校验                          |
 |         mitt          |                     最小的事件发射器实现                     |
+|        croner         |                 无任何依赖的`cron`表达式实现                 |
 
 **服务端工具包**
 
