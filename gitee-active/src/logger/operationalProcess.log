@@ -1,17 +1,17 @@
-2023-08-01 23:41:02 launch browser
-2023-08-01 23:41:03 newContext
-2023-08-01 23:41:03 newPage
-2023-08-01 23:41:03 goto https://gitee.com/login
-2023-08-01 23:41:07 fill 13725402770 into the "手机／邮箱／个人空间地址"
-2023-08-01 23:41:08 fill ************* into the "手机／邮箱／个人空间地址"
-2023-08-01 23:41:09 click "登 录"
-2023-08-01 23:41:09 waitForTimeout 1000 ms
-2023-08-01 23:41:10 goto https://gitee.com/Ann-yang/note-sites/pages
-2023-08-01 23:41:13 click "服务"
-2023-08-01 23:41:13 click "Logo en Gitee Pages"
-2023-08-01 23:41:14 click "更新"
-2023-08-01 23:41:14 Dialog message: 确定重新部署 Gitee Pages 吗?
-2023-08-01 23:41:14 waitForTimeout 1000
-2023-08-01 23:41:16 等待部署完成 -> body > div.site-content > div.ui.container > div > div.pages_message > div > p.start-service-description
-2023-08-01 23:42:16 已完成部署, 关闭浏览器
-2023-08-01 23:42:16 用时: 74051ms
+2023-08-24 23:22:09 launch browser
+2023-08-24 23:22:10 newContext
+2023-08-24 23:22:10 newPage
+2023-08-24 23:22:10 goto https://gitee.com/login
+2023-08-24 23:22:23 fill 13725402770 into the "手机／邮箱／个人空间地址"
+2023-08-24 23:22:23 fill ************* into the "手机／邮箱／个人空间地址"
+2023-08-24 23:22:24 click "登 录"
+2023-08-24 23:22:24 waitForTimeout 1000 ms
+2023-08-24 23:22:26 goto https://gitee.com/Ann-yang/note-sites/pages
+2023-08-24 23:22:27 click "服务"
+2023-08-24 23:22:28 click "Logo en Gitee Pages"
+2023-08-24 23:22:29 click "更新"
+2023-08-24 23:22:29 Dialog message: 确定重新部署 Gitee Pages 吗?
+2023-08-24 23:22:29 waitForTimeout 1000
+2023-08-24 23:22:31 等待部署完成 -> body > div.site-content > div.ui.container > div > div.pages_message > div > p.start-service-description
+2023-08-24 23:23:31 已完成部署, 关闭浏览器
+2023-08-24 23:23:31 用时: 82688ms
