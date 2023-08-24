@@ -14,7 +14,7 @@ tags:
 
 [React Native](https://reactnative.dev/)
 
-[React-Native(中)](https://reactnative.cn/)
+[React-Native(中)](https://reactnative.dev/)
 
 [各种学习资料](https://github.com/reactnativecn/react-native-guide)
 
@@ -47,9 +47,9 @@ npx react-native init projectName --template react-native-template-typescript
 
 ## 核心组件和API
 
-[核心组件和API](https://reactnative.cn/docs/next/components-and-apis)
+[核心组件和API](https://reactnative.dev/docs/next/components-and-apis)
 
--   文本必须放到[`Text`](https://reactnative.cn/docs/next/text)组件中, 相当于是WEB里的`span`
+-   文本必须放到[`Text`](https://reactnative.dev/docs/next/text)组件中, 相当于是WEB里的`span`
 
     -   省略文本
 
@@ -63,11 +63,11 @@ npx react-native init projectName --template react-native-template-typescript
         </Text>
         ```
 
--   文本输入使用[`TextInput`](https://reactnative.cn/docs/next/textinput)([`secureTextEntry`](https://reactnative.cn/docs/next/textinput#securetextentry)属性设置是否隐藏输入内容)
+-   文本输入使用[`TextInput`](https://reactnative.dev/docs/next/textinput)([`secureTextEntry`](https://reactnative.dev/docs/next/textinput#securetextentry)属性设置是否隐藏输入内容)
 
--   布局使用[`View`](https://reactnative.cn/docs/next/view)组件, 相当于是WEB里的`div`
+-   布局使用[`View`](https://reactnative.dev/docs/next/view)组件, 相当于是WEB里的`div`
 
--   图片使用[`Image`](https://reactnative.cn/docs/next/image)组件, 背景图片则使用[`ImageBackground`](https://reactnative.cn/docs/next/imagebackground)(支持内部嵌套)
+-   图片使用[`Image`](https://reactnative.dev/docs/next/image)组件, 背景图片则使用[`ImageBackground`](https://reactnative.dev/docs/next/imagebackground)(支持内部嵌套)
 
     -   `resizeMode`属性设置填充模式
 
@@ -106,19 +106,22 @@ npx react-native init projectName --template react-native-template-typescript
         />
         ```
 
--   [`ScrollView`](https://reactnative.cn/docs/next/using-a-scrollview)元素用于滚动视图
+-   [`ScrollView`](https://reactnative.dev/docs/next/using-a-scrollview)元素用于滚动视图
 
     -   横向滚动
 
         ```tsx
         <ScrollView horizontal>
+          <!-- 内部如果需要滚动请使用 Pressable 或者 Touchablexxx 组件 -->
           <View>
             <Text>...</Text>
           </View>
         </ScrollView>
         ```
 
--   [长列表](https://reactnative.cn/docs/next/using-a-listview)使用[`FlatList`](https://reactnative.cn/docs/next/flatlist)和[`SectionList`](https://reactnative.cn/docs/next/sectionlist)
+    -   `ScrollView`内部无法滚动问题, 内部组件不要使用`View`而是使用`Pressable` 或者 `Touchablexxx` 组件
+
+-   [长列表](https://reactnative.dev/docs/next/using-a-listview)使用[`FlatList`](https://reactnative.dev/docs/next/flatlist)和[`SectionList`](https://reactnative.dev/docs/next/sectionlist)
 
     -   `renderItem`每次渲染都会调用
     -   `ListEmptyComponent`, `ListFooterComponent`, `ListHeaderComponent`提供空列表, 表尾, 表头插槽
@@ -129,118 +132,13 @@ npx react-native init projectName --template react-native-template-typescript
     -   `extraData`外部数据依赖
     -   `ListFooterComponent`配合`onEndReached`实现上拉加载更多
 
--   `loading`使用[`ActivityIndicator`](https://reactnative.cn/docs/next/activityindicator)组件
+-   `loading`使用[`ActivityIndicator`](https://reactnative.dev/docs/next/activityindicator)组件
 
-    -   封装`loading.tsx`
-
-        ```tsx
-        import { useState, forwardRef, useImperativeHandle } from "react";
-        import { Text, View, StyleSheet, ActivityIndicator, Dimensions } from "react-native";
-        const { width, height } = Dimensions.get("window");
-        
-        // loading 方法
-        export type RefMenthodType = {
-          show: (msg?: string) => void;
-          hide: () => void;
-        };
-        
-        const Loading = forwardRef((_props: any, ref: any) => {
-          const [visible, setVisible] = useState(false);
-          const [text, setText] = useState("正在加载...");
-        
-          const show = (msg?: string) => {
-            if (msg) setText(msg);
-            setVisible(true);
-          }
-          const hide = () => setVisible(false);
-        
-          // 暴露指定的数据给外部使用
-          useImperativeHandle(ref, () => {
-            return { show, hide };
-          });
-        
-          const LoadContent = (
-            <View style={styles.LoadingPage}>
-              <View style={styles.loadingComtent}>
-                <ActivityIndicator size={50} color="#FFF" />
-                <Text style={styles.loadingText}>{text}</Text>
-              </View>
-            </View>
-          );
-        
-          return visible ? LoadContent : <View></View>;
-        });
-        
-        Loading.displayName = "Loading";
-        
-        const styles = StyleSheet.create({
-          LoadingPage: {
-            position: "absolute",
-            left: 0,
-            top: 0,
-            backgroundColor: "rgba(0,0,0,0)",
-            width,
-            height,
-            justifyContent: "center",
-            alignItems: "center"
-          },
-          loadingComtent: {
-            width: 150,
-            height: 150,
-            backgroundColor: "rgba(0,0,0,0.6)",
-            opacity: 1,
-            justifyContent: "center",
-            alignItems: "center",
-            borderRadius: 7
-          },
-          loadingText: {
-            marginLeft: 10,
-            color: "#FFF",
-            marginTop: 10
-          }
-        });
-        
-        export default Loading;
-        ```
-
-    -   封装`hooks`
-
-        ```tsx
-        import { useRef } from "react";
-        import Loading, { type RefMenthodType } from "@/components/Loading";
-        
-        /** 页面loading, 使用方式: 
-         * const { Loading, showLoading, hideLoading } = useLoading();
-         * 页面中使用 {Loading}
-         * showLoading 显示loading
-         * hideLoading 隐藏loading
-         */
-        
-        export default () => {
-          const loadingRef = useRef<RefMenthodType>();
-        
-          const showLoading = (msg?: string) => {
-            if (loadingRef.current) {
-              loadingRef.current.show(msg);
-            }
-          };
-        
-          const hideLoading = () => {
-            if (loadingRef.current) {
-              loadingRef.current.hide();
-            }
-          };
-        
-          return {
-            Loading: <Loading ref={loadingRef} />,
-            showLoading,
-            hideLoading,
-            ref: loadingRef,
-          }
-        };
-        ```
-
--   组件的点击事件不能只能绑定给`View`组件, 要使任何元素触发触摸/单击事件, 必须使用[`TouchableOpacity`](https://reactnative.cn/docs/next/touchableopacity), [`TouchableHighlight`](https://reactnative.cn/docs/next/touchablehighlight)或者[`Pressable`](https://reactnative.cn/docs/next/pressable)组件进行包裹, 然后绑定`onPress`事件即可, 不同的组件会有不同的触摸反馈:
+    ```tsx
+    <ActivityIndicator size={50} color="#FFF" />
+    ```
+    
+-   组件的点击事件不能只能绑定给`View`组件, 要使任何元素触发触摸/单击事件, 必须使用[`TouchableOpacity`](https://reactnative.dev/docs/next/touchableopacity), [`TouchableHighlight`](https://reactnative.dev/docs/next/touchablehighlight)或者[`Pressable`](https://reactnative.dev/docs/next/pressable)组件进行包裹, 然后绑定`onPress`事件即可, 不同的组件会有不同的触摸反馈:
 
     ```tsx
     import { View, Text, TouchableOpacity } from "react-native";
@@ -261,6 +159,14 @@ npx react-native init projectName --template react-native-template-typescript
 -   [`AppState`](https://reactnative.dev/docs/appstate)可以知道应用当前是在前台还是在后台，并且能在状态变化的时候进行通知
 
 -   [`Linking`](https://reactnative.dev/docs/linking.html)可以打开`Uri`, 发送意图
+
+-   [`Vibration`](https://reactnative.dev/docs/next/vibration)使用震动
+
+-   [`Keyboard`](https://reactnative.dev/docs/keyboard)控制软键盘
+
+-   [`Dimensions`](https://reactnative.dev/docs/dimensions)获取窗口尺寸(对应的`Hooks`为`useWindowDimensions`)
+
+-   [`Pixelratio`](https://reactnative.dev/docs/pixelratio)像素比
 
 ## 样式
 
@@ -409,13 +315,13 @@ export default Btn;
 
 ### 阴影
 
-[阴影](https://reactnative.cn/docs/next/shadow-props)
+[阴影](https://reactnative.dev/docs/next/shadow-props)
 
 ### 动画
 
 大部分动画都可以使用`useNativeDriver: true`来设置使用原生端来计算动画(默认是JS端计算动画的)
 
-[动画](https://reactnative.cn/docs/next/animations)
+[动画](https://reactnative.dev/docs/next/animations)
 
 -   变换
 
@@ -451,7 +357,7 @@ const styles = StyleSheet.create({
 
 ## 布局
 
-React Native 只提供了[FlexBox布局](https://reactnative.cn/docs/next/flexbox)和**绝对布局**, **不支持浮动和网格布局**
+React Native 只提供了[FlexBox布局](https://reactnative.dev/docs/next/flexbox)和**绝对布局**, **不支持浮动和网格布局**
 
 -   React Native 中的 Flexbox 的工作原理和 WEB上的 CSS 基本一致，当然也存在少许差异。首先是默认值不同：`flexDirection`的默认值为`column`(而不是`row`)，`alignContent`默认值为 `flex-start`(而不是 `stretch`), `flexShrink` 默认值为`0` (而不是`1`), 而`flex`只能指定一个数字值
 
@@ -476,13 +382,13 @@ React Native 只提供了[FlexBox布局](https://reactnative.cn/docs/next/flexbo
 
 ## 网络请求
 
-[网络请求](https://reactnative.cn/docs/next/network)
+[网络请求](https://reactnative.dev/docs/next/network)
 
 React Native内置提供了和WEB一模一样的[Fetch API](https://developer.mozilla.org/zh-CN/docs/Web/API/Fetch_API)标准, React Native同样也内置支持[AJAX](https://developer.mozilla.org/zh-CN/docs/Web/API/XMLHttpRequest)(XMLHttpRequest)所以可以直接使用如[`axios`](https://axios-http.com/zh/docs/intro)等一些第三方封装AJAX的库
 
 ## 权限操作
 
-[PermissionsAndroid](https://reactnative.cn/docs/permissionsandroid)
+[PermissionsAndroid](https://reactnative.dev/docs/permissionsandroid)
 
 ```ts
 import { PermissionsAndroid, Linking, ToastAndroid } from "react-native";
@@ -505,7 +411,7 @@ const getPermissions = async (per: Permission, msg = "请设置权限") => {
 
 ## 常用API
 
-[所有的API](https://reactnative.cn/docs/accessibilityinfo)
+[所有的API](https://reactnative.dev/docs/accessibilityinfo)
 
 -   获取设备屏幕的尺寸
 
@@ -556,7 +462,7 @@ const getPermissions = async (per: Permission, msg = "请设置权限") => {
 
 ## 路径别名配置
 
-[路径别名配置](https://reactnative.cn/docs/typescript#%E5%9C%A8-typescript-%E4%B8%AD%E4%BD%BF%E7%94%A8%E8%87%AA%E5%AE%9A%E4%B9%89%E8%B7%AF%E5%BE%84%E5%88%AB%E5%90%8D)使用`babel-plugin-module-resolver`
+[路径别名配置](https://reactnative.dev/docs/typescript#%E5%9C%A8-typescript-%E4%B8%AD%E4%BD%BF%E7%94%A8%E8%87%AA%E5%AE%9A%E4%B9%89%E8%B7%AF%E5%BE%84%E5%88%AB%E5%90%8D)使用`babel-plugin-module-resolver`
 
 ```sh
 yarn add babel-plugin-module-resolve
@@ -628,6 +534,7 @@ module.exports = {
 | 原生dialog                | react-native-dialogs, @react-native-picker/picker            |
 | 网格布局                  | react-native-super-grid                                      |
 | popup弹出菜单             | react-native-popup-menu                                      |
+| 长按弹出菜单              | react-native-hold-menu                                       |
 | 文档选择                  | react-native-document-picker                                 |
 | 侧滑按钮list              | react-native-swipe-list-view                                 |
 | tab可滚动                 | `react-native-scrollable-tab-view`, `react-native-tab-view`  |
@@ -649,7 +556,7 @@ module.exports = {
 | 图片选择                  | react-native-image-picker                                    |
 | 图片预览                  | react-native-image-zoom-viewer                               |
 | 图片操作(裁剪)            | react-native-image-crop-picker                               |
-| 轮播                      | react-native-swiper                                          |
+| 轮播                      | `react-native-swiper`, `react-native-reanimated-carousel`    |
 | 抽屉组件                  | react-native-drawer                                          |
 | 对话界面                  | react-native-gifted-chat                                     |
 | 启动屏                    | react-native-splash-screen                                   |
@@ -659,6 +566,7 @@ module.exports = {
 | 聊天界面库                | react-native-gifted-chat                                     |
 | 自定义通知                | react-native-push-notification, notifee                      |
 | 图表库                    | `react-native-chart-kit`,`react-native-charts-wrapper`,`react-native-echarts` |
+| WebGL 着色器              | gl-react-native                                              |
 | 进度条                    | react-native-progress                                        |
 | 热更新                    | CodePush                                                     |
 | 热更新                    | react-native-pushy                                           |
@@ -669,7 +577,7 @@ module.exports = {
 
 ## 原生模块
 
-[原生模块](https://reactnative.cn/docs/next/native-modules-android)
+[原生模块](https://reactnative.dev/docs/next/native-modules-android)
 
 ### 上下文获取
 
@@ -732,6 +640,7 @@ import javax.annotation.Nonnull;
 
 // 这个类必须实现 ReactContextBaseJavaModule
 public class Module extends ReactContextBaseJavaModule {
+// implements ActivityEventListener 实现这个接口就可以重写 onActivityResult 和 onNewIntent 方法
 
     public Module(@Nonnull ReactApplicationContext reactContext) {
         super(reactContext);
@@ -1429,7 +1338,7 @@ adb logcat -v time *:E > run.log
 
 ## 打包
 
-[打包](https://reactnative.cn/docs/next/signed-apk-android)
+[打包](https://reactnative.dev/docs/next/signed-apk-android)
 
 需要使用`keytool`命令生成一个私有密钥, 命令如下:
 

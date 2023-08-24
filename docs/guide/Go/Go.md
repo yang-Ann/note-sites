@@ -8231,6 +8231,7 @@ func getTime() string {
 | lipgloss  | github.com/charmbracelet/lipgloss                            | 自定义命令行布局和样式                                       |
 | pterm     | go get github.com/pterm/pterm                                | 控制台渲染图表, 进度条, 表格, 文本输入, 选择菜单, 树等       |
 | docconv   |                                                              | 将PDF、DOC、DOCX、XML、HTML、RTF、ODT、Pages 文档和图像()需要[tesseract](https://github.com/tesseract-ocr/tesseract)支持转换为纯文本 |
+| robotgo   | go get github.com/go-vgo/robotgo                             | gui自动化, 类似于 python 里的pyauto                          |
 
 ## AOT和JIT
 

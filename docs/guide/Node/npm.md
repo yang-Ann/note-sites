@@ -583,6 +583,7 @@ npm config set access public
 |       validator       |                          字符串校验                          |
 |         mitt          |                     最小的事件发射器实现                     |
 |        croner         |                 无任何依赖的`cron`表达式实现                 |
+|        url解析        |                          url-parse                           |
 
 **服务端工具包**
 
@@ -617,7 +618,6 @@ npm config set access public
 |               node-fetch               |                      node中的fetch实现                       |
 |                  tsx                   |                       直接运行 ts文件                        |
 |                  open                  |                可以编程的打开图片, 网站, 应用                |
-|                  ink                   |               命令行反应库(实时更新命令行信息)               |
 |                js-yaml                 |                      js实现解析yaml文件                      |
 |                 dotenv                 |        解析`.env`文件内容到环境变量(`process.env`)中         |
 |              tesseract.js              | 包装[tesseract](https://github.com/tesseract-ocr/tesseract)的js库 |
@@ -636,6 +636,7 @@ npm config set access public
 | picocolors      | 也是终端字符串美化库, 但是比 chalk 要小            |
 | log-symbols     | 终端图标库                                         |
 | ora             | 终端加载动画                                       |
+| ink             | 命令行反应库(使用类似于React的语法编写命令行程序)  |
 | prompts         | 命令行询问选择                                     |
 | inquirer        | 命令行交互                                         |
 | figlet          | 生成基于 ASCII 的艺术字                            |

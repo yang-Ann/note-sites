@@ -1554,7 +1554,74 @@ export default App;
 
 ### useContext
 
-[useContext](https://react.dev/reference/react/useContext)
+[`useContext`](https://react.dev/reference/react/useContext)有点类型于`Vue`的[`provide/inject `](https://cn.vuejs.org/api/composition-api-dependency-injection.html#composition-api-dependency-injection), 具体使用如下
+
+父组件定义`Context`并给定对应的状态: 
+
+```tsx
+import { useState, useCallback, createContext } from "react";
+
+type StateType = {
+  theme: "light" | "dark";
+}
+
+// 创建一个 Context
+export const ThemeContext = createContext<StateType| null>(null);
+
+const App = () => {
+  const [state, _setState] = useState<StateType>({
+    theme: "light"
+  });
+  
+  const setState = useCallback((field: keyof typeof state, val: any) => {
+    _setState(_state => {
+      return { ..._state, [field]: val };
+    });
+  }, []);
+
+  return (
+    // value 就是需要向下传递的状态, 被包裹的子组件就可以拿到这个注入的状态
+    <ThemeContext.Provider value={state}>
+      <Child />
+      
+      <label>
+        <input
+          type="checkbox"
+          checked={theme === "dark"}
+          onChange={(e) => {
+            setState("theme", e.target.checked ? "dark" : "light")
+          }}
+        />
+        Use dark mode
+      </label>
+    </ThemeContext.Provider>
+  )
+};
+
+export default App;
+```
+
+子组件通过`useContext`即可拿到状态: 
+
+```tsx
+import { useContext } from "react";
+import { ThemeContext } from "./App.tsx";
+
+const Child = () => {
+  
+  // 获取 context
+	const context = useContext(ThemeContext);
+
+	console.log("获取素材信息", context);
+	return (
+		<div className={context.theme}>
+			<h1>theme: {context.theme}</h1>
+		</div>
+	);
+};
+
+export default Child;
+```
 
 ### useMemo
 
