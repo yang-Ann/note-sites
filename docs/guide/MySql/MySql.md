@@ -8,6 +8,8 @@ tags:
 ---
 # MySql
 
+SQL全称Structured Query Language(结构查询语言)
+
 [菜鸟教程](https://www.runoob.com/mysql/mysql-tutorial.html)
 
 [Mysql廖雪峰](https://www.liaoxuefeng.com/wiki/1177760294764384)
@@ -371,6 +373,9 @@ select 列字段1,列字段2 from 表名 [where Clause] [limit N][ offset M]
 
 - 查询语句中可以使用一个或者多个表, 表之间使用逗号`,`分割, 并使用`where`语句来设定查询条件
 - 可以使用星号`*`来代替所有的字段，`select`语句会返回表的所有字段数据
+    - 可以指定多个字段(逗号分隔)
+    - 可以重命名字段, 使用空格分开
+
 - 可以使用`where`语句来指定任意的条件
 - 可以使用`limit`属性来设定返回的记录数
 - 可以通过`offset`指定`select`语句开始查询的数据偏移量, 默认情况下偏移量为**0**
@@ -383,6 +388,9 @@ select * from test1;
 
 # 查询 test1 表中 author 等于 An 的数据(只返回 title 和 author 列的数据)
 select title, author from test1 where author = 'An';
+
+# 效果同上, 只不过重命名了返回的字段
+select title new_title, author new_author from test1 where author = 'An';
 
 # 查询 test1 表中 author 等于 An 和 title 等于 标题1的数据
 select * from test1 where author = 'An' and title = '标题1';
@@ -495,3 +503,5 @@ select author, COUNT(*) from test1 group by author
 # 效果同上, 不过当有数据的 author 字段为空时, 则填充空数据
 select coalesce(author, '空数据'), COUNT(*) from test1 group by author
 ```
+
+### 聚合查询

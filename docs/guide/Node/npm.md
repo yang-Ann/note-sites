@@ -621,6 +621,10 @@ npm config set access public
 |                js-yaml                 |                      js实现解析yaml文件                      |
 |                 dotenv                 |        解析`.env`文件内容到环境变量(`process.env`)中         |
 |              tesseract.js              | 包装[tesseract](https://github.com/tesseract-ocr/tesseract)的js库 |
+|                 alasql                 |                        内存sql数据库                         |
+|                 sql.js                 |                         sqlite操作库                         |
+|             better-sqlite3             |                         sqlite操作库                         |
+|              drizzle-orm               |                           sql rom                            |
 
 **终端工具**
 

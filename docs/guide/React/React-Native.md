@@ -518,7 +518,7 @@ module.exports = {
 | 导航                      | React-Navigation                                             |
 | SQLine                    | react-native-sqlite-storage                                  |
 | 文件操作                  | react-native-fs                                              |
-| 文件上传下载              | rn-fetch-blob                                                |
+| 文件上传下载(操作)        | `rn-fetch-blob`, `react-native-blob-util`                    |
 | 滑块                      | @react-native-community/slider                               |
 | 权限请求                  | react-native-permissions                                     |
 | 设备信息                  | react-native-device-info                                     |
@@ -533,13 +533,14 @@ module.exports = {
 | 图库控制                  | react-native-cameraroll                                      |
 | 原生dialog                | react-native-dialogs, @react-native-picker/picker            |
 | 网格布局                  | react-native-super-grid                                      |
+| PDF预览                   | react-native-pdf                                             |
 | popup弹出菜单             | react-native-popup-menu                                      |
 | 长按弹出菜单              | react-native-hold-menu                                       |
 | 文档选择                  | react-native-document-picker                                 |
 | 侧滑按钮list              | react-native-swipe-list-view                                 |
 | tab可滚动                 | `react-native-scrollable-tab-view`, `react-native-tab-view`  |
 | 样式增强                  | react-native-extended-stylesheet                             |
-| 下拉选择                  | siemiatj/react-native-modal-dropdown                         |
+| 下拉选择库                | `siemiatj/react-native-modal-dropdown`, `react-native-select-dropdown`, `react-native-input-select`, `react-native-modal-dropdown` |
 | 渐变                      | react-native-linear-gradient                                 |
 | 地图                      | react-native-maps                                            |
 | 表单                      | tcomb-form-native                                            |
@@ -550,6 +551,7 @@ module.exports = {
 | 底部划出菜单              | react-native-bottom-sheet                                    |
 | 按钮弹出更多              | react-native-action-button                                   |
 | 日期选择                  | react-native-modal-datetime-picker                           |
+| 传统蓝牙                  | react-native-bluetooth-classic                               |
 | webview                   | react-native-webview                                         |
 | 渲染html为原生组件        | react-native-render-html                                     |
 | 将html作为组件            | react-native-htmlview                                        |

@@ -3365,6 +3365,8 @@ console.count(123); // 123: 1
 
 `console.group(xxx)`
 
+`console.groupCollapsed(xxx)`
+
 `console.groupEnd()`
 
 ```
@@ -3379,6 +3381,11 @@ console.groupEnd();
 console.group('分组2');
 console.log(2);
 console.log(2);
+console.groupEnd();
+
+console.groupCollapsed("默认折叠分组1");
+console.log(1);
+console.log(1);
 console.groupEnd();
 ```
 
