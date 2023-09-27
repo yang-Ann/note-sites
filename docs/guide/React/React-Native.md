@@ -1,6 +1,6 @@
 ---
 title: React-Native
-date: 2023-1-28
+date: 2023-9-21
 categories:
  - 混合开发
 tags:
@@ -513,12 +513,15 @@ module.exports = {
 
 | 名称                      | 说明                                                         |
 | ------------------------- | ------------------------------------------------------------ |
-| 组件库                    | `react-native-paper`, `native-base`, `react-native-elements`, `react-native-ui-lib`, `rn.mobile.ant.design`, `teaset`, `react-native-ui-kitten` |
+| 组件库                    | `react-native-paper`,`tamagui`, `native-base`, `react-native-elements`, `react-native-ui-lib`, `rn.mobile.ant.design`, `teaset`, `react-native-ui-kitten` |
 | 图标库                    | react-native-vector-icons                                    |
+| 动画库                    | react-native-reanimated                                      |
+| 手势导航                  | react-native-gesture-handler                                 |
+| 安全区域库                | react-native-safe-area-context                               |
 | 导航                      | React-Navigation                                             |
 | SQLine                    | react-native-sqlite-storage                                  |
 | 文件操作                  | react-native-fs                                              |
-| 文件上传下载(操作)        | `rn-fetch-blob`, `react-native-blob-util`                    |
+| 文件上传下载(操作)        | `rn-fetch-blob`, `react-native-blob-util`(推荐)              |
 | 滑块                      | @react-native-community/slider                               |
 | 权限请求                  | react-native-permissions                                     |
 | 设备信息                  | react-native-device-info                                     |
@@ -546,9 +549,10 @@ module.exports = {
 | 表单                      | tcomb-form-native                                            |
 | 自定义toast               | react-native-toast-message                                   |
 | modal组件的增强           | react-native-modal                                           |
+| 颜色选择器                | react-native-color-picker-ios                                |
 | 拟态框                    | react-native-modalfy                                         |
-| actions menu              | react-native-actions-sheet                                   |
-| 底部划出菜单              | react-native-bottom-sheet                                    |
+| 底部弹出菜单              | react-native-actions-sheet                                   |
+| 交互式底板                | `react-native-bottom-sheet`, `react-native-reanimated-bottom-sheet` |
 | 按钮弹出更多              | react-native-action-button                                   |
 | 日期选择                  | react-native-modal-datetime-picker                           |
 | 传统蓝牙                  | react-native-bluetooth-classic                               |

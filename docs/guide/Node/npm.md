@@ -112,6 +112,7 @@ npm info 包名 # 查看包的更多信息
 
 npm config list # 查看npm配置
 npm config edit # 编辑npm配置
+npm config ls -l # 查看所有的npm默认配置
 ```
 
 ### 配置淘宝镜像
@@ -427,13 +428,28 @@ npm run env
 ```sh
 # 镜像修改
 registry=https://registry.npmjs.org/
+# 发布包是不检查 git 是否提交
+git-checks=false
+# 支持配置某些包的镜像
+chromedriver_cdnurl="https://npmmirror.com/mirrors/chromedriver"
+electron_mirror="https://npm.taobao.org/mirrors/electron/"
+
+##### 以下是 pnpm 支持的配置
 # 禁用严格依赖
 strict-peer-dependencies=false
 # pnpm i 不安装工作区下的所有包的依赖
 recursive-install=false
-# 发布包是不检查 git 是否提交
-git-checks=false
 ```
+
+### 优先级
+
+`.npmrc`的配置存在优先级，当我们在多个配置文件中定义相同的键时，`npm`将按照以下顺序查找和应用配置：
+
+1.  项目根目录下的`.npmrc`文件
+2.  用户主目录下的`.npmrc`文件
+3.  `npm`内置的默认配置
+
+可以通过`npm config list`来查看
 
 ## npm 开发工具包
 
@@ -926,7 +942,9 @@ rm -rf package-lock.json # rm -rf yarn.lock
 
 在`workspace`中`pnpm`安装依赖如下:
 
->  在 [workspace](https://pnpm.io/zh/workspaces)内, `pnpm install` 会下载项目所有依赖, 如果想禁用这个行为, `.npmrc`配置 [`recursive-install = false`](https://pnpm.io/zh/npmrc#recursive-install)
+>  在 [workspace](https://pnpm.io/zh/workspaces)内, `pnpm install` 会下载项目所有依赖, 如果想禁用这个行为, `.npmrc`配置 [`recursive-install=false`](https://pnpm.io/zh/npmrc#recursive-install)
+>
+>  是否严格的依赖模式可以配置[`recursive-install=false`](https://www.pnpm.cn/npmrc#shamefully-hoist)
 
 ##### 全局的公共依赖包
 
