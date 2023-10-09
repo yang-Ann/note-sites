@@ -323,6 +323,45 @@ export default Btn;
 
 [动画](https://reactnative.dev/docs/next/animations)
 
+```tsx
+/** 动画实例 */
+let aca: Animated.CompositeAnimation | null = null;
+
+useEffect(() => {
+    aca = Animated.loop(
+      // 循环动画
+      Animated.sequence([
+        Animated.timing(scaleAnim, {
+          toValue: 1.1, // 最终的值
+          duration: 1500, // 过渡时间
+          useNativeDriver: true // 使用原生动画(不会阻塞主线程)
+        }),
+        Animated.timing(scaleAnim, {
+          toValue: 1,
+          duration: 1500,
+          useNativeDriver: true
+        })
+      ])
+    );
+    
+    // 执行动画
+    aca.start();
+    
+    return () => {
+      if (aca) {
+        aca.stop();
+        aca = null;
+      }
+    }
+}, [scaleAnim]);
+
+
+/* 扫描线 */
+<Animated.View style={{ transform: [{ scale: scaleAnim }]}}>
+    <Animated.View style={[styles.border, { transform: [{ translateY: moveAnim }] }]} />
+</Animated.View>
+```
+
 -   变换
 
     ```tsx
@@ -407,6 +446,11 @@ const getPermissions = async (per: Permission, msg = "请设置权限") => {
     }
   }
 };
+
+
+// 获取权限
+  getPermissions("android.permission.READ_EXTERNAL_STORAGE", "文件读取权限");
+  getPermissions("android.permission.WRITE_EXTERNAL_STORAGE", "文件写入权限");
 ```
 
 ## 常用API
@@ -552,7 +596,8 @@ module.exports = {
 | 颜色选择器                | react-native-color-picker-ios                                |
 | 拟态框                    | react-native-modalfy                                         |
 | 底部弹出菜单              | react-native-actions-sheet                                   |
-| 交互式底板                | `react-native-bottom-sheet`, `react-native-reanimated-bottom-sheet` |
+| 交互式底板                | `react-native-bottom-sheet`, `react-native-reanimated-bottom-sheet`, `react-native-raw-bottom-sheet` |
+| 执行shell命令             | `react-native-android-shell`, `react-native-command-executer` |
 | 按钮弹出更多              | react-native-action-button                                   |
 | 日期选择                  | react-native-modal-datetime-picker                           |
 | 传统蓝牙                  | react-native-bluetooth-classic                               |
@@ -581,7 +626,7 @@ module.exports = {
 
 >   更多第三方库可以在`GitHub`使用条件搜索`react native stars:>9999`进行搜索
 
-## 原生模块
+## 原生相关
 
 [原生模块](https://reactnative.dev/docs/next/native-modules-android)
 
@@ -590,7 +635,8 @@ module.exports = {
 Android中的上下文可以直接通过`this`或者是`类名.this`而在React Native中是通过`getReactApplicationContext().getBaseContext()`获取的, 比如: 启动一个toast
 
 ```java
-Context context = getReactApplicationContext().getBaseContext();
+ReactApplicationContext context = getReactApplicationContext();
+Context context = context.getBaseContext();
 Toast.makeText(context, "hello world", Toast.LENGTH_SHORT).show();
 ```
 
@@ -599,6 +645,8 @@ Toast.makeText(context, "hello world", Toast.LENGTH_SHORT).show();
 ```java
 Context context = getCurrentActivity().getApplication().getApplicationContext();
 ```
+
+获取当前的`Activity`使用`getCurrentActivity()`
 
 如果是获取`ReactApplicationContext`则可以在`ReactContextBaseJavaModule`里的构造函数中获取： 
 
@@ -1240,6 +1288,133 @@ const NativeButton = requireNativeComponent<NativeButtonProps>("NativeButton");
     console.log("弹起事件: ", data, data.nativeEvent);
   }}
 />
+```
+
+### OnActivityResult
+
+原生开发中, 可以使用`startActivityForResult(intent, requestCode)`配合`onActivityResult(int requestCode, int resultCode, Intent data)`获取从另一个`activity`返回的数据
+
+在`React-Native`中, 在`Android`原生模块中像往常一样重写了`onActivityResult`, 根本不会调用
+
+正确的方式有如下的两种:
+
+1.   在原生模块创建一个内部类实例, 该实例继承`BaseActivityEventListener`, 具体类型是`ActivityEventListener`, 该类型需要实现`onActivityResult()`方法
+2.   在原生模块构造函数中对上下文使用`addActivityEventListener`添加监听, 监听对象就是第一步创建的`ActivityEventListener`实例
+
+```java
+package com.wddmt.modules;
+
+import static android.app.Activity.RESULT_OK;
+
+import android.app.Activity;
+import android.content.Intent;
+
+import com.facebook.react.bridge.ActivityEventListener;
+import com.facebook.react.bridge.BaseActivityEventListener;
+import com.facebook.react.bridge.Promise;
+import com.facebook.react.bridge.ReactApplicationContext;
+import com.facebook.react.bridge.ReactContextBaseJavaModule;
+import com.facebook.react.bridge.ReactMethod;
+
+/**
+ * 扫码模块
+ */
+public class ScannerModule extends ReactContextBaseJavaModule {
+    /**
+     * 给扫码页面的请求码
+     */
+    private final int REQUEST_ECODE_SCAN = 1;
+
+    /**
+     * 扫码响应 Promise 实例
+     */
+    private Promise mPromise;
+
+    /**
+     * 上下文
+     */
+    private ReactApplicationContext mContext;
+
+    public ScannerModule(ReactApplicationContext reactContext) {
+        super(reactContext);
+
+        // 保存上下文
+        mContext = reactContext;
+      
+        // 添加监听 ActivityEventListener
+        mContext.addActivityEventListener(mActivityEventListener);
+    }
+
+    @Override
+    public String getName() {
+        return "ScannerModule";
+    }
+
+    /**
+     * 这里创建一个 BaseActivityEventListener 实例
+     */
+    private final ActivityEventListener mActivityEventListener = new BaseActivityEventListener() {
+
+        /**
+         * 重写 onActivityResult
+         * 这个回调的效果同 Android 原生 Activity 里面的 onActivityResult 回调是一样的
+         */
+        @Override
+        public void onActivityResult(Activity activity, int requestCode, int resultCode, Intent data) {
+
+            // 判断是否是我们的 requestEcoderScan 里面指定的请求码
+            if (mPromise != null && requestCode == REQUEST_ECODE_SCAN) {
+
+                // 是失败的
+                if (resultCode == Activity.RESULT_CANCELED) {
+                    mPromise.reject("SCAN_CODE_ERROR", "操作被取消了");
+
+                    // 是成功的
+                } else if (resultCode == RESULT_OK && data.getData() != null) {
+
+                    // 获取返回的数据
+                    String result = data.getStringExtra("data");
+
+                    // 返回给JS端
+                    mPromise.resolve(result);
+                } else {
+                    mPromise.reject("SCAN_CODE_ERROR", "二维码识别失败，请稍候再试");
+                }
+
+                // 重置保存的 Promise 实例
+                mPromise = null;
+            }
+        }
+    };
+
+    /**
+     * 这个方法是跳转到一个扫码界面的方法
+     */
+    @ReactMethod
+    public void requestEcoderScan(final Promise promise) {
+
+        // 保存 Promise 实例
+        this.mPromise = promise;
+
+        // 获取当前 Activity
+        Activity activity = getCurrentActivity();
+
+        if (activity == null) {
+            mPromise.reject("E_ACTIVITY_DOES_NOT_EXIST", "没有获取到 Activity");
+            return;
+        }
+
+        try {
+            Intent intent = new Intent(activity, ScanActivity.class);
+            // 启动扫码页面, 这里是使用 startActivityForResult 可以让该页面回调返回值
+            activity.startActivityForResult(intent, REQUEST_ECODE_SCAN);
+        } catch (Exception e) {
+            mPromise.reject("START_ACTIVITY_ERROR", "跳转扫码页面失败");
+            mPromise = null;
+        }
+    }
+}
+
 ```
 
 ## 环境或构建问题

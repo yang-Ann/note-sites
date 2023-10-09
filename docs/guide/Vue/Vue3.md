@@ -3750,7 +3750,7 @@ export default defineConfig({
 })
 ```
 
-声明文件添加`.tsx`后缀名文件类型
+-   声明文件添加`.tsx`后缀名文件类型
 
 ```typescript
 // vite-env.d.ts
@@ -3760,7 +3760,7 @@ declare module "*.tsx" {
 }
 ```
 
-使用`TSX`之后就不能使用`.vue`文件命令了需要改成`.tsx`即可
+-   使用`TSX`之后就不能使用`.vue`文件命令了需要改成`.tsx`即可
 
 ```typescript
 // App.tsx
@@ -3785,9 +3785,8 @@ export default defineComponent({
 });
 ```
 
-### tsx技巧
-
 -   事件都变成`on`前缀事件名首字母大写, 比如: `onClick`, `onChange`
+
 -   属性带`-`都变成小驼峰命名, 比如: `append-to-body`则变成`appendToBody`
 
 -   tsx里是支持`v-model`指令的, 还有`v-slots`
@@ -3795,7 +3794,6 @@ export default defineComponent({
     ```tsx
     // v-model 指令
     <input type="text" value={msg.value} v-model={msg} />
-    
     
     // v-slots 指令
     const slot1 = <div>slot1</div>
@@ -3807,7 +3805,21 @@ export default defineComponent({
     }
     
     return () => (
-      <div v-slots={slots}></div>
+      <MyComp v-slots={slots}></MyComp>
+    );
+    ```
+
+-   插槽除了`v-slots`指令为, 还可以直接传递给内部
+
+    ```tsx
+    return () => (
+      {/* 注意内部是一个对象 */}
+      <MyComp>{{
+          header: (scope: any) => <div>header</div>,
+          // 等价于 默认插槽
+          default: () => <div>default</div>,
+          footer: () => <div>footer</div>,
+        }}</MyComp>
     );
     ```
 
@@ -3815,19 +3827,91 @@ export default defineComponent({
 
     ```tsx
     import { defineComponent, resolveComponent, h } from "vue";
-    import Child from "./Child";
+    import Child1 from "./Child1";
+    import Child2 from "./Child2";
     
     export default defineComponent({
-      components: { Child },
+      components: { Child1, Child2 },
     	setup() {
+        const compName = "Child1";
+        
         // 手动解析组件
-        const Child = h(resolveComponent("Child"), { msg: "hello" });
+        const ChildComp = h(resolveComponent(compName), { msg: "hello" });
+        
     		return () => (
-    			<div>{Child}</div>
+    			<div>{ChildComp}</div>
     		);
     	}
     });
     ```
+
+-   tsx使用内置组件
+
+    ```tsx
+    import { h, KeepAlive, Teleport, Transition, TransitionGroup } from 'vue'
+    
+    export default {
+      setup () {
+        return () => h(Transition, { mode: 'out-in' }, /* ... */)
+      }
+    }
+    ```
+
+## 技巧
+
+### 利用组件路径渲染动态组件
+
+```vue
+<template>
+  <!-- 动态组件 -->
+  <component ref="componentRef" :is="componentValue" @vue:mounted="componentOnMounted" />
+</template>
+
+<script lang="ts" setup>
+import { shallowRef, defineAsyncComponent, markRaw, type AsyncComponentLoader } from 'vue';
+
+// 动态渲染的组件引用
+const componentRef = shallowRef<any>();
+// 动态渲染的组件
+const componentValue = shallowRef<any>();
+
+// 根据组件路径获取匹配的值
+const businessURLGlob = import.meta.glob('@/views/**/**.vue');
+
+/** 渲染动态组件 */
+const renderComponent = () => {
+  try {
+    // 根据路径获取到组件对象
+    const component = businessURLGlob['/src/views/my/my.vue'];
+    if (component) {
+      // 解析组件对象
+      componentValue.value = markRaw(defineAsyncComponent(component as AsyncComponentLoader<any>));
+    } else {
+      alert('动态组件获取失败');
+    }
+  } catch (err) {
+    console.error('err: ', err);
+  }
+};
+
+/* 监听 component 组件 onMounted 生命周期  */
+const componentOnMounted = async () => {
+  try {
+    if (componentRef.value) {
+      console.log('componentRef: ', componentRef.value);
+    } else {
+      console.warn('动态组件的 ref 对象获取失败');
+    }
+  } catch (err) {
+    console.error('err: ', err);
+  }
+};
+</script>
+
+<style lang="scss" scoped></style>
+```
+
+
 
 ## 插件
 

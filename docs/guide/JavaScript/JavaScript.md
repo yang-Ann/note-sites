@@ -6926,6 +6926,149 @@ async function request(urlMap) {
 }
 ```
 
+### async 控制并发数
+
+有时在开发中会碰到发送多个异步任务的情况, 可以使用`Promise`下面的`all`, `allSettled`, `race`等方法, 但是这些方法并没有提供控制并发数量的方式, 我们可以使用`Promise`+`栈`的方式实现, 如下: 
+
+```ts
+/** 数据类型, 必须指定 task */
+type SyncTaskType<T = any> = {
+  /** 异步任务 */
+  task: () => Promise<T>;
+    
+  /** 其它参数 */
+  [k: string]: any;
+};
+
+/** 执行并发操作 */
+const syncTask = <T = any>(opt: {
+  /** 异步任务队列 */
+  taskList: SyncTaskType<T>[];
+  /** 并发数 */
+  limit: number;
+  /** 任务执行成功回调 */
+  onSuccess?: (res: T, item: SyncTaskType<T>) => void;
+  /** 任务执行失败回调 */
+  onError?: (error: unknown, item: SyncTaskType<T>) => void;
+  /** 任务执行完成回调 */
+  onFinally?: (item: SyncTaskType<T>) => void;
+}): Promise<{
+  /** 成功的返回值 */
+  successList: T[];
+  /** 失败的返回值 */
+  errorList: unknown[];
+}> => {
+  return new Promise(resolve => {
+    // 正在运行的任务
+    const runningPool: SyncTaskType[] = [];
+    // 等待运行的任务
+    const waitinggPool: SyncTaskType[] = [];
+    // 成功运行返回值
+    const successList: T[] = [];
+    // 失败运行返回值
+    const errorList: T[] = [];
+
+    // 运行任务
+    const walker = (item: SyncTaskType) => {
+      item
+        .task()
+        .then(res => {
+          opt.onSuccess && opt.onSuccess(res, item);
+          successList.push(res);
+        })
+        .catch(err => {
+          opt.onError && opt.onError(err, item);
+          errorList.push(err);
+        })
+        .finally(() => {
+          opt.onFinally && opt.onFinally(item);
+
+          // 任务出栈
+          runningPool.shift();
+
+          if (waitinggPool.length) {
+            // 拿出下一个任务
+            const next = waitinggPool.shift();
+            if (next) {
+              // 继续入栈任务
+              runningPool.push(next);
+              // 继续运行
+              walker(next);
+            }
+          } else {
+            // 当前没有正在运行的任务
+            if (runningPool.length === 0) {
+              resolve({
+                successList,
+                errorList
+              });
+            }
+          }
+        });
+    };
+
+    // 开始执行
+    opt.taskList.forEach(item => {
+      // 当前正在执行的任务小于给定的并发数
+      if (runningPool.length < opt.limit) {
+        // 入栈任务
+        runningPool.push(item);
+        // 开始执行
+        walker(item);
+      } else {
+        // 超过最大并发, 保存到等待运行任务中
+        waitinggPool.push(item);
+      }
+    });
+  });
+};
+
+// 异步休眠函数
+const sleep = (timeout: number) => new Promise(resolve => setTimeout(resolve, timeout));
+
+
+// 测试代码
+(async () => {
+  try {
+    const res = await syncTask({
+      taskList: [
+        { task: () => new Promise(resolve => resolve(1)), a: 1 },
+        { task: () => sleep(500), b: true },
+        { task: () => new Promise(resolve => resolve(2)), data: 2 },
+        { task: () => new Promise((_, reject) => reject(3)), age: 18 }
+      ],
+      limit: 3,
+			onSuccess(res, item) {
+				console.log("onSuccess: ", res, item);
+			},
+			onError(error, item) {
+				console.log("onError: ", error, item);
+			},
+			onFinally(item) {
+				console.log("onFinally: ", item);
+			},
+    });
+		
+    /**
+     * onSuccess:  1 { task: [Function: task], a: 1 }
+     * onSuccess:  2 { task: [Function: task], data: 2 }
+     * onFinally:  { task: [Function: task], a: 1 }
+     * onFinally:  { task: [Function: task], data: 2 }
+     * onError:  3 { task: [Function: task], age: 18 }
+     * onFinally:  { task: [Function: task], age: 18 }
+     * onSuccess:  undefined { task: [Function: task], b: true }
+     * onFinally:  { task: [Function: task], b: true }
+     * res:  { successList: [ 1, 2, undefined ], errorList: [ 3 ] }
+     */
+    console.log("res: ", res);
+  } catch (err) {
+    console.log("err: ", err);
+  }
+})();
+```
+
+
+
 ## 代理和反射
 
 ES6新增的代理和反射提供了拦截基本操作可以嵌入额外的能力, 只需要给目标对象定义一个代理对象, 通过代理对象来访问这个目标对象

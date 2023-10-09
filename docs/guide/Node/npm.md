@@ -185,6 +185,7 @@ cd /d D:/xxx/xxx 进去这个指定的目录
 cls: 请空屏幕的命令
 直接在某个文件夹地址栏输入 cmd 直接打开当前目录下的 cmd 窗口
 
+cmd /? : 查看cmd命令的参数
 命令 /? : 对应的命令帮助
 ipconfig : 查看自己的ip信息
 ping ip地址: 检查本机到指定ip地址的连通性(加上 -t 就会一直 ping)
@@ -565,7 +566,7 @@ npm config set access public
 -   `npm init @usr/foo` -> `npx @usr/create-foo`
 -   `npm init @usr` -> `npx @usr/create`
 
-## npm 实用包
+## npm 第三方库
 
 [awesome-nodejs](https://github.com/sindresorhus/awesome-nodejs)
 
@@ -641,6 +642,7 @@ npm config set access public
 |                 sql.js                 |                         sqlite操作库                         |
 |             better-sqlite3             |                         sqlite操作库                         |
 |              drizzle-orm               |                           sql rom                            |
+|               mime-types               |                        解析MIME type                         |
 
 **终端工具**
 
