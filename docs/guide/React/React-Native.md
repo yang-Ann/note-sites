@@ -573,7 +573,9 @@ module.exports = {
 | 截图操作                  | react-native-view-shot                                       |
 | 高性能图片组件            | react-native-fast-image                                      |
 | 视频播放                  | react-native-video                                           |
-| 音频播放                  | react-native-audio-toolkit                                   |
+| 音频操作                  | react-native-audio-toolkit                                   |
+| 爱心飘起特效              | react-native-floating-hearts                                 |
+| 烟花落下特效              | react-native-confetti-cannon                                 |
 | 相机控制                  | react-native-vision-camera                                   |
 | 解析二维码                | vision-camera-code-scanner(作用于`react-native-vision-camera`) |
 | 高性能flatlist            | @shopify/flash-list                                          |

@@ -128,7 +128,38 @@ git config core.autocrlf false
 
 ```shell
 git commit -m "内容日志" 文件名 #将暂存区内容提交到本地库
-#可以直接使用 git commit 跳过 git add 步骤
+# 可以直接使用 git commit 跳过 git add 步骤
+```
+
+#### 推送
+
+```sh
+# git push 别名 远程分支名
+git push origin master
+
+# 首次提交
+git push origin master-u
+```
+
+如果推送代码时报如下的警告
+
+```sh
+warning: ----------------- SECURITY WARNING ----------------
+warning: | TLS certificate verification has been disabled! |
+warning: ---------------------------------------------------
+warning: HTTPS connections may not be secure. See https://aka.ms/gcmcore-tlsverify for more information.
+```
+
+这个警告是`ssl`的警告, 对应的配置里的`http.sslVerify`
+
+可以直接通过命令修改, 也可以直接通过`.gitConfig`配置文件修改
+
+```sh
+# 修改全局的 http.sslVerify 为 false
+git config --global http.sslVerify false
+
+# .gitConfig 配置文件配置
+http.sslVerify=false
 ```
 
 #### 区分文件大小写

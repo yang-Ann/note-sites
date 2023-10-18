@@ -115,6 +115,54 @@ npm config edit # 编辑npm配置
 npm config ls -l # 查看所有的npm默认配置
 ```
 
+### 基础配置
+
+npm的基础常用配置如下: 
+
+```json
+{
+  "name": "@anlib/sqlite-orm", // 项目名称
+  "private": true, // 是否是私有包, 一般用于 monorepo 项目
+  "version": "0.0.5", // 版本
+  "type": "module", // module | commonjs
+  "types": "lib/src/index.d.ts", // 类型文件
+  "description": "一个简单的 sqlite orm", // 项目描述
+  "main": "lib/bundle.esm.js", // 项目入口
+  "jsnext:main": "lib/bundle.esm.js",
+  "module": "lib/bundle.esm.js", // ECMA Script 模块入口
+  "browser": "lib/bundle.browser.js",
+  "amd": "lib/bundle.amd.js", // amd 对应的
+  "homepage": "https://github.com/yang-Ann/sqlite-orm", // 主页地址
+  "bugs": { // issues 地址
+    "url": "https://github.com/yang-Ann/sqlite-orm/issues"
+  },
+  "keywords": [ // 发布到 npm 之后可以搜索的关键字
+    "sqlite",
+    "orm"
+  ],
+  "author": "An <331536495@qq.com> (https://ann-yang.gitee.io/note-sites/)", // 作者信息
+  "repository": { // 源代码仓库
+    "type": "git",
+    "url": "https://github.com/sqlite-orm"
+  },
+  "files": [ // 这里声明的文件会被上传到 npm 
+    "lib"
+  ],
+  "license": "MIT", // 开源协议
+  "scripts": { // 命令
+    "build": "rollup -c ./rollup.config.ts",
+    "dev": "node --loader ts-node/esm ./src/index.ts",
+    "dev:nodemon": "nodemon --watch ./dist ./dist/index.js",
+    "lint": "eslint src --ext .ts",
+    "prettier": "prettier --write src",
+    "release": "bumpp -r",
+    "test": "vitest ./src/test/index.test.ts"
+  },
+  "dependencies": {}, // 开发依赖
+  "devDependencies": {} // 生产依赖
+}
+```
+
 ### 配置淘宝镜像
 
 使用 npm 安装第三方库需要访问国外的网络, 默认为`https://registry.npmjs.org/`会比较慢, 可以配置[淘宝镜像](https://npmmirror.com/)
@@ -431,6 +479,8 @@ npm run env
 registry=https://registry.npmjs.org/
 # 发布包是不检查 git 是否提交
 git-checks=false
+# 指定包为公开的包, 常用于作用域包, 如: @vue/router, @react/router等
+access=public
 # 支持配置某些包的镜像
 chromedriver_cdnurl="https://npmmirror.com/mirrors/chromedriver"
 electron_mirror="https://npm.taobao.org/mirrors/electron/"
