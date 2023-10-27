@@ -127,11 +127,9 @@ npm的基础常用配置如下:
   "type": "module", // module | commonjs
   "types": "lib/src/index.d.ts", // 类型文件
   "description": "一个简单的 sqlite orm", // 项目描述
-  "main": "lib/bundle.esm.js", // 项目入口
-  "jsnext:main": "lib/bundle.esm.js",
-  "module": "lib/bundle.esm.js", // ECMA Script 模块入口
-  "browser": "lib/bundle.browser.js",
-  "amd": "lib/bundle.amd.js", // amd 对应的
+  "main": "lib/bundle.esm.js", // Commonjs 模块入口(require 引入)
+  "module": "lib/bundle.esm.js", // ECMA Script 模块入口(import 引入)
+  "unpkg": "lib/bundle.browser.js", // 直接 script 标签的 src 引入
   "homepage": "https://github.com/yang-Ann/sqlite-orm", // 主页地址
   "bugs": { // issues 地址
     "url": "https://github.com/yang-Ann/sqlite-orm/issues"

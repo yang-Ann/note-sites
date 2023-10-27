@@ -4574,6 +4574,8 @@ tsc index.ts --outDir ../dist --target ES6 --watch
 
 `noEmitOnError`: 有错误的情况下不生成输出文件, 默认 **false**
 
+`verbatimModuleSyntax`: 检查导入的值, 比如: 导入类型需要使用`import type`,  默认 **false**
+
 ## 类型体操
 
 TS 类型本身就是一个很复杂的、独立的语言, 不仅仅是 JS 的增强和类型注释, 具体有多复杂可以试着挑战一下[type-challenges](https://github.com/type-challenges/type-challenges)项目

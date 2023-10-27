@@ -569,6 +569,7 @@ module.exports = {
 | 滑块                      | @react-native-community/slider                               |
 | 权限请求                  | react-native-permissions                                     |
 | 设备信息                  | react-native-device-info                                     |
+| 设备方向变化              | react-native-orientation                                     |
 | 本地存储                  | @react-native-async-storage/async-storage                    |
 | 截图操作                  | react-native-view-shot                                       |
 | 高性能图片组件            | react-native-fast-image                                      |
@@ -1304,19 +1305,25 @@ const NativeButton = requireNativeComponent<NativeButtonProps>("NativeButton");
 2.   在原生模块构造函数中对上下文使用`addActivityEventListener`添加监听, 监听对象就是第一步创建的`ActivityEventListener`实例
 
 ```java
-package com.wddmt.modules;
-
-import static android.app.Activity.RESULT_OK;
+package com.learn_rn.modules;
 
 import android.app.Activity;
+
 import android.content.Intent;
+import android.text.TextUtils;
+import android.util.Log;
 
 import com.facebook.react.bridge.ActivityEventListener;
+import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.BaseActivityEventListener;
 import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
+import com.facebook.react.bridge.WritableMap;
+import com.huawei.hms.hmsscankit.ScanUtil;
+import com.huawei.hms.ml.scan.HmsScan;
+import com.huawei.hms.ml.scan.HmsScanAnalyzerOptions;
 
 /**
  * 扫码模块
@@ -1325,7 +1332,7 @@ public class ScannerModule extends ReactContextBaseJavaModule {
     /**
      * 给扫码页面的请求码
      */
-    private final int REQUEST_ECODE_SCAN = 1;
+    public static final int REQUEST_CODE_SCAN = 0x01;
 
     /**
      * 扫码响应 Promise 实例
@@ -1342,11 +1349,14 @@ public class ScannerModule extends ReactContextBaseJavaModule {
 
         // 保存上下文
         mContext = reactContext;
-      
+
         // 添加监听 ActivityEventListener
         mContext.addActivityEventListener(mActivityEventListener);
     }
 
+    /**
+     * 这里返回模块名称
+     */
     @Override
     public String getName() {
         return "ScannerModule";
@@ -1363,60 +1373,96 @@ public class ScannerModule extends ReactContextBaseJavaModule {
          */
         @Override
         public void onActivityResult(Activity activity, int requestCode, int resultCode, Intent data) {
-
-            // 判断是否是我们的 requestEcoderScan 里面指定的请求码
-            if (mPromise != null && requestCode == REQUEST_ECODE_SCAN) {
-
-                // 是失败的
-                if (resultCode == Activity.RESULT_CANCELED) {
-                    mPromise.reject("SCAN_CODE_ERROR", "操作被取消了");
-
-                    // 是成功的
-                } else if (resultCode == RESULT_OK && data.getData() != null) {
-
-                    // 获取返回的数据
-                    String result = data.getStringExtra("data");
-
-                    // 返回给JS端
-                    mPromise.resolve(result);
+            // 当前页面的请求码
+            if (requestCode == REQUEST_CODE_SCAN) {
+                // 判断指定的请求码
+                if (mPromise != null) {
+                    if (resultCode != Activity.RESULT_OK || data == null) {
+                        mPromise.reject("SCAN_CODE_ERROR", "二维码识别失败，请稍候再试");
+                    } else {
+                        Object obj = data.getParcelableExtra(ScanUtil.RESULT);
+                        if (obj instanceof HmsScan) {
+                            if (!TextUtils.isEmpty(((HmsScan) obj).getOriginalValue())) {
+                                WritableMap map = Arguments.createMap();
+                                map.putString("codeData", ((HmsScan) obj).getOriginalValue());
+                                // 返回给JS端
+                                mPromise.resolve(map);
+                            }
+                        } else {
+                            mPromise.reject("SCAN_CODE_ERROR", "没有获取二维码识别数据");
+                        }
+                    }
                 } else {
-                    mPromise.reject("SCAN_CODE_ERROR", "二维码识别失败，请稍候再试");
+                    Log.w("SCAN_TAG", "没有获取 Promise 实例");
                 }
-
-                // 重置保存的 Promise 实例
-                mPromise = null;
             }
+            // 重置保存的 Promise 实例
+            mPromise = null;
         }
     };
 
     /**
-     * 这个方法是跳转到一个扫码界面的方法
+     * 跳转扫码页面
      */
     @ReactMethod
-    public void requestEcoderScan(final Promise promise) {
-
+    public void gotoScanQrCode(final Promise promise) {
         // 保存 Promise 实例
         this.mPromise = promise;
 
-        // 获取当前 Activity
-        Activity activity = getCurrentActivity();
-
-        if (activity == null) {
-            mPromise.reject("E_ACTIVITY_DOES_NOT_EXIST", "没有获取到 Activity");
-            return;
-        }
-
         try {
-            Intent intent = new Intent(activity, ScanActivity.class);
-            // 启动扫码页面, 这里是使用 startActivityForResult 可以让该页面回调返回值
-            activity.startActivityForResult(intent, REQUEST_ECODE_SCAN);
+            // 跳转到扫码页面
+            Activity currentActivity = this.getCurrentActivity();
+            ScanUtil.startScan(currentActivity, REQUEST_CODE_SCAN, new HmsScanAnalyzerOptions.Creator().setHmsScanTypes(HmsScan.ALL_SCAN_TYPE).create());
+
+            // 跳转到指定的页面
+            // Intent intent = new Intent(activity, ScanActivity.class);
+            // intent.putExtra("data", "这是传递过去的数据");
+            // // 启动扫码页面, 这里是使用 startActivityForResult 可以让该页面回调返回值
+            // activity.startActivityForResult(intent, REQUEST_ECODE_SCAN);
+
+            // 目标页面取数据
+            // Intent intent = this.getIntent();
+            // String data = intent.getStringExtra("data");
+
+            // 目标页面携带数据返回上一个 Activity
+            // Intent intent = new Intent();
+            // intent.putExtra("result", "目标页面返回的数据");
+            // setResult(Activity.RESULT_OK, intent);
+            // finish();
         } catch (Exception e) {
-            mPromise.reject("START_ACTIVITY_ERROR", "跳转扫码页面失败");
+            mPromise.reject("START_ACTIVITY_ERROR", "跳转扫码页面失败: " + e.getMessage());
             mPromise = null;
         }
     }
 }
+```
 
+JS端使用, 如下: 
+
+```tsx
+import { NativeModules } from "react-native";
+
+/** ScannerModule 模块(扫码功能) */
+export type ScannerModuleType = {
+  /** 跳转到扫码页面 */
+  gotoScanQrCode: () => P<{ codeData: string } | null>;
+};
+
+/** 这里的名称(ScannerModule)对应了模块里面 getName() 的返回值 */
+const ScannerModule: ScannerModuleType = NativeModules.ScannerModule;
+
+ScannerModule.gotoScanQrCode()
+  .then(res => {
+    console.log("扫码结果: ", res);
+    if (res) {
+      setState("scanResult", res.codeData);
+    } else {
+      setState("scanResult", "");
+    }
+  })
+  .catch(err => {
+    console.log("扫码失败了: ", err);
+  });
 ```
 
 ## 环境或构建问题

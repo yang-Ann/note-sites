@@ -103,9 +103,17 @@ export default config
 ```js
 import { defineConfig } from "vite";
 
+// 对象的形式
 export default defineConfig({
   // ...
-})
+});
+
+// 函数的形式
+export default defineConfig(({ mode, command, ssrBuild }) => {
+  return {
+    // ...
+  }
+});
 ```
 
 > Vite 也直接支持 TS 配置文件。你可以在 `vite.config.ts` 中使用 `defineConfig` 工具函数
@@ -115,35 +123,77 @@ export default defineConfig({
 在 Vue3 中不自带`@`(**/src**)地址别名, 需手动配置
 
 ```ts
-import { defineConfig } from "vite";
-import vue from "@vitejs/plugin-vue";
-
-import { resolve } from "path";
+import { resolve, sep } from "path";
 import { fileURLToPath } from "url";
+
+import { defineConfig, loadEnv } from "vite";
+import vue from "@vitejs/plugin-vue";
+import vueJsx from "@vitejs/plugin-vue-jsx";
 
 const __dirname = fileURLToPath(new URL(".", import.meta.url));
 
-export default defineConfig({
-	plugins: [vue()],
-	resolve: {
-		// 设置路径别名
-		alias: {
-			"@": resolve(__dirname, "./src"),
-			"components": resolve(__dirname, "./src/components"),
-			"assets": resolve(__dirname, "./src/assets")
-		}
-		// 也可以写成数组
-		// alias: [
-		//  { find: /^@$/, replacement: resolve(__dirname, "./src") },
-		// ]
-	},
-	base: "./", // 打包路径
-	server: {
-    host: true, // 显示多个开发地址
-		port: 8080, // 服务端口号
-		open: true, // 服务启动时是否自动打开浏览器
-		cors: true // 允许跨域
-	}
+// https://vitejs.dev/config/
+export default defineConfig(({ mode, command, ssrBuild }) => {
+  // 启动的模式, 默认: development 和 production, 通过 --mode 参数可以自定义
+  console.log("mode: ", mode);
+  // 命令名
+  console.log("command: ", command);
+
+	// 命令行参数
+	const commanArgs = process.argv.slice(2);
+	console.log("commanArgs: ", commanArgs);
+
+	// 这里可以动态的加载环境变量文件, 通过命令行参数的方式动态加载环境变量文件
+  const env = loadEnv(mode, path.resolve(process.cwd(), commanArgs[0]), "VITE_");
+	console.log("=========== 自定义加载env ===========: ", env);
+
+  return {
+    plugins: [
+      // 支持 vue 插件
+      vue(),
+      
+      // 加载 jsx 插件, 还需要在 vite-env.d.ts 里添加对应的文件名称解析类型
+      // declare module "*.tsx" {
+      //  const src: any;
+      //  export default src;
+      // }
+      vueJsx(),
+    ],
+    base: "./", // 打包路径
+    define: {
+			// 从环境变量文件中加载环境变量定义到全局 windows
+      // 如果是 ts 则需要在类型文件中声明添加类型声明, 如: declare const __TEST__: string;
+			__TEST__: `"${env.VITE_TEST}"`, // 注意这里要加上 双引号
+      
+      // 也可以使用自定义的值
+      __APP_DIRNAME__: __dirname.split(sep),
+    },
+    resolve: {
+      // 设置路径别名
+      alias: {
+        "@": resolve(__dirname, "./src"),
+        "components": resolve(__dirname, "./src/components"),
+        "assets": resolve(__dirname, "./src/assets")
+      }
+      // 也可以写成数组
+      // alias: [
+      //  { find: /^@$/, replacement: resolve(__dirname, "./src") },
+      // ]
+    },
+
+    // 开发服务器配置
+    server: {
+      host: true, // 显示多个开发地址
+      port: 8081, // 服务端口号
+      open: true, // 服务启动时是否自动打开浏览器
+      cors: true // 允许跨域
+      // 是否使用固定端口，若此端口不可用将会导致程序错误
+      strictPort: true
+      // hmr: { // 全屏报错提示
+      // 	overlay: false
+      // }
+    },
+  };
 });
 ```
 
@@ -163,7 +213,7 @@ export default defineConfig({
 }
 ```
 
-可以在根目录下新建`.env.[模式名]`文件来指定对应模式的环境变量, 例如: `.env.development`则表示在`development`模式下读取该文件的环境变量:
+可以在根目录下新建`.env.[模式名]`文件来指定对应模式的环境变量, 例如: `.env.development`则表示在`development`(开发)模式下读取该文件的环境变量, 还有`.env.production`对应生产环境:
 
 ```sh
 # 环境变量需要以 VITE_ 开头 (只有以 VITE_ 为前缀的变量才会经过 vite 处理)
@@ -199,8 +249,6 @@ interface ImportMetaEnv {
   // ...
 }
 ```
-
-
 
 ### 集成 vue-router, vuex, pinia
 
