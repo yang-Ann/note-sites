@@ -3959,6 +3959,174 @@ const componentOnMounted = async () => {
 <style lang="scss" scoped></style>
 ```
 
+#### 封装成hook
+
+```ts
+import { reactive, shallowRef, markRaw, defineAsyncComponent } from 'vue';
+import type { AsyncComponentLoader, Ref } from 'vue';
+import { ElMessage } from 'element-plus';
+
+/** 页面状态 */
+export type StateType = {
+  /** 查看的数据 */
+  viewRow: Record<string, any>;
+  /** 是否禁用 */
+  disabled: boolean;
+  /** 页面组件 */
+  pageComponent: AsyncComponentLoader<any> | null;
+};
+
+/** 返回值类型 */
+export type Resule = {
+  viewEquipmentInfo: (row: any) => Promise<any>;
+  state: StateType;
+  crudRef: Ref<any>;
+};
+
+/**
+ * 查看目标页面表单
+ *
+ * ```ts
+ * // 页面挂载组件
+ * <component ref="pageComponentRef" :is="viewPageState.pageComponent" @vue:mounted="vnodeMounted" style="display: none" />
+ *
+ * // 调用 hook 获取方法, 参数, 传递各种参数
+ * const {
+ *   renderPage,
+ *   vnodeMounted,
+ *   pageComponentRef,
+ *   pageURLGlob,
+ *   state: viewPageState,
+ * } = useViewPageForm({
+ *   viewPageAfter() {
+ *     console.log('查看之前');
+ *   },
+ *   viewPageBefore() {
+ *     console.log('查看之后');
+ *   },
+ *   getPageViewParams(row) {
+ *     console.log('getPageViewParams: ', row);
+ *     return {
+ *       id: row.id,
+ *     };
+ *   },
+ *   getViewPageUrl(row, pageURLGlob) {
+ *     console.log('getViewPageUrl: ', row, pageURLGlob);
+ *     if (row.IS_VIEW) {
+ *       return '/src/views/My.vue';
+ *     }
+ *     return row.url;
+ *   },
+ *   viewPageFn(row, compRef) {
+ *      console.log("row: ", row);
+ *      console.log("compRef: ", compRef);
+ *   }
+ * });
+ *
+ * // 开始解析页面
+ * const viewPage = (row: any) => {
+ *   renderPage({ ...row, IS_VIEW: true });
+ * };
+ * ```
+ */
+export default (opt: {
+  /** 点击查看页面之前 */
+  viewPageAfter?: () => void;
+  /** 点击查看页面之后 */
+  viewPageBefore?: () => void;
+  /** 查看的页面URL */
+  getViewPageUrl: (row: any, pageURLGlob: Record<string, () => Promise<any>>) => string;
+  /** 传递给目标页面的参数 */
+  getPageViewParams?: (row: any) => { id: string };
+  /** 自定义查看页面函数 */
+  viewPageFn?: (row: any, compRef: Ref<any>) => void;
+}) => {
+  const state = reactive<StateType>({
+    viewRow: {},
+    disabled: false,
+    pageComponent: null,
+  });
+
+  /** 页面组件ref */
+  const pageComponentRef = shallowRef();
+
+  /**
+   * 页面url匹配
+   * TODO 这里是写死的, 因为不能使用变量的原因
+   * @see - https://cn.vitejs.dev/guide/features.html#dynamic-import
+   */
+  const pageURLGlob = import.meta.glob('@/views/**/*.vue');
+  console.log('========= useViewPageForm =========: ', pageURLGlob);
+
+  /* 解析页面 */
+  const renderPage = (row: any) => {
+    if (state.disabled) return;
+    state.disabled = true;
+    try {
+      state.viewRow = row;
+      const url = opt.getViewPageUrl(row, pageURLGlob);
+      if (!url) {
+        ElMessage.warning('页面组件解析失败, 请检查 getViewPageUrl 函数返回页面路径是否正确');
+        return;
+      }
+
+      const comp = pageURLGlob[url];
+      if (comp) {
+        state.pageComponent = defineAsyncComponent(markRaw(comp as AsyncComponentLoader<any>));
+      } else {
+        ElMessage.warning('页面组件解析失败, 请检查 -> ' + opt.getViewPageUrl(row, pageURLGlob));
+      }
+    } catch (err) {
+      console.error('err: ', err);
+      ElMessage.error('发生了错误: ' + err);
+    } finally {
+      state.disabled = false;
+    }
+  };
+
+  /* 监听 component 组件加载成功 */
+  const vnodeMounted = async () => {
+    if (state.disabled) return;
+    state.disabled = true;
+
+    opt?.viewPageAfter && opt.viewPageAfter();
+
+    try {
+      if (!state.viewRow) {
+        ElMessage.warning('数据获取失败');
+        return;
+      }
+
+      if (!state.pageComponent) {
+        ElMessage.warning('目标页面还未解析, 请先调用 renderPage 方法');
+        return;
+      }
+
+      if (!pageComponentRef.value?.crudRefs) {
+        ElMessage.warning('目标页面没有暴露表格Ref对象 -> ' + opt.getViewPageUrl(state.viewRow, pageURLGlob));
+        return;
+      }
+		
+      opt.viewPageFn(state.viewRow, pageComponentRef);
+    } catch (err) {
+      console.error('err:', err);
+      ElMessage.error('发生了错误: ' + err);
+    } finally {
+      state.disabled = false;
+      opt?.viewPageBefore && opt.viewPageBefore();
+    }
+  };
+
+  return {
+    renderPage,
+    vnodeMounted,
+    pageComponentRef,
+    pageURLGlob,
+    state,
+  };
+};
+```
+
 
 
 ## 插件

@@ -626,6 +626,8 @@ module.exports = {
 | 热更新                    | react-native-pushy                                           |
 | react-native 开发 windows | react-native-windows                                         |
 | 项目配置文件读取          | react-native-config                                          |
+| 树选择器                  | `react-native-checkbox-tree`, `react-native-tree-selection`, `react-native-tree-multi-select` |
+| 树层级                    | react-native-animated-tree-view                              |
 
 >   更多第三方库可以在`GitHub`使用条件搜索`react native stars:>9999`进行搜索
 
@@ -1654,3 +1656,261 @@ npx react-native run-android --variant=release
 `--variant=release`参数只能在完成了上面的签名配置之后才可以使用
 
 >   注意: 在`debug`和 `release`版本间来回切换安装时可能会报错签名不匹配, 此时需要先卸载前一个版本再重新安装
+
+## 热更新
+
+
+- 安装`code-push-cli`命令行工具
+
+```sh
+npm install -g code-push-cli
+```
+
+- 注册 CodePush
+
+```sh
+# 注册
+code-push register
+
+# 登录
+code-push login
+```
+
+> 会弹出一个网站, 这里可以选择使用`Github`进行登录, 然后会获得`token`复制粘贴即可
+> 如果碰到证书校验失败可以关机ssl证书检验`git config --global http.sslVerify false`
+
+- 向`CodePush`服务器注册新的 App
+
+```sh
+# AppName 就是要创建的应用名称
+# platform 可以用 ios 或者 Android
+code-push app add <AppName> <platform> react-native
+
+┌────────────┬───────────────────────────────────────┐
+│ Name       │ Deployment Key                        │
+├────────────┼───────────────────────────────────────┤
+│ Production │ mcNDEqhhKH2fvm_NNVSzwC1JVPgpaSLFU9WAj │ # 生产环境的key
+├────────────┼───────────────────────────────────────┤
+│ Staging    │ 4O616rtg7BGZTaH_ynL0QIZynLjIzQvd0WNn_ │ # 开发环境的key
+└────────────┴───────────────────────────────────────┘
+
+# 通过别名查看指定的key
+code-push deployment ls <AppName> -k
+```
+
+> 注册的App 应用情况可以通过 [https://appcenter.ms/apps](appcenter) 来查看
+
+
+- 安装`react-native-code-push`
+```sh
+yarn add react-native-code-push
+```
+
+### Android 配置
+
+- `android/settings.gradle` 文件中添加如下内容
+
+```gradle
+include ':react-native-code-push'
+project(':react-native-code-push').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-code-push/android/app')
+```
+
+- 在`app/build.gradle`文件中添加如下内容
+
+```gradle
+apply from: '../../node_modules/react-native-code-push/android/codepush.gradle'
+```
+
+- 在`MainApplication.java`文件中，添加如下内容
+
+```java
+import com.microsoft.codepush.react.CodePush;
+
+public class MainApplication extends Application implements ReactApplication {
+    // ...
+    private final ReactNativeHost mReactNativeHost =
+            new DefaultReactNativeHost(this) {
+                @Override
+                public boolean getUseDeveloperSupport() {
+                    return BuildConfig.DEBUG;
+                }
+
+                @Override
+                protected List<ReactPackage> getPackages() {
+                    @SuppressWarnings("UnnecessaryLocalVariable")
+                    List<ReactPackage> packages = new PackageList(this).getPackages();
+                    // 将自定义的 Package 类进行注册
+                    packages.add(new MyReactPackage());
+                    return packages;
+                }
+
+                @Override
+                protected String getJSMainModuleName() {
+                    return "index";
+                }
+
+              // 重写 getJSBundleFile 方法, 使用 CodePush 里的方法
+                @Nullable
+                @Override
+                protected String getJSBundleFile() {
+                    return CodePush.getJSBundleFile();
+                }
+            };
+
+  // ...
+}
+```
+
+- 在`res/values/strings.xml`中添加 `CodePushDeploymentKey`, 这里可以写 StagingKey 或 ProductionKey
+
+```xml
+<resources>
+  <!-- 可以填 StagingKey 或者 ProductionKey, 发布时就要使用对应的模式  -->
+  <string name="CodePushDeploymentKey">xxx</string>
+</resources>
+```
+
+### JS端
+
+- 修改`App.tsx`, 如下: 
+
+```tsx
+import { useEffect } from "react";
+import { View } from "react-native";
+import { SafeAreaProvider } from "react-native-safe-area-context";
+import CodePush from "react-native-code-push";
+
+const codePushOptions = {
+  checkFrequency: CodePush.CheckFrequency.ON_APP_RESUME,
+  updateDialog: true, //发现可更新时是否显示对话框
+  installMode: CodePush.InstallMode.IMMEDIATE
+};
+
+function App(): JSX.Element {
+
+  // APP更新
+  const appUpdate = () => {
+    CodePush.sync({
+      // 安装模式
+      // ON_NEXT_RESUME 下次恢复到前台时
+      // ON_NEXT_RESTART 下一次重启时
+      // IMMEDIATE 马上更新
+      installMode: CodePush.InstallMode.IMMEDIATE,
+      // 对话框 如果打包和上传没有设置强制更新的话, 那么默认就是非强制更新, 显示的都是非强制更新配置的内容
+      updateDialog: {
+        // 是否显示更新描述
+        appendReleaseDescription: true,
+        // 更新描述的前缀。 默认为 "Description"
+        descriptionPrefix: "更新内容：",
+        // 强制更新按钮文字, 默认为 continue
+        mandatoryContinueButtonLabel: "立即更新",
+        // 强制更新时的信息. 默认为 "An update is available that must be installed."
+        mandatoryUpdateMessage: "必须更新后才能使用",
+        // 非强制更新时, 按钮文字,默认为 "ignore"
+        optionalIgnoreButtonLabel: "稍后",
+        // 非强制更新时, 确认按钮文字. 默认为 "Install"
+        optionalInstallButtonLabel: "后台更新",
+        // 非强制更新时, 检查到更新的消息文本
+        optionalUpdateMessage: "有新版本了, 是否更新？",
+        // Alert窗口的标题
+        title: "更新提示"
+      }
+    }).then(res => {
+      console.log("检查更新: ", res);
+    });
+  };
+
+  // 禁止重启
+  CodePush.disallowRestart();
+
+  // 开始检查更新
+  appUpdate();
+
+  useEffect(() => {
+    // 加载完了, 允许重启
+    CodePush.allowRestart();
+  }, []);
+
+
+  return (
+    <SafeAreaProvider>
+      <View>App</View>
+    </SafeAreaProvider>
+  );
+}
+
+// export default App;
+
+const _App = CodePush(codePushOptions)(App);
+export default _App;
+```
+
+
+- 在`index.js`文件中进行如下修改
+
+```js
+import { AppRegistry } from "react-native";
+import App from "./App";
+import { name as appName } from "./app.json";
+
+// 关闭 code push 全部黄色警告
+// console.disableYellowBox = true;
+// console.ignoredYellowBox = ['Warning: BackAndroid is deprecated. Please use BackHandler instead.'];
+
+AppRegistry.registerComponent(appName, () => App);
+```
+
+### 发布应用更新
+
+- 发布应用更新, 会自动打包并上传`bundle`文件, 命令如下
+
+```sh
+# AppName 就是要创建的应用名称
+# platform 可以用 ios 或者 Android
+code-push release-react <AppName> <platform> -d Staging # 发布到 Staging, 对应`res/values/strings.xml`里的 key 就要是 Staging
+code-push release-react <AppName> <platform> -d Production # 发布到 Production, 对应`res/values/strings.xml`里的 key 就要是 Production
+```
+> 默认会从`android\app\build.gradle`文件里面的`android.defaultConfig.versionName`读取版本号信息
+
+> 更多用法, 可见`code-push release-react -h`
+
+- 查看发布记录
+
+```sh
+# Staging 发布记录
+code-push deployment history <AppName> Staging
+
+# Production 发布记录
+code-push deployment history <AppName> Production
+```
+
+- 更多命令
+
+```sh
+# 在账号里面添加一个新的app
+code-push app add
+# 或者 rm 在账号里移除一个app
+code-push app remove
+# 重命名一个存在app
+code-push app rename
+# 或则 ls 列出账号下面的所有app
+code-push app list
+# 把app的所有权转移到另外一个账号
+code-push app transfer
+
+
+# 部署
+code-push deployment add 
+# 重命名
+code-push deployment rename 
+# 删除部署
+code-push deployment rm 
+# 列出应用的部署情况
+code-push deployment ls 
+# 查看部署的key
+code-push deployment ls -k 
+# 查看历史版本(Production 或者 Staging)
+code-push deployment history 
+```
+
+> https://github.com/microsoft/react-native-code-push/blob/master/docs/setup-android.md

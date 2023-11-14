@@ -15,6 +15,8 @@ tags:
 
 [React官网(中)](https://react.docschina.org/)
 
+[TypeScript + React组件模式](https://fettblog.eu/typescript-react-component-patterns/)
+
 ## 命令式编写
 
 `react`和`react-dom`提供了一些API, 可以命令式的创建元素, 开发中一般不会这样写, 如下: 
@@ -381,6 +383,22 @@ export default App;
 ```
 
 >   `CSSModule`是可以使用`less`或者是`sass`的
+
+### css样式穿透
+
+在`react`中使用`:global(.className){}`来实现样式穿透, 如下: 
+
+```css
+.menu {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px 0;
+  :global(.el-button) {
+    background-color: red !important;
+  }
+}
+```
 
 ## Fragments
 
