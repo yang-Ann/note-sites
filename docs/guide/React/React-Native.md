@@ -1739,7 +1739,6 @@ public class MainApplication extends Application implements ReactApplication {
                 protected List<ReactPackage> getPackages() {
                     @SuppressWarnings("UnnecessaryLocalVariable")
                     List<ReactPackage> packages = new PackageList(this).getPackages();
-                    // 将自定义的 Package 类进行注册
                     packages.add(new MyReactPackage());
                     return packages;
                 }
@@ -1761,11 +1760,11 @@ public class MainApplication extends Application implements ReactApplication {
 }
 ```
 
-- 在`res/values/strings.xml`中添加 `CodePushDeploymentKey`, 这里可以写 StagingKey 或 ProductionKey
+- 在`res/values/strings.xml`中添加 `CodePushDeploymentKey`, 这里可以写 `StagingKey` 或 `ProductionKey`
 
 ```xml
 <resources>
-  <!-- 可以填 StagingKey 或者 ProductionKey, 发布时就要使用对应的模式  -->
+  <!-- 可以填 StagingKey 或者 ProductionKey, 发布时就要使用对应的模式, 见下面的说明  -->
   <string name="CodePushDeploymentKey">xxx</string>
 </resources>
 ```
@@ -1796,6 +1795,8 @@ function App(): JSX.Element {
       // ON_NEXT_RESTART 下一次重启时
       // IMMEDIATE 马上更新
       installMode: CodePush.InstallMode.IMMEDIATE,
+      // 也可以在调用的时候指定 DeploymentKey
+      // deploymentKey: "OgMbtXONUdQtkMsgo27JqOYgtGMukk3nGSdqn",
       // 对话框 如果打包和上传没有设置强制更新的话, 那么默认就是非强制更新, 显示的都是非强制更新配置的内容
       updateDialog: {
         // 是否显示更新描述
@@ -1869,10 +1870,16 @@ AppRegistry.registerComponent(appName, () => App);
 # platform 可以用 ios 或者 Android
 code-push release-react <AppName> <platform> -d Staging # 发布到 Staging, 对应`res/values/strings.xml`里的 key 就要是 Staging
 code-push release-react <AppName> <platform> -d Production # 发布到 Production, 对应`res/values/strings.xml`里的 key 就要是 Production
-```
-> 默认会从`android\app\build.gradle`文件里面的`android.defaultConfig.versionName`读取版本号信息
 
-> 更多用法, 可见`code-push release-react -h`
+# 完整命令
+code-push release-react <AppName> <platform>  --t 1.0.0 --dev false --d Production --des "1.优化性能" --m true
+
+# 更多参数可见
+ code-push release-react -h
+```
+> 默认发布的版本会从`android\app\build.gradle`文件里面的`android.defaultConfig.versionName`读取版本号信息
+
+>   注意: 对应版本的更新并且对应`DeploymentKey`才会更新, 比如: 发布一个`0.0.1`版本`Production`的更新, 那边就只会在`0.0.1`版本并且是`Production`的APP上面才会收到相应的更新, 并且更新的内容都是前端的**后端无法热更新**
 
 - 查看发布记录
 
@@ -1900,17 +1907,19 @@ code-push app transfer
 
 
 # 部署
-code-push deployment add 
+code-push deployment add <appName> [deploymentName]
+# 清空相关的发布(会清除所有的发布记录)
+code-push deployment clear <appName> <deploymentName>
 # 重命名
-code-push deployment rename 
-# 删除部署
-code-push deployment rm 
+code-push deployment rename <appName> <currentDeploymentName> <newDeploymentName>
+# 删除部署key
+code-push deployment rm <appName> <deploymentName>
 # 列出应用的部署情况
-code-push deployment ls 
+code-push deployment ls <appName>
 # 查看部署的key
-code-push deployment ls -k 
-# 查看历史版本(Production 或者 Staging)
-code-push deployment history 
+code-push deployment ls -k <appName>
+# 查看部署历史版本(Production 或者 Staging)
+code-push deployment history <appName> <deploymentName>
 ```
 
-> https://github.com/microsoft/react-native-code-push/blob/master/docs/setup-android.md
+> 更多用法, 可见`code-push release-react -h`

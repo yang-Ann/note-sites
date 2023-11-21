@@ -22,6 +22,8 @@ SQL全称Structured Query Language(结构查询语言)
 
 - 其他版本: https://dev.mysql.com/downloads/windows/installer/5.7.html
 
+>   推荐使用`5.7.24`版本的MySql
+
 然后在bin目录**同级**下创建一个文件`my.ini`文件, 用来配置mysql配置, 基本配置如下: 
 
 ```ini
@@ -76,6 +78,13 @@ mysqld --initialize --console
 2022-07-24T07:14:22.522252Z 1 [Note] A temporary password is generated for root@localhost: Gp6ap>_6ws#N
 ```
 
+也可以手动的创建用户
+
+```sh
+# 创建一个用户:root 密码:1234 的用户
+mysqladmin -u root password 1234
+```
+
 初始密码就是`Gp6ap>_6ws#N`, 在登录的时候需要使用到, 还需要输入一下的命令: 
 
 ```sh
@@ -87,6 +96,10 @@ net start mysql
 
 # 停止服务
 # net end mysql
+
+# 卸载mysql服务
+mysqld -remove mysql
+# 删除对应的环境变量和目录即可完成mysql的卸载
 ```
 
 ### 登录MySql
@@ -96,17 +109,20 @@ net start mysql
 命令格式如下: 
 
 ```sh
-mysql -h 主机名 -u 用户名 -p
+# 注意参数之间没有空格
+mysql -u用户名 -p密码 -h要连接的ip地址 -P端口号(默认3306)
 ```
 
-- **-h** : 指定客户端所要登录的 MySQL 主机名, 登录本机(localhost 或 127.0.0.1)该参数可以省略;
-- **-u** : 登录的用户名;
-- **-p** : 告诉服务器将会使用一个密码来登录, 如果所要登录的用户名密码为空, 可以忽略此选项。
+-   `-u`: 登录的用户名
+-   `-p`: 登录的密码, 如果所要登录的用户名密码为空, 可以忽略
+
+- `-h`: 指定客户端所要登录的 MySQL ip, 默认本机(`localhost` 或 `127.0.0.1`)
+- `-P`: 指定要连接的端口号
 
 如果要登录本机的 MySQL 数据库，只需要输入以下命令即可:
 
 ```sh
-mysql -u root -p
+mysql -uroot -p1234 -h127.0.0.1 -P3306
 ```
 
 输入密码即可登录, 登录成功会有提示并且shell提示符会变成`mysql>`, 输入**exit**或**quit**则退出登录
