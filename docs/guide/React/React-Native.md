@@ -1769,6 +1769,8 @@ public class MainApplication extends Application implements ReactApplication {
 </resources>
 ```
 
+>   这里设置的`deploymentKey`是默认的, 还是可以在`JS`端重新指定的
+
 ### JS端
 
 - 修改`App.tsx`, 如下: 
@@ -1779,62 +1781,12 @@ import { View } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import CodePush from "react-native-code-push";
 
-const codePushOptions = {
-  checkFrequency: CodePush.CheckFrequency.ON_APP_RESUME,
-  updateDialog: true, //发现可更新时是否显示对话框
-  installMode: CodePush.InstallMode.IMMEDIATE
-};
+import Provider from "./Provider";
 
 function App(): JSX.Element {
-
-  // APP更新
-  const appUpdate = () => {
-    CodePush.sync({
-      // 安装模式
-      // ON_NEXT_RESUME 下次恢复到前台时
-      // ON_NEXT_RESTART 下一次重启时
-      // IMMEDIATE 马上更新
-      installMode: CodePush.InstallMode.IMMEDIATE,
-      // 也可以在调用的时候指定 DeploymentKey
-      // deploymentKey: "OgMbtXONUdQtkMsgo27JqOYgtGMukk3nGSdqn",
-      // 对话框 如果打包和上传没有设置强制更新的话, 那么默认就是非强制更新, 显示的都是非强制更新配置的内容
-      updateDialog: {
-        // 是否显示更新描述
-        appendReleaseDescription: true,
-        // 更新描述的前缀。 默认为 "Description"
-        descriptionPrefix: "更新内容：",
-        // 强制更新按钮文字, 默认为 continue
-        mandatoryContinueButtonLabel: "立即更新",
-        // 强制更新时的信息. 默认为 "An update is available that must be installed."
-        mandatoryUpdateMessage: "必须更新后才能使用",
-        // 非强制更新时, 按钮文字,默认为 "ignore"
-        optionalIgnoreButtonLabel: "稍后",
-        // 非强制更新时, 确认按钮文字. 默认为 "Install"
-        optionalInstallButtonLabel: "后台更新",
-        // 非强制更新时, 检查到更新的消息文本
-        optionalUpdateMessage: "有新版本了, 是否更新？",
-        // Alert窗口的标题
-        title: "更新提示"
-      }
-    }).then(res => {
-      console.log("检查更新: ", res);
-    });
-  };
-
-  // 禁止重启
-  CodePush.disallowRestart();
-
-  // 开始检查更新
-  appUpdate();
-
-  useEffect(() => {
-    // 加载完了, 允许重启
-    CodePush.allowRestart();
-  }, []);
-
-
   return (
     <SafeAreaProvider>
+      <Provider />
       <View>App</View>
     </SafeAreaProvider>
   );
@@ -1842,8 +1794,150 @@ function App(): JSX.Element {
 
 // export default App;
 
+const codePushOptions = {
+  /** 不更新, 只有 调用 sync 才检查更新 */
+  checkFrequency: CodePush.CheckFrequency.MANUAL,
+  /** 发现可更新时是否显示对话框 */
+  updateDialog: true,
+  /** 安装模式 */
+  installMode: CodePush.InstallMode.IMMEDIATE
+};
 const _App = CodePush(codePushOptions)(App);
+
 export default _App;
+```
+
+-   可以让应用一进来或者每次切换到前台时检查热更新, 如下: 
+
+```tsx
+import { useEffect } from "react";
+import { View, AppState } from "react-native";
+import type { NativeEventSubscription, AppStateStatus } from "react-native";
+
+import { appUpdate } from "@/utils/appUpdate";
+
+// 监听应用是在前台还是后台
+let appstateLinstener: NativeEventSubscription | null;
+let appState: AppStateStatus = "active";
+
+const Provider = () => {
+  console.log("Provider render");
+
+  useEffect(() => {
+    appUpdate();
+    appstateLinstener = AppState.addEventListener("change", (nextAppState: AppStateStatus) => {
+      if (appState.match(/inactive|background/) && nextAppState === "active") {
+        console.log("应用回到前台, 检查热更新");
+        appUpdate();
+      } else {
+        console.log("应用回到后台");
+      }
+      appState = nextAppState;
+    });
+
+    return () => {
+      if (appstateLinstener) {
+        appstateLinstener.remove();
+        appstateLinstener = null;
+      }
+    };
+  }, []);
+
+  return (
+    <View style={{ flex: 1 }}>
+      <Router />
+    </View>
+  );
+};
+
+export default Provider;
+```
+
+-   `appUpdate`函数如下: 
+
+```ts
+import CodePush from "react-native-code-push";
+
+// 开发环境下的 deploymentKey
+const DEV_DEPLOYMENT_KEY = "xxx";
+// 生产环境下的 deploymentKey
+const PROD_DEPLOYMENT_KEY = "xxx";
+
+let DEPLOYMENT_KEY: string;
+
+if (__DEV__) {
+  DEPLOYMENT_KEY = DEV_DEPLOYMENT_KEY;
+} else {
+  DEPLOYMENT_KEY = PROD_DEPLOYMENT_KEY;
+}
+
+/** app 热更新 */
+export const appUpdate = () => {
+  CodePush.sync(
+    {
+      // 安装模式
+      // ON_NEXT_RESUME 下次恢复到前台时
+      // ON_NEXT_RESTART 下一次重启时
+      // ON_NEXT_SUSPEND 后台更新
+      // IMMEDIATE 马上更新
+      installMode: CodePush.InstallMode.IMMEDIATE,
+      deploymentKey: DEPLOYMENT_KEY,
+      // 对话框配置, 如果打包和上传没有设置强制更新的话, 那么默认就是非强制更新, 显示的都是非强制更新配置的内容
+      updateDialog: {
+        // 是否显示更新描述
+        appendReleaseDescription: true,
+        // 更新描述的前缀
+        descriptionPrefix: "",
+        // 强制更新按钮文字
+        mandatoryContinueButtonLabel: "立即更新",
+        // 强制更新时的信息
+        mandatoryUpdateMessage: "发现可用更新, 更新内容如下:\n",
+        // 非强制更新时, 按钮文字
+        optionalIgnoreButtonLabel: "稍后",
+        // 非强制更新时, 确认按钮文字
+        optionalInstallButtonLabel: "后台更新",
+        // 非强制更新时, 检查到更新的消息文本
+        optionalUpdateMessage: "有新版本了, 是否更新?\n",
+        // Alert窗口的标题
+        title: "更新提示"
+      }
+    },
+    syncStatus => {
+      switch (syncStatus) {
+        case CodePush.SyncStatus.CHECKING_FOR_UPDATE:
+          console.log("检查更新");
+          break;
+        case CodePush.SyncStatus.DOWNLOADING_PACKAGE:
+          console.log("开始下载更新");
+          break;
+        case CodePush.SyncStatus.AWAITING_USER_ACTION:
+          console.log("等待用户操作");
+          break;
+        case CodePush.SyncStatus.INSTALLING_UPDATE:
+          console.log("安装更新");
+          break;
+        case CodePush.SyncStatus.UP_TO_DATE:
+          console.log("当前App是最新的");
+          break;
+        case CodePush.SyncStatus.UPDATE_IGNORED:
+          console.log("用户取消更新");
+          break;
+        case CodePush.SyncStatus.UPDATE_INSTALLED:
+          console.log("已下载并安装更新");
+          break;
+        case CodePush.SyncStatus.UNKNOWN_ERROR:
+          console.log("发生了未知错误");
+          break;
+        default:
+          console.log("default: ", syncStatus);
+      }
+    },
+    progress => {
+      const currProgress = (progress.receivedBytes / progress.totalBytes).toFixed(2);
+      console.log("当前下载进度: ", currProgress * 100);
+    }
+  );
+};
 ```
 
 
@@ -1871,8 +1965,8 @@ AppRegistry.registerComponent(appName, () => App);
 code-push release-react <AppName> <platform> -d Staging # 发布到 Staging, 对应`res/values/strings.xml`里的 key 就要是 Staging
 code-push release-react <AppName> <platform> -d Production # 发布到 Production, 对应`res/values/strings.xml`里的 key 就要是 Production
 
-# 完整命令
-code-push release-react <AppName> <platform>  --t 1.0.0 --dev false --d Production --des "1.优化性能" --m true
+# 更多参数命令
+code-push release-react <应用名称> <对应平台>  --t <对应的应用版本> --dev <是否开发模式> --d <更新环境> --des 更新描述 --m 是否强制更新
 
 # 更多参数可见
  code-push release-react -h

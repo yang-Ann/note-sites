@@ -242,6 +242,27 @@ grant all privileges on *.* to '用户名'@'%' identified by '密码';
 grant SELECT,DELETE,UPDATE on *.* to '用户名'@'%' identified by '密码';
 ```
 
+## 基础语法
+
+-   SQL语句可以单行或多行书写, 以**分号**结尾
+
+-   MySql数据的SQL语句不区分大小写, 推荐使用大写
+
+-   注释
+
+    -   单行注释: 
+
+        ```mysql
+        -- 单行注释
+        #单行注释
+        ```
+
+    -   多行注释:
+
+        ```mysql
+        /* 多行注释 */
+        ```
+
 ## 数据库操作
 
 创建数据库
@@ -286,21 +307,21 @@ use 数据库;
 
 创建数据表的语法如下: 
 
-```sh
+```mysql
 create table `数据表名` (
 	`列的名称` 列的类型 列的条件 [设置主键],
 	`列的名称` 列的类型 列的条件,
-	`列的名称` 列的类型 列的条件,
+	`列的名称` 列的类型 列的条件 # 最后一列不加逗号
 );
 ```
 
-```sql
+```mysql
 # 当 test1 表不存在时才创建
 create table if not exists `test1`( 
    `id` int PRIMARY KEY AUTOINCREMENT, # 自增 主键
    `title` varchar(100) NOT NULL, # 类型为 varchar(100), 即字符串长度为 100, 不能为空
    `author` varchar(40) NULL, # 可以为空
-   `date` date,
+   `date` date
    primary key ( `id` ) # 主键是id
 ) engine=innodb default charset=utf8; # 设置存储引擎和字符串为 utf8
 ```
@@ -384,15 +405,17 @@ insert into [数据库名.]表名 (字段1, 字段2, ... )
 ### 查询数据
 
 ```sql
-select 列字段1,列字段2 from 表名 [where Clause] [limit N][ offset M]
+select 列字段1,列字段2 from 表名 [where Clause] group by [DESC|AES] having [Clause] [limit N] [offset M]
 ```
 
 - 查询语句中可以使用一个或者多个表, 表之间使用逗号`,`分割, 并使用`where`语句来设定查询条件
 - 可以使用星号`*`来代替所有的字段，`select`语句会返回表的所有字段数据
     - 可以指定多个字段(逗号分隔)
-    - 可以重命名字段, 使用空格分开
+    - 可以重命名字段, 使用`as`或者`空格`分开
 
 - 可以使用`where`语句来指定任意的条件
+- 可以使用`group by`语句来进行分组
+- 可以使用`having`语句来进行分组后的条件
 - 可以使用`limit`属性来设定返回的记录数
 - 可以通过`offset`指定`select`语句开始查询的数据偏移量, 默认情况下偏移量为**0**
 
@@ -401,6 +424,9 @@ select 列字段1,列字段2 from 表名 [where Clause] [limit N][ offset M]
 ```sql
 # 查询 test1 表中所有的数据
 select * from test1;
+
+# 去重查询
+select distinct author from test1;
 
 # 查询 test1 表中 author 等于 An 的数据(只返回 title 和 author 列的数据)
 select title, author from test1 where author = 'An';
