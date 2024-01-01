@@ -2196,6 +2196,49 @@ getElementsByTagName("*"), 可以获取页面的所有元素
 console.log(document.elementFromPoint(50,200));
 ```
 
+利用这个方法, 可以实现高度当前鼠标下的元素的功能, 如下: 
+
+```js
+// 记录上一次的元素和背景颜色 
+let preEl;
+let preBackgroundColor;
+
+const onmousemove = debounce((e) => {
+  const { pageX, pageY } = e;
+  // 根据坐标获取指定的元素
+  const el = document.elementFromPoint(pageX, pageY);
+  console.log(pageX, pageY, el);
+  
+  // 记录背景颜色
+  if (preEl) {
+    preEl.style.backgroundColor = preBackgroundColor;
+  }
+
+  if (el) {
+    // 记录当前的值
+    preBackgroundColor = el.style.backgroundColor;
+    preEl = el;
+    
+    // 修改背景颜色
+    el.style.backgroundColor = 'red';
+  }
+}, 100);
+
+// 鼠标移动事件
+document.onmousemove = onmousemove;
+
+// 防抖
+function debounce(fn, delay) {
+  let timer;
+  return (...args) => {
+    timer && clearTimeout(timer);
+    timer = setTimeout(() => {
+      fn.apply(this, args);
+    }, delay);
+  };
+};
+```
+
 `document.body.contentEditable`
 
 ```js

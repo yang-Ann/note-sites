@@ -3545,45 +3545,72 @@ printPoint(new Point(3, 4));
 
 从用法上来说两者本质上没有区别, 从扩展的角度来说, `type` 比 `interface` 更方便拓展一些
 
-- `type`: 可以使用`&`,`|`来扩展类型, 还可以保存`keyof`返回的联合键值
-- `interface`: 只能使用`extends`来扩展(继承)类型
+- `type`: 可以使用`&`,`|`来扩展类型, **不能重复定义**
 
-```ts
-interface Person1 {
-  name: string;
-}
+    ```ts
+    type Person1 = {
+    	name: string;
+    };
+    
+    // 合并
+    type NewPerson1 = Person1 & { age: number };
+    const obj2: NewPerson1 = {
+    	name: "李四",
+    	age: 20
+    };
+    
+    // 单选
+    type newPerson3 = Person1 | { sex: "男" | "女" };
+    const obj3: newPerson3 = { sex: "男" };
+    
+    type NewPerson1Key = keyof NewPerson1; // keyof 是可以获取键值联合类型
+    type Obj2Type = typeof obj2; // typeof 根据实例获取其对应的类型
+    ```
 
-// 使用继承扩展 interface 
-interface newPerson1 extends Person1 { age: number };
+- `interface`
 
-const obj1: newPerson1 = {
-  name: "张三",
-  age: 18,
-}
+    - 使用`extends`来扩展(继承)类型
 
-// ------------------
+        ```ts
+        interface Person1 {
+          name: string;
+        }
+        
+        // 使用继承扩展 interface 
+        interface NewPerson1 extends Person1 { age: number };
+        
+        const obj1: NewPerson1 = {
+          name: "张三",
+          age: 18,
+        }
+        
+        type NewPerson1Key = keyof NewPerson1; // keyof 是可以获取键值联合类型
+        type Obj2Type = typeof obj1; // typeof 根据实例获取其对应的类型
+        ```
 
-type Person2 = {
-  name: string;
-}
+    - 可以重复定义同一个接口的类型会合并到一起, 适合第三方库封装好暴露出来的类型使用, 这样使用者可以很方便的添加类型, 例如: 给全局对象添加类型, `Vue`扩展环境变量的类型
 
-// 合并
-type newPerson2 = Person2 & { age: number };
-const obj2: newPerson2 = {
-  name: "李四",
-  age: 20,
-}
-
-// 单选
-type newPerson3 = Person2 | { age: number };
-const obj3: newPerson3 = { age: 10 };
-
-// 获取键集合
-type Person1Key = keyof Person1; // keyof 是可以获取包括接口的键值联合类型的
-type Person2Key = keyof Person2;
-```
-
-
+        ```ts
+        // 给全局 window 对象添加类型
+        interface Window {
+          hello: string;
+          sayHi: () => string;
+        }
+        
+        window.hello;
+        window.sayHi();
+        
+        
+        // 给全局 String 对象添加类型
+        interface String {
+          len: () => number;
+        }
+        
+        const s1 = "hello";
+        s1.len();
+        
+        String("hello").len();
+        ```
 
 ## 泛型
 

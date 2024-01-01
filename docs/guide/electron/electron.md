@@ -90,9 +90,10 @@ const createWindow = () => {
   win = new BrowserWindow({
     width: 800, // 窗口宽度
     height: 600, // 窗口高度
-    // 将指定脚本附加到渲染器流程
+    // 将指定脚本注入到该页面中, 并执行
     webPreferences: {
-      preload: resolve(__dirname, './preload.js') // 脚本会被执行, 该文件可以使用所有的 Node API 
+      nodeIntegration: true, // 脚本内可以访问 Node API
+      preload: resolve(__dirname, './preload.js') // 脚本会被执行
     },
     icon: "xxx", // 设置任务栏图标
     title: "xxx", // 设置标题
@@ -115,6 +116,13 @@ const createWindow = () => {
   
   // 删除菜单
   // win.removeMenu();
+  
+  // 注入一段代码并执行
+  win.webContents.executeJavaScript("alert('注入的代码执行了')", true).then((res) => {
+    console.log("res: ", res);
+  }).catch(err => {
+    console.log("err: ", err);
+  });
 }
 
 // ready 事件表示页面被打开后
@@ -268,15 +276,20 @@ new BrowserWindow({
   // fullscreen: true, // 全屏
   // frame: false, // 让桌面应用没有边框, 这样菜单栏也会消失
   resizable: false, // 不允许用户改变窗口大小
-  width: 800, // 设置窗口宽高
-  height: 600,
+  center: true, // 是否居中
+  width: 800, // 设置窗口宽
+  height: 600, // 设置窗口高
+  hasShadow: true, // 显示阴影
   icon: iconPath, // 应用运行时的标题栏图标
   minWidth: 300, // 最小宽度
   minHeight: 500, // 最小高度
   maxWidth: 300, // 最大宽度
   maxHeight: 600, // 最大高度
+  // parent: BrowserWindow.getFocusedWindow() || undefined, // 指定父窗口(创建子窗口时使用)
+  // modal: true, // 是否是模态窗口, 这只在窗口是子窗口时有效
   // 进行对首选项的设置
   webPreferences: {
+    webviewTag: true, // 启用 webview 标签
     backgroundThrottling: false, // 设置应用在后台正常运行
     enableRemoteModule: true, // 允许使用 remote 模块
     nodeIntegration: true, // 设置能在页面或导入的js文件中使用 nodejs的API(需要配合contextIsolation一起使用)
@@ -286,7 +299,7 @@ new BrowserWindow({
 })
 ```
 
-开启了`webPreferences`的`nodeIntegration`和`contextIsolation`就可以直接在`<script>`或js文件中直接使用node的API了, 如下: 
+开启了`webPreferences`的`nodeIntegration`和`contextIsolation`就可以直接在`<script>`或js文件中直接使用`node`的API了, 如下: 
 
 ```html
 <h1 id="title">hello world</h1>
@@ -1133,7 +1146,25 @@ module.exports = {
 
 
 
+## React + Electrom
 
+推荐使用[`electron-react-boilerplate`](https://github.com/electron-react-boilerplate/electron-react-boilerplate)
+
+```sh
+git clone --depth 1 --branch main https://github.com/electron-react-boilerplate/electron-react-boilerplate.git your-project-name
+
+cd your-project-name
+
+npm install
+
+# 运行命令
+npm run start
+
+# 打包命令
+npm run package
+```
+
+>   更多模板可见[boilerplates-and-clis](https://www.electronjs.org/docs/latest/tutorial/boilerplates-and-clis)
 
 
 

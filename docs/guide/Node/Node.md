@@ -1044,6 +1044,43 @@ mime.getType("md"); // "text/markdown"
 Content-Disposition: attachment; filename="filename.txt"
 ```
 
+### http下载文件
+
+```ts
+import * as fs from "fs";
+import * as http from "http";
+
+const url = "http://localhost/download?file=test.pdf";
+
+// 发送请求
+const request = http.get(url, response => {
+  const statusCode = response.statusCode;
+  if (statusCode !== 200) {
+    console.log("statusMessage: ", response.statusMessage);
+  }
+  
+  const contentType = response.headers["content-cype"];
+  const contentLength = parseInt(response.headers["content-length"] || "-1");
+  let downLen = 0;
+
+  const ws = fs.createWriteStream(`./hello.pdf`);
+  response.pipe(ws);
+  response.on("data", chunk => {
+    downLen += chunk.length;
+    const precent = (downLen / contentLength) * 100;
+    console.log(`下载进度: ${precent.toFixed(2)}%`);
+  });
+
+  response.on("end", () => {
+    console.log(`下载完成`);
+  });
+});
+
+request.on("error", err => {
+  console.log(`下载文件出错: `, err);
+});
+```
+
 ## zlib
 
 用于压缩文件, 可以减少数据传输的大小
@@ -1755,7 +1792,31 @@ console.log(dataStr); // {"id":1,"name":"张三"}
 
 ## child_process
 
-[child_process](http://nodejs.cn/api/child_process.html) 是 Node.js 的内置模块, 用于创建子进程
+[child_process](https://nodejs.org/docs/latest/api/child_process.html) 是 Node.js 的内置模块, 常用的方法``fork``用于创建子进程, `spawn`和`exec`执行系统命令
+
+下面的是监听`nginx`配置文件变更重新运行`nginx`命令重载配置的例子
+
+```ts
+import { watchFile } from "node:fs";
+import { spawnSync } from "node:child_process";
+
+const filePath = "./conf/nginx.conf";
+
+console.log(getTime(), "watch " + filePath);
+const watcher = watchFile(filePath, { interval: 200 }, (curr, prev) => {
+  // 运行命令 ./nginx -s reload
+  const res = spawnSync("./nginx", ["-s", "reload"])
+  if (res.status === 0) {
+    console.log(getTime(), "reload nginx conf succeded");
+  } else {
+    console.error(res.stderr.toString());
+  }
+});
+
+function getTime() {
+  return (new Date()).toLocaleTimeString();
+}
+```
 
 ## 开发环境与生产环境
 
