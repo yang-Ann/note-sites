@@ -76,22 +76,20 @@ tags:
 
 ## 表格
 
-```
-在table中使用 tr 表示表格中的一行(行数)
-在tr中使用 td 表示一个单元格(列数)
-```
+在[`table`](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/table)中使用 `tr` 表示表格中的一行(行数)
+在`tr`中使用 [`td`](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/td) 表示一个单元格(列数)
 
-- `colspan`
+常用的样式如下: 
 
-  ```
-  横向合并单元格
-  ```
+- `width`:宽度
 
-- `rowspan`
+- `height`: 高度
 
-  ```
-  纵向合并单元格
-  ```
+- `colspan`: 横向合并单元格
+- `rowspan`: 纵向合并单元格
+- `align`: 水平对齐方式
+- `valign`: 垂直对齐方式
+- `bgcolor`: 背景颜色
 
 ### 长表格
 
@@ -116,10 +114,94 @@ tags:
 | vertical-align:center | 在td中垂直居中        |
 | display: table-cell   | 将元素设置为单元格 td |
 
+使用table可以实现表格信息打印, 下面是一个简单的个人信息添加的页面: 
+
+```html
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>test</title>
+</head>
+
+<style>
+  .title {
+    /* text-align: center; */
+    font-weight: bold;
+  }
+
+  .table {
+    border-collapse: collapse; /* 边框的合并 */
+  }
+
+  .table td {
+    border: 1px solid black;
+    padding: 8px;
+  }
+</style>
+
+
+<body>
+  <p class="title">个人客户身份证失败和尽职调查信息表（深圳版202202）</p>
+  <table class="table">
+    <tr>
+      <td rowspan="5">基本信息1</td>
+      <td width="100">姓名</td>
+      <td width="100">xxx</td>
+      <td width="40" align="center">性别</td>
+      <td width="50" align="center">xxx</td>
+      <td width="50">国籍</td>
+      <td width="120">xxx</td>
+    </tr>
+    <tr>
+      <td>身份证件种类</td>
+      <td colspan="3">xxx</td>
+      <td>有效期</td>
+      <td>xxx</td>
+    </tr>
+    <tr>
+      <td colspan="6">三要素是否一致xxx</td>
+    </tr>
+    <tr>
+      <td colspan="3">联网核查结果xxx</td>
+      <td colspan="3">身份证资产是否齐全xxx</td>
+    </tr>
+    <tr>
+      <td colspan="1">工作单位</td>
+      <td colspan="2">xxx</td>
+      <td colspan="1">职业</td>
+      <td colspan="2">xxx</td>
+    </tr>
+    <tr>
+      <td rowspan="4">基本信息2</td>
+      <td colspan="6">住所地或工作单位地址xxx</td>
+    </tr>
+    <tr>
+      <td colspan="6">联系方式xxx</td>
+    </tr>
+    <tr>
+      <td colspan="6">是否正常接通xxx</td>
+    </tr>
+    <tr>
+      <td colspan="6">是否本人使用xxx</td>
+    </tr>
+  </table>
+</body>
+
+<script type="module">
+
+</script>
+
+</html>
+```
+
 ## 表单
 
 - 在网页中使用表单来表示要提交的数据
-- 使用form标签来创建一个表单
+- 使用`form`标签来创建一个表单
 
 ### 表单标签
 

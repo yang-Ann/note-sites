@@ -488,6 +488,8 @@ electron_mirror="https://npm.taobao.org/mirrors/electron/"
 strict-peer-dependencies=false
 # pnpm i 不安装工作区下的所有包的依赖
 recursive-install=false
+# pnpm i 不自动依赖 workspace 里的包, 仍然可以使用 workspace: 依赖
+link-workspace-packages=false
 ```
 
 ### 优先级
@@ -910,6 +912,12 @@ pnpm add -D xxx # 安装依赖包到devDependencies
 pnpm add -O xxx # 安装依赖包到optionalDependencies
 
 pnpm add -g xxx # 全局安装依赖包
+
+pnpm add foo --workspace # 安装foo依赖包, 从工作区中查找
+
+pnpm add ./package.tar.gz # 从指定目录中安装
+
+pnpm add ./some-directory # 从指定目录中安装
 
 pnpm install # 安装项目全部依赖, install 简写 i
 

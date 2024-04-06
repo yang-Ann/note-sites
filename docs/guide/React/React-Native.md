@@ -628,6 +628,7 @@ module.exports = {
 | 项目配置文件读取          | react-native-config                                          |
 | 树选择器                  | `react-native-checkbox-tree`, `react-native-tree-selection`, `react-native-tree-multi-select` |
 | 树层级                    | react-native-animated-tree-view                              |
+| 国际化                    | react-native-i18n                                            |
 
 >   更多第三方库可以在`GitHub`使用条件搜索`react native stars:>9999`进行搜索
 
@@ -1558,6 +1559,21 @@ adb devices
 
 # 断开连接
 adb disconnect 192.168.1.102:44625
+
+# 获取设备的root权限
+adb root
+
+# 重新挂载Android设备的系统分区，使其以可读写的方式挂载
+adb remount
+
+# 进入 adb shell 模式
+adb shell
+
+# 重启设备
+adb reboot
+
+# 安装指定的apk文件
+adb install C:/An/Desktop/wps.apk
 ```
 
 ### 其他命令
@@ -2017,3 +2033,15 @@ code-push deployment history <appName> <deploymentName>
 ```
 
 > 更多用法, 可见`code-push release-react -h`
+
+## 模拟器调试
+
+这里说的是使用自定义模拟器调试(除了Android Studio的模拟), 这里以雷电模拟器为例, 下载好新建模拟器, 打开模拟器的`adb调试`, 执行`adb devices`查看是否有已经连接设备
+
+如果是项目有集成`Flipper`, 则需要先注释掉`Flipper`的初始化代码, 否则模拟器运行会报错, 如下:
+
+```java
+// android/app/src/main/java/com/mlkj/wddmt/MainApplication.java 文件中的 Flipper 的初始化代码
+
+ReactNativeFlipper.initializeFlipper(this, getReactNativeHost().getReactInstanceManager());
+```

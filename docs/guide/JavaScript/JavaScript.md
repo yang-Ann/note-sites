@@ -2068,10 +2068,7 @@ console.log(result[2]); // 百度一下
 
 ## DOM
 
-```
-DOM, 全称Document Object Model 文档对象模型
-JS中通过DOM来对HTML文档进行操作, 只要理解了DOM就可以随心所欲的操作WEB页面
-```
+**Document Object Model** 文档对象模型, 它把`HTML`文档当做一个对象, 这个对象就是`document`对象, 这个对象主要定义了处理网页内容的方法和接口
 
 - 文档
 
@@ -3185,11 +3182,7 @@ window.addEventListener('test', (e) => {
 
 ## BOM
 
-```
-全称, Browser Object Model 浏览器对象模型
-BOM可以使通过JS来操作浏览器
-在BOM中为提供了一组对象, 用来完成对浏览器的操作
-```
+**Browser Object Mode**l 浏览器对象模型, 它指的是把浏览器当做一个对象来对待, 这个对象主要定义了与浏览器交互的方法和接口, **BOM**的核心是`window`, 而`window`对象具有双重角色, 它即是通过JS访问浏览器窗口的一个接口, 有时一个 `Global`对象, 网页中定义的任何对象, 变量和函数, 都是作为`window`对象的一个属性或者方法存在
 
 ### BOM对象的分类
 
@@ -3948,8 +3941,6 @@ console.log("url: ", url);
 URL.revokeObjectURL(url);
 ```
 
-
-
 ## Clipboard API
 
 剪贴板 [**Clipboard** **API**](https://developer.mozilla.org/zh-CN/docs/Web/API/Clipboard) 提供了响应剪贴板命令（剪切、复制和粘贴）与基于`Promise`的读写系统剪贴板的能力
@@ -4048,6 +4039,33 @@ if (newWindow) {
 ## File
 
 在web中使用文件可以参考[MDN](https://developer.mozilla.org/zh-CN/docs/Web/API/File_API/Using_files_from_web_applications#example.3a_using_object_urls_to_display_images)
+
+### 生成文件并下载
+
+```ts
+/** 生成文件并下载 */
+const genFileDownload = (fileContent: string, fileName: string) => {
+	// 转换为Blob对象
+	const blob = new Blob([fileContent], { type: "text/plain;charset=utf-8" });
+	const link = document.createElement("a");
+	const url = URL.createObjectURL(blob);
+	link.href = url;
+	link.download = fileName;
+	link.style.display = "none";
+
+	document.body.appendChild(link);
+
+	link.click();
+	link.addEventListener("click", () => {
+		link.remove();
+	});
+  
+  // 释放资源
+  // URL.revokeObjectURL(url);
+};
+
+genFileDownload("hello world", "test.txt");
+```
 
 ## FileReader
 
@@ -4149,12 +4167,131 @@ if(!/image\/\w+/.test(file.type)){
 
 > 如果需要增加一个进度条，可以使用 HTML5 的**[progress](https://developer.mozilla.org/zh-CN/docs/Web/HTML/Element/progress)**标签
 
+### 封装FileReader
+
+`FileReader`可以使用`Promise`的封装一下, 可以读取多种类型的数据, 如下: 
+
+```ts
+// fileReader 读取 Blob, 支持类型: ArrayBuffer | Binary | Base64 | Text
+const fileReaderFile = (
+  file: Blob,
+  type: "ArrayBuffer" | "Binary" | "Base64" | "Text" = "Base64"
+): Promise<string | ArrayBuffer | void> => {
+  return new Promise((resolve, reject) => {
+    const fileReader = new FileReader();
+    switch (type) {
+      case "ArrayBuffer":
+        fileReader.readAsArrayBuffer(file);
+        break;
+      case "Binary":
+        fileReader.readAsBinaryString(file);
+        break;
+      case "Base64":
+        fileReader.readAsDataURL(file);
+        break;
+      case "Text":
+        fileReader.readAsText(file);
+        break;
+      default:
+        console.error("未知的读取类型: ", type);
+        break;
+    }
+
+    fileReader.onload = () => {
+      if (fileReader.readyState === FileReader.DONE && fileReader.result) {
+        resolve(fileReader.result);
+      }
+    };
+    fileReader.onerror = () => {
+      reject(fileReader.error);
+    };
+  });
+};
+```
+
+## FormData
+
+[`FormData`](https://developer.mozilla.org/zh-CN/docs/Web/API/FormData)是一种表示表单数据的键值对 `key/value` 的数据, 常用于表单或者文件上传, 可以通过`new FormData()`来获取实例, 基本的方法如下: 
+
+- `append()`
+向 FormData 中添加新的属性值, FormData 对应的属性值存在也不会覆盖原值, 而是新增一个值, 如果属性不存在则新增一项属性值
+- `delete()`
+从 FormData 对象里面删除一个键值对
+- `entries()`
+返回一个包含所有键值对的`iterator`对象
+- `get()`
+返回在 FormData 对象中与给定键关联的第一个值
+- `getAll()`
+返回一个包含 FormData 对象中与给定键关联的所有值的数组
+- `has()`
+返回一个布尔值表明 FormData 对象是否包含某些键
+- `keys()`
+返回一个包含所有键的`iterator`对象
+- `set()`
+给 FormData 设置属性值, 如果FormData 对应的属性值存在则覆盖原值, 否则新增一项属性值
+- `values()`
+返回一个包含所有值的`iterator`对象
+
+基本使用如下: 
+
+```ts
+// 从 form 标签中解析 formData
+// const formEl = document.getElementById('form');
+// const formData = new FormData(formEl);
+
+const formData = new FormData();
+formData.append("name", "张三");
+formData.append("age", 18);
+formData.append("file", new File(['hello'], "test.txt"));
+
+for (const [k, v] of formData.entries()) {
+  console.log(k, v);
+}
+
+const objData = Object.fromEntries(formData);
+console.log("objData: ", objData); // {name: '张三', age: '18', file: File}
+
+console.log("sex key: ", formData.has("sex")); // false
+console.log("name: ", formData.get("name")); // 张三
+
+// 可以添加重复的键值
+formData.append("name", "李四");
+console.log("name all: ", formData.getAll("name")); // ["张三", "李四"]
+```
+
+也可以通过[`form`](https://developer.mozilla.org/zh-CN/docs/Web/HTML/Element/form)标签来自动解析生成
+
+```html
+<form action="http://localhost:8900/test" method="get" id="form">
+  <div>
+    <label for="name">名称: </label>
+    <input type="text" name="name" required value="hello" />
+  </div>
+  <div>
+    <label for="email">邮箱: </label>
+    <input type="email" name="email" required value="123456@qq.com" />
+  </div>
+  <div>
+    <!-- http://localhost:8900/test?name=hello&email=123456%40qq.com -->
+    <input type="submit" value="确定" />
+  </div>
+</form>
+
+
+<script type="module">
+  const formEl = document.getElementById('form');
+  const formdata = new FormData(formEl);
+  const objData = Object.fromEntries(formdata);
+  console.log("objData: ", objData); // {name: 'hello', email: '123456@qq.com'}
+</script>
+```
+
 ## MutationObserver
 
 [`MutationObserver`](https://developer.mozilla.org/zh-CN/docs/Web/API/MutationObserver)接口提供了监视对DOM树所做更改的能力, 接受一个 callback 参数，用来处理节点变化的回调函数，该回调调用会收到两个参数：
 
 - [mutations](https://developer.mozilla.org/zh-CN/docs/Web/API/MutationRecord)：节点变化记录列表
-- observer：构造 MutationObserver 对象
+- `observer`：构造 MutationObserver 对象
 
 MutationObserver 对象有三个方法, 分别如下：
 

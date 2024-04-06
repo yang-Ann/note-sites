@@ -72,7 +72,9 @@ export default {
 你可以显式地通过 `--config` 命令行选项指定一个配置文件（相对于 `cwd` 路径进行解析）
 
 ```sh
-vite --config my-config.js
+vite dev --config dev.vite.config.ts # 执行 dev 命令, 指定使用 dev.vite.config.ts 配置文件
+vite build --config build.vite.config.ts
+vite test --mode test # 执行 test 命令, 指定使用 test 模式, 会自动加载 ,test.env 文件, 并且 mode 为 test 
 ```
 
 注意: Vite 会在 **CommonJS** 和 **TypeScript** 配置文件中替换 `__filename`，`__dirname` 以及 `import.meta.url`。如果使用这些名称作为变量名可能会导致代码报错: 
@@ -101,7 +103,7 @@ export default config
 另外可以使用 `defineConfig` 工具函数，这样不用 jsdoc 注解也可以获取类型提示:
 
 ```js
-import { defineConfig } from "vite";
+import { defineConfig, type ConfigEnv, type UserConfigExport } from "vite";
 
 // 对象的形式
 export default defineConfig({
@@ -109,10 +111,12 @@ export default defineConfig({
 });
 
 // 函数的形式
-export default defineConfig(({ mode, command, ssrBuild }) => {
-  return {
-    // ...
-  }
+export default defineConfig(({ mode, command, ssrBuild }: ConfigEnv) => {
+	const config: UserConfigExport = {
+		// ...
+	};
+
+	return config;
 });
 ```
 
@@ -144,10 +148,14 @@ export default defineConfig(({ mode, command, ssrBuild }) => {
 	console.log("commanArgs: ", commanArgs);
 
 	// 这里可以动态的加载环境变量文件, 通过命令行参数的方式动态加载环境变量文件
-  const env = loadEnv(mode, path.resolve(process.cwd(), commanArgs[0]), "VITE_");
+  const envDir = path.resolve(process.cwd(), commanArgs[0]);
+  const env = loadEnv(mode, envDir, "VITE_");
 	console.log("=========== 自定义加载env ===========: ", env);
+  
+  const proxyPrefix = '/api';
 
   return {
+    envDir, // 环境变量文件目录
     plugins: [
       // 支持 vue 插件
       vue(),
@@ -159,7 +167,7 @@ export default defineConfig(({ mode, command, ssrBuild }) => {
       // }
       vueJsx(),
     ],
-    base: "./", // 打包路径
+    base: "./", // 资源基本路径
     define: {
 			// 从环境变量文件中加载环境变量定义到全局 windows
       // 如果是 ts 则需要在类型文件中声明添加类型声明, 如: declare const __TEST__: string;
@@ -186,12 +194,30 @@ export default defineConfig(({ mode, command, ssrBuild }) => {
       host: true, // 显示多个开发地址
       port: 8081, // 服务端口号
       open: true, // 服务启动时是否自动打开浏览器
+      // open: '/docs/index.html', 自动打开这个字符串的地址
       cors: true // 允许跨域
       // 是否使用固定端口，若此端口不可用将会导致程序错误
       strictPort: true
       // hmr: { // 全屏报错提示
       // 	overlay: false
       // }
+      
+      proxy: {
+        // 指定路径代理, 比如: window.open('/myPage/runtime') -> http://127.0.0.1:8078
+				"^/myPage/runtime": {
+					target: "http://127.0.0.1:8078",
+					changeOrigin: true,
+					prependPath: false, // 是否要在代理路径前添加目标路径
+				},
+    
+        // 接口代理
+        [proxyPrefix]: {
+          target: 'http://test.dev:8080',
+          changeOrigin: true,
+          // ws: true, // 代理 websockets
+          rewrite: (path) => path.replace(new RegExp(`^${proxyPrefix}`), ''),
+        },
+			},
     },
   };
 });
