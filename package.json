@@ -4,7 +4,8 @@
   "description": "An 的个人学习笔记",
   "main": "index.js",
   "engines": {
-    "node": "> 14.18"
+    "node": ">= 14.18 <= 16.20.2",
+    "npm": ">= 6.0.0 <= 8.5.5"
   },
   "scripts": {
     "dev": "vuepress dev docs",
