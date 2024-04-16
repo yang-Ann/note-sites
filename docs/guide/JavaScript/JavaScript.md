@@ -1595,6 +1595,18 @@ Math和其他的对象不同, 它不是一个构造函数,
     Math.round(Math.random()*(y-x))+x;
 ```
 
+利用随机数就可以简单的写个生成`UUID`的方法如下: 
+
+```ts
+export const genUUID = () => {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+      const r = Math.random() * 16 | 0,
+          v = c == 'x' ? r : (r & 0x3 | 0x8);
+      return v.toString(16);
+  });
+}
+```
+
 `Math.max()`
 
 ```
@@ -6262,8 +6274,7 @@ while (result = re.exec("123 456")) {
   
   // 使用 toString()方法也可以只不过会把每个元素都转成字符串
   arr.toString().split(',');
-  
-  
+  // ['1', '2', '3', '4', '5', '6', '7', '8']
   
   // flatMap 相当于是 map 加 flat 的结合
   const arr2 = [1,2,3,4,5];
@@ -6275,7 +6286,7 @@ while (result = re.exec("123 456")) {
   const result = arr2.flatMap(item=>[item*10]);
   console.log(result); // [10, 20, 30, 40, 50]
   ```
-
+  
 - `findIndex()`
 
   ```

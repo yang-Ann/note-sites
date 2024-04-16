@@ -170,18 +170,18 @@ npm的基础常用配置如下:
 npm get registry
 
 # 切换源(推荐)
-npm config set registry http://registry.npm.taobao.org/
+npm config set https://registry.npmmirror.com
 ```
 
 也可以通过`C:/Users/用户名/.npmrc`文件添加镜像源, 如下:
 
 ```sh
-registry=http://registry.npm.taobao.org/ # npm 淘宝源
-disturl=https://npm.taobao.org/mirrors/node
-electron_mirror=https://npm.taobao.org/mirrors/electron/
+registry=https://registry.npmmirror.com # npm 淘宝源
+disturl=https://registry.npmmirror.com/node
+electron_mirror=https://registry.npmmirror.com/electron/
 ```
 
-> `cnpm`**不生成 lock 文件, 也不会识别项目中的lock文件**，如果是多人开发，建议使用npm或者其他包管理工具安装插件
+> `cnpm`**不生成 lock 文件, 也不会识别项目中的lock文件**，如果是多人开发，建议使用`npm`或者其他包管理工具安装插件
 
 >   也可以使用[`nrm`](https://www.npmjs.com/package/nrm)来管理npm镜像配置
 
@@ -741,8 +741,6 @@ nvm默认node镜像源是`https://nodejs.org/dist`，从默认的镜像缘源下
 node_mirror: https://npm.taobao.org/mirrors/node/ # 添加 node 镜像
 npm_mirror: https://npm.taobao.org/mirrors/npm/ # 添加 npm 镜像
 ```
-
-![image-20220305101241784](./images/image-20220305101241784.png) 
 
 ### 安装指定版本号的node
 
