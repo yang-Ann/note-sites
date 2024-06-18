@@ -1,9 +1,9 @@
 name: docs
 
 on:
-  # 每当 push 到 main 分支时触发部署
+  # 每当 push 到 master 分支时触发部署
   push:
-    branches: [main]
+    branches: [master]
   # 手动触发部署
   workflow_dispatch:
 
@@ -42,8 +42,8 @@ jobs:
       - name: Deploy to GitHub Pages
         uses: crazy-max/ghaction-github-pages@v4
         with:
-          # 部署到 gh-pages 分支
-          target_branch: gh-pages
+          # 部署到 master 分支
+          target_branch: master
           # 部署目录为 VuePress 的默认输出目录
           build_dir: docs/.vuepress/dist
         env:
