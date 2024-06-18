@@ -2983,6 +2983,12 @@ public class LearnMap {
     public static void main(String[] args) {
         // 创建一个Map, 键是String类型, 值也是String类型
         Map<String, String> map = new HashMap<String, String>();
+      
+        // 也可以可以在初始化的时候直接赋值
+     		Map<String, String> map2 = new HashMap<String, String>() {{
+            put("name1", "张三");
+            put("name2", "李四");
+        }}
 
         // 使用put方法添加一个键为name值为张三的元素到map中
         map.put("name1", "张三");
@@ -3106,7 +3112,7 @@ public class LearnMap {
 }
 ```
 
-把获取键值对集合一起写到增强for中更加简洁
+把获取键值对集合一起写到增强`for`中更加简洁
 
 ```java
 // 直接到增强for中获取到 键值对 集合循环

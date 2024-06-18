@@ -104,7 +104,13 @@ mysqld -remove mysql
 
 ### 登录MySql
 
-数据库软件: https://dbeaver.io/download/
+数据库软件: 
+
+- dbeaver: https://dbeaver.io/download/
+
+- navcat: https://www.navicat.com.cn/
+  - 字符串: `utf8mb4`
+  - 排序规则: `utf8mb4_general_ci`
 
 命令格式如下: 
 

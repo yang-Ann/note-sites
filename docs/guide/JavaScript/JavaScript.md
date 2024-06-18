@@ -3372,7 +3372,7 @@ console.log("%chello%cworld", "background: red","font-size: 28px");
 `console.dir()`
 
 ```
-向控制台输出一个对象所有的属性和方法
+向控制台输出一个对象所有的属性和方法, 当在node环境下, 一个对象或数组中有太多数据就会被默认隐藏掉一些, 可以指定第二个参数为: { depth: 10 } 输出10层的信息
 ```
 
 `console.error()`
@@ -3393,10 +3393,10 @@ console.log("%chello%cworld", "background: red","font-size: 28px");
 清空控制台
 ```
 
-`console.trace()`
+`console.trace(msg: string)`
 
 ```
-打印调用栈信息
+打印调用栈信息, 这个堆栈跟踪会显示从当前执行函数开始，一直到全局作用域的函数调用序列，包括文件名、行号和列号等详细信息，有助于开发者理解函数被调用的上下文和流程
 ```
 
 `console.count(xxx)`
@@ -7262,7 +7262,159 @@ const sleep = (timeout: number) => new Promise(resolve => setTimeout(resolve, ti
 })();
 ```
 
+### 转移Promise执行函数
 
+在`new Promise(resolve, reject => { // ...  })`时可以得到两个修改并触发`Promise`状态的方法, 这个两个方法可以临时保存起来, 然后在需要触发的时候调用即可触发, 这样的场景在使用第三方批量打印标签并且需要在打印完成后读取标签数据时会用到, 具体业务就是**使用`websocket`批量发送打印标签数据, 标签是逐个打印的, 打印完成后返回标签的数据,需要对返回的数据进行处理**, 这个场景第一时间肯定会想到使用栈的方式去执行, 打印前入栈, 打印完成后出栈, 然后继续入栈, 出栈这里不多说, 直接看如何使用`Promise`的方式去处理, 如下:
+
+这里定义一个全局变量和一个获取`Promise`的`resolve`函数的方法:
+
+```ts
+/** 全局 Promise resolve */
+let _gloablePromiseResolve: (p: any) => void = () => {
+  console.error('没有重新赋值为Promise resolve函数, 请检查代码');
+};
+
+/** 全局 Promise reject */
+let _gloablePromiseReject: (p: any) => void = () => {
+  console.error('没有重新赋值为Promise reject函数, 请检查代码');
+};
+
+/** 打印超时时间定时器 */
+let timeoutTimer: NodeJS.Timeout | null = null;
+
+type AnyParamsFn = (p: any) => void;
+
+/** 立即获取一个 Promise 的 resolve 和 reject 函数 */
+const getCallbackAsync = <T = any>(getResolve: (resolveFn: AnyParamsFn, rejectFn: AnyParamsFn) => void) => {
+  return new Promise<T>((resolve, reject) => {
+    getResolve(resolve, reject);
+  });
+};
+```
+
+具体的业务: 
+
+```ts
+/** 定义打印SDK的类型 */
+interface Window {
+	PRINT_JSSDK: {
+		print(printData: string): void;
+	};
+}
+
+// 打印超时 30s
+const PRINT_TIMOUT = 30 * 1000;
+
+export const handlePrint = async (opt: PrintOption) => {
+	try {
+		// websocket 连接
+		const connectRes = await connect({
+			wsIp: config.wsIp,
+			port: config.wsPort
+		});
+
+		if (connectRes.ws) {
+			// websocket 监听事件
+			connectRes.ws.onmessage = handleOnMessage;
+
+			// 加载打印的SDK
+			if (!window.PRINT_JSSDK) {
+				// @ts-ignore
+				await import("../PRINT_JSSDK.min.js");
+			}
+
+			if (!window.PRINT_JSSDK) {
+				alert("PRINT_JSSDK加载失败, 无法打印");
+				return;
+			}
+
+			for (let i = 0; i < opt.printList.length; i++) {
+				const item = opt.printList[i];
+
+				// 开始打印, 这里的打印成功或者失败是不知道的, 需要通过 websocket 返回通知才能确定
+				window.PRINT_JSSDK.print(item);
+        
+				// 重点: 这里异步阻塞, 一直等到有打印结果就继续往下执行
+				const printRes = await getCallbackAsync<{
+					isSuccess: boolean;
+					printData: any;
+					remarks: string;
+				}>((resolveFn, rejectFn) => {
+          
+          // 赋值 _gloablePromiseResolve 函数
+          _gloablePromiseResolve = (par: any) => {
+            // 这里触发打印完成时, 关闭超时打印定时器
+            timeoutTimer && clearTimeout(timeoutTimer);
+            // 触发 Promise 的 resolve 函数
+            resolveFn(par);
+          };
+          
+          // 赋值 _gloablePromiseReject 函数
+          _gloablePromiseReject = rejectFn;
+          
+          // 这里开启超时打印定时器, 避免前端发送了打印数据, 但是打印机不返回数据, 就会一直卡着
+          timeoutTimer && clearTimeout(timeoutTimer);
+          timeoutTimer = setTimeout(() => {
+            // 这里可以执行 resolve
+            _gloablePromiseResolve({
+              isSuccess: false,
+              printData: null,
+              remarks: "打印超时"
+            });
+            
+            // 也可以执行 reject 
+            // _gloablePromiseReject(new Error(`打印超时, 超时的打印数据如下: ${JSON.stringify(item, null, 2)}`));
+          }, PRINT_TIMOUT);
+        };
+
+        // 这里就可以对打印结果进行处理了
+				if (printRes.isSuccess) {
+					console.log("打印成功: ", printRes, item);
+				} else {
+					console.log("打印失败: ", printRes, item);
+				}
+			}
+
+			// 打印完成
+		} else {
+			alert("websocket connect fail");
+		}
+	} catch (err) {
+		console.log("err: ", err);
+    alert(err instanceof Error ? err.message : String(err));
+	}
+};
+
+/** 处理 websocket onMessage 事件 */
+const handleOnMessage = (e: MessageEvent<any>) => {
+	const triggerPrintError = (remarks: string) => {
+    // 这里把保存的 Promise 的 resolve 执行, 并返回结果, 就会解除上面打印的阻塞
+		_gloablePromiseResolve({
+			isSuccess: false,
+			printData: null,
+			remarks
+		});
+	};
+
+	try {
+    // 处理打印响应
+		const printData = JSON.parse(e.data);
+    
+		if (printData) {
+      // 这里把保存的 Promise 的 resolve 执行, 并返回结果, 就会解除上面打印的阻塞
+			_gloablePromiseResolve({
+				isSuccess: true,
+				printData: printData,
+				remarks: "success"
+			});
+		} else {
+			triggerPrintError(`打印失败: ` + e.data);
+		}
+	} catch (err) {
+		triggerPrintError(`JSON反序列化失败: ` + err);
+	}
+};
+```
 
 ## 代理和反射
 

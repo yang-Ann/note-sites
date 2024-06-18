@@ -7545,6 +7545,53 @@ if err != nil {
 }
 ```
 
+## 编码和解码
+
+### URL编码解码
+
+```go
+package main
+
+import (
+	"fmt"
+	"net/url"
+)
+
+func main() {
+	encodedStr := "hello%20world"
+	decodedStr, err := url.QueryUnescape(encodedStr)
+	if err != nil {
+		fmt.Println("Error:", err)
+		return
+	}
+	fmt.Println("decodedStr:", decodedStr) // 输出: decodedStr: hello world
+}
+```
+
+### Base64编码解码
+
+```go
+package main
+
+import (
+	"encoding/base64"
+	"fmt"
+)
+
+func main() {
+	encodedStr := "aGVsbG8gd29ybGQ="
+	decodedBytes, err := base64.StdEncoding.DecodeString(encodedStr)
+	if err != nil {
+		fmt.Println("Error:", err)
+		return
+	}
+	decodedStr := string(decodedBytes)
+	fmt.Println("decodedStr:", decodedStr) // 输出: decodedStr: hello world
+}
+```
+
+
+
 ## 网络请求
 
 可以使用`resty`库, 基本使用如下: 

@@ -4497,7 +4497,7 @@ tsc index.ts --outDir ../dist --target ES6 --watch
 }
 ```
 
-`module`: 指定编译后使用的模块化规范, 可选值: "None", "CommonJS", "AMD", "System", "UMD", "ES6"或"ES2015"
+`module`: 指定编译后使用的模块化规范, 可选值: "`None`", "`CommonJS`", "`AMD`", "`System`", "`UMD`", "`ES6`"或"`ES2015`"
 
 - 只有"**AMD**"和"**System**"能和`--outFile`一起使用
 

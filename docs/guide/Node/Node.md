@@ -146,6 +146,8 @@ console.log(import.meta.url); // 'file:///F:/project/auxiliary-util/index.ts'
 const __filename = url.fileURLToPath(import.meta.url);
 // or
 const __filename = url.fileURLToPath(new URL(import.meta.url));
+// or
+const __filename = process.argv[1];
 
 console.log(__filename); // F:\project\auxiliary-util\index.ts
 ```
@@ -161,6 +163,10 @@ import * as url from "url";
 const __dirname = path.resolve();
 // or
 const __dirname = url.fileURLToPath(new URL(".", import.meta.url));
+// or
+const __dirname = process.cwd();
+
+console.log(__filename); // F:\project\auxiliary-util
 ```
 
 >  还有`setTimeout` `clearTimeout` `setInterval` `clearInterval` `console`同浏览器中一样
@@ -281,22 +287,22 @@ fs模块的 API 都分为 同步和异步两种 (带`Sync`后缀的是同步), �
 
 常用方法如下: 
 
-| 方法名                                     | 说明                                                         |
-| ------------------------------------------ | ------------------------------------------------------------ |
-| writeFile(file, data[, options], callback) | 写入文件, `file`文件路径, `data`数据, `options`写入的一些配置, `callback`回调<br />**Node写入不存在的文件时会创建对应的文件** |
-| readFile(path[, options], callback)        | 文件读取, `path`读取文件路径, `options`读取的选项, `callback`回调<br />[文件标识符](http://nodejs.cn/api/fs.html#file-system-flags) |
-| appendFile(path, data, callback)           | 追加到文件, `path`文件路径, `data`追加的数据, `callback`回调<br /> |
-| existsSync(path)                           | 检查一个路径是否存在                                         |
-| statSync(path)                             | 获取文件的状态, 返回一个对象, 对象包括文件的大小, 创建时间, 是否是文件或文件夹 |
-| unlink(path, callback)                     | 删除文件(`不包括文件夹`)                                     |
-| rmdir(path[, options], callback)           | 删除文件夹(`不包括文件`), 要获得类似于 `rm -rf` Unix 命令的行为, 使用`fs.rm` |
-| rm(path[, options], callback)              | 异步地删除文件和目录                                         |
-| readdir(path[, options], callback)         | 读取一个目录的目录结构, 回调会收到目录数组                   |
-| truncata(path, len, callback)              | 截断文件, 将文件修改为指定的大小, 单位是字节, 截断中文可能会会乱码(一个字占3个字节) |
-| mkdirSync(path[, mode])                    | 创建一个文件夹(`目录`), `mode`可以为`{ recursive: true }`这样可以创建父目录 |
-| renameSync(oldPath, newPath)               | 对文件进行重命名, `oldPath`旧的路径, `newPath`新的路径       |
-| watchFile(filename[, options], listener)   | 监视文件的修改, `filename`要监视的文件, `listener`回调(当文件发生变化时调用), 参数为当前文件的状态, 修改前的文件状态 |
-| copyFile(path1, path2)                     | 复制文件                                                     |
+- `writeFile`: 写入文件, `file`文件路径, `data`数据, `options`写入的一些配置, `callback`回调<br />**Node写入不存在的文件时会创建对应的文件**
+- `readFile`: 文件读取, `path`读取文件路径, `options`读取的选项, `callback`回调<br />[文件标识符](http://nodejs.cn/api/fs.html#file-system-flags)
+- `appendFile`: 追加到文件, `path`文件路径, `data`追加的数据, `callback`回调<br />
+- `existsSync`: 检查一个路径是否存在                                        
+- `statSync`: 获取文件的状态, 返回一个对象, 对象包括文件的大小, 创建时间, 是否是文件或文件夹
+- `unlink`: 删除文件(`不包括文件夹`)                                    
+- `rmdir`: 删除文件夹(`不包括文件`), 要获得类似于 `rm -rf` Unix 命令的行为, 使用`fs.rm`
+- `rm`: 异步地删除文件和目录                                        
+- `readdir`: 读取一个目录的目录结构, 回调会收到目录数组                  
+- `truncata`: 截断文件, 将文件修改为指定的大小, 单位是字节, 截断中文可能会会乱码(一个字占3个字节)
+- `mkdirSync`: 创建一个文件夹(`目录`), `mode`可以为`{ recursive: true }`这样可以创建父目录
+- `renameSync`: 对文件进行重命名, `oldPath`旧的路径, `newPath`新的路径      
+- `watchFile`: 监视文件的修改, `filename`要监视的文件, `listener`回调(当文件发生变化时调用), 参数为当前文件的状态, 修改前的文件状态
+- `copyFile`: 复制文件
+
+​                                            
 
 `fs`模块的API除了读取文件的内容格式需要注意一下, 其它对着文档用就行了
 
@@ -409,19 +415,18 @@ rl.on("close", () => {
 
 path 模块提供了一些用于处理文件路径的工具函数
 
-| 方法或属性名              | 说明                                                         |
-| ------------------------- | ------------------------------------------------------------ |
-| sep                       | 作为路径段分隔符, 在 Windows 上是 `\`, 在 Linux/macOS 上是 `/` |
-| delimiter                 | 作为路径定界符, 在 Windows 上是 `;`, 在 Linux/macOS 上是 `:` |
-| basename()                | 返回路径的最后一部分。 第二个参数可以过滤掉文件的扩展名      |
-| dirname()                 | 返回路径的目录部分                                           |
-| extname(path)             | 返回路径中文件的后缀名, 即路径中最后一个`.`之后的部分<br/>如果一个路径中并不包含`.`或该路径只包含一个`.` 且这个`.`为路径的第一个字符, 则此命令返回空字符串 |
-| isAbsolute()              | 判断是否是绝对路径, 返回布尔值                               |
-| parse()                   | 解析对象的路径为组成其的片段                                 |
-| format()                  | 将`path.parse()`格式的对象转换为字符串路径<br />当向 `pathObject` 提供属性时，存在一个属性优先于另一个属性的组合: <br />如果提供 `pathObject.dir`，则忽略 `pathObject.root` <br />如果 `pathObject.base` 存在，则忽略 `pathObject.ext` 和 `pathObject.name` |
-| resolve([from ...], to)   | 将 **to** 参数解析为绝对路径, 给定的路径的序列是从右往左被处理的, 后面每个 **path** 被依次解析, 直到构造完成一个绝对路径<br />会把 **/** 或 **\\** 开头的字符串片段解析成**根目录** |
-| join(path1, path2[, ...]) | 用于连接路径, 主要用途在于, 会正确使用当前系统的路径分隔符, Unix系统是**/**, Windows系统是**\\**<br />对 **/** 或 **\\** 开头的字符串片段只返回自身(**不会解析成根路径**) |
-| normalize(path)           | 会尝试计算**path**实际的路径(归一化路径)                     |
+- `sep`  : 作为路径段分隔符, 在 Windows 上是 `\`, 在 Linux/macOS 上是 `/` 
+- `delimiter`  : 作为路径定界符, 在 Windows 上是 `;`, 在 Linux/macOS 上是 `:` 
+- `basename()`: 返回路径的最后一部分。 第二个参数可以过滤掉文件的扩展名      
+- `dirname()`: 返回路径的目录部分, 就是父级目录, 可以在写入文件时, 判断是否存在, 不存在则创建                                          
+- `extname()`: 返回路径中文件的后缀名, 即路径中最后一个`.`之后的部分<br/>如果一个路径中并不包含`.`或该路径只包含一个`.` 且这个`.`为路径的第一个字符, 则此命令返回空字符串 
+- `isAbsolute()`: 判断是否是绝对路径, 返回布尔值                               
+- `parse()`: 解析对象的路径为组成其的片段                                 
+- `format()`: 将`path.parse()`格式的对象转换为字符串路径<br />当向 `pathObject` 提供属性时，存在一个属性优先于另一个属性的组合: 如果提供 `pathObject.dir`，则忽略 `pathObject.root` 如果 `pathObject.base` 存在，则忽略 `pathObject.ext` 和 `pathObject.name` 
+- `resolve()`: 将 **to** 参数解析为绝对路径, 给定的路径的序列是从右往左被处理的, 后面每个 **path** 被依次解析, 直到构造完成一个绝对路径会把 **/** 或 **\\** 开头的字符串片段解析成**根目录** 
+- `join()`: 用于连接路径, 主要用途在于, 会正确使用当前系统的路径分隔符, Unix系统是**/**, Windows系统是**\\**<br />对 **/** 或 **\\** 开头的字符串片段只返回自身(**不会解析成根路径**) 
+- `normalize()`: 会尝试计算**path**实际的路径(归一化路径)
+- `relative()`: 根据当前工作目录, 转换相对路径
 
 ```js
 import * as path from "path";
@@ -479,6 +484,10 @@ console.log(path.join("/bar/foo", "./baz")); // \bar\foo\baz
 console.log(path.join("www", "images/png/", "../gif/image.gif")); // www\images\gif\image.gif
 console.log(path.join("/foo/bar", "/tmp/file/")); // \foo\bar\tmp\file\
 console.log(path.join("www", "images/png/", "/gif/image.gif")); // www\images\png\gif\image.gif
+
+const dirPath = "F:\\project\\an-tmagic-editor\\ui\\src\\an-text";
+console.log("dirPath: ", dirPath);
+console.log("relative: ", path.relative(dirPath, "an-text")); // ..\..\..\an-text
 ```
 ## os
 

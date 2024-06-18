@@ -134,6 +134,10 @@ npm的基础常用配置如下:
   "bugs": { // issues 地址
     "url": "https://github.com/yang-Ann/sqlite-orm/issues"
   },
+  "engines": { // 设置指定的包版本
+    "node": ">=14.0.0 <16.0.0",  
+    "npm": ">=6.0.0"  
+  }, 
   "keywords": [ // 发布到 npm 之后可以搜索的关键字
     "sqlite",
     "orm"
@@ -616,41 +620,57 @@ npm config set access public
 -   `npm init @usr/foo` -> `npx @usr/create-foo`
 -   `npm init @usr` -> `npx @usr/create`
 
+## 语义化版本
+
+可以直接使用[semver](https://www.npmjs.com/package/semver)包来完成, 具体的规范可见[语义化版本](https://semver.org/lang/zh-CN/)
+
+```
+=: 精确匹配版本
+>: 大于指定版本
+>=: 大于或等于指定版本
+<: 小于指定版本
+<=: 小于或等于指定版本
+~: 兼容补丁版本（即第二位和第三位数字可以改变）
+^: 兼容次要版本（即第一位数字不能改变，但第二位和第三位数字可以改变）
+```
+
 ## npm 第三方库
 
 [awesome-nodejs](https://github.com/sindresorhus/awesome-nodejs)
 
 **前端工具包**
 
-|         包名          |                             描述                             |
-| :-------------------: | :----------------------------------------------------------: |
-|         serve         |          快速的为一个文件夹生成一个静态的 http 服务          |
-|         axios         |                          网络请求库                          |
-|        ESLint         |                         代码检查工具                         |
-|       prettier        |                       代码风格修正工具                       |
-|        nanoid         |                    可以快速生成唯一的 id                     |
-|        lodash         |                    JavaScript 实用函数库                     |
-|         ramda         |                    JavaScript 实用函数库                     |
-|         dayjs         |                          日期处理库                          |
-|        mathjs         |                            数学库                            |
-|     jsonwebtoken      |                   根据给定的数据生成 token                   |
-|        cheerio        |        基于JQuery的node模块, 可用于web爬取, 解析html         |
-|         jsdom         |         文档对象模型模拟器(一般都是配合cheerio使用)          |
-|       puppeteer       | 生成页面 PDF, 抓取 SPA, 自动提交表单, 进行 UI 测试, 键盘输入等, 功能很强大<br />可以配合 Headless Recorder 插件进行录制操作 |
-|        fabric         |                           canvas库                           |
-|         xlsx          |                       读取和写入excel                        |
-| javascript-obfuscator |                          js代码混淆                          |
-|      markdown-it      |                         markdown解析                         |
-|     monaco-editor     |                      vscode web版编辑器                      |
-|        qrcode         |                          生成二维码                          |
-|    relationship.js    |                         亲戚关系计算                         |
-|       js-base64       |                         base64编解码                         |
-|       jsencrypt       |                          rsa加解密                           |
-|       nprogress       |                        页面顶部进度条                        |
-|       validator       |                          字符串校验                          |
-|         mitt          |                     最小的事件发射器实现                     |
-|        croner         |                 无任何依赖的`cron`表达式实现                 |
-|        url解析        |                          url-parse                           |
+|          包名          |                             描述                             |
+| :--------------------: | :----------------------------------------------------------: |
+|         serve          |          快速的为一个文件夹生成一个静态的 http 服务          |
+|         axios          |                          网络请求库                          |
+|         ESLint         |                         代码检查工具                         |
+|        prettier        |                       代码风格修正工具                       |
+|         nanoid         |                    可以快速生成唯一的 id                     |
+|         lodash         |                    JavaScript 实用函数库                     |
+|         ramda          |                    JavaScript 实用函数库                     |
+|         dayjs          |                          日期处理库                          |
+|         mathjs         |                            数学库                            |
+|      jsonwebtoken      |                   根据给定的数据生成 token                   |
+|        cheerio         |        基于JQuery的node模块, 可用于web爬取, 解析html         |
+|         jsdom          |         文档对象模型模拟器(一般都是配合cheerio使用)          |
+|       puppeteer        | 生成页面 PDF, 抓取 SPA, 自动提交表单, 进行 UI 测试, 键盘输入等, 功能很强大<br />可以配合 Headless Recorder 插件进行录制操作 |
+|         fabric         |                           canvas库                           |
+|          xlsx          |                       读取和写入excel                        |
+| javascript-obfuscator  |                          js代码混淆                          |
+|      markdown-it       |                         markdown解析                         |
+|     monaco-editor      |                      vscode web版编辑器                      |
+|         qrcode         |                          生成二维码                          |
+|    relationship.js     |                         亲戚关系计算                         |
+|       js-base64        |                         base64编解码                         |
+|       jsencrypt        |                          rsa加解密                           |
+|       nprogress        |                        页面顶部进度条                        |
+|       validator        |                          字符串校验                          |
+|          mitt          |                     最小的事件发射器实现                     |
+|         croner         |                 无任何依赖的`cron`表达式实现                 |
+|       url-parse        |                           url解析                            |
+|         semver         |                        版本号生成工具                        |
+| `dot-prop`,`get-value` |                   使用`.`获取对象中的属性                    |
 
 **服务端工具包**
 
@@ -681,6 +701,7 @@ npm config set access public
 |                  glob                  |                  使用 shell 的模式匹配文件                   |
 |               fast-glob                |                     根据 global 遍历文件                     |
 |                walkdir                 |                          遍历目录树                          |
+|                find-up                 |                通过遍历父目录来查找文件或目录                |
 |                piscina                 |                          多线程实现                          |
 |               node-fetch               |                      node中的fetch实现                       |
 |                  tsx                   |                       直接运行 ts文件                        |
@@ -689,10 +710,16 @@ npm config set access public
 |                 dotenv                 |        解析`.env`文件内容到环境变量(`process.env`)中         |
 |              tesseract.js              | 包装[tesseract](https://github.com/tesseract-ocr/tesseract)的js库 |
 |                 alasql                 |                        内存sql数据库                         |
-|                 sql.js                 |                         sqlite操作库                         |
-|             better-sqlite3             |                         sqlite操作库                         |
+|                 sql.js                 |                sqlite操作库(可以在浏览器运行)                |
+|      `better-sqlite3`, `sqlite3`       |                         sqlite操作库                         |
 |              drizzle-orm               |                           sql rom                            |
 |               mime-types               |                        解析MIME type                         |
+|              concurrently              |                同时运行多个命令, 启动多个服务                |
+|              npm-run-all               |               用于并行或顺序运行多个 npm 脚本                |
+|                esprima                 |                     将js源代码将转成AST                      |
+|               estraverse               |                    遍历`esprima`生成的AST                    |
+|               escodegen                |               将`esprima`生成的AST转换为源代码               |
+|                 acorn                  |                           js解析器                           |
 
 **终端工具**
 
@@ -738,8 +765,8 @@ nvm默认node镜像源是`https://nodejs.org/dist`，从默认的镜像缘源下
 2. 新增两行配置，更换`node`和`npm`的下载源为淘宝镜像源
 
 ```sh
-node_mirror: https://npm.taobao.org/mirrors/node/ # 添加 node 镜像
-npm_mirror: https://npm.taobao.org/mirrors/npm/ # 添加 npm 镜像
+node_mirror: https://registry.npmmirror.com/node # 添加 node 镜像
+npm_mirror: https://registry.npmmirror.com/npm # 添加 npm 镜像
 ```
 
 ### 安装指定版本号的node
