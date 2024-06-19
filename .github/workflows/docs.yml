@@ -22,3 +22,5 @@ jobs:
         with:
           branch: gh-pages # 设置目标分支
           folder: docs/.vuepress/dist # 设置部署文件夹
+          token: ${{ secrets.GH_PAGES_TOKEN }} # 使用新创建的Secret
+          clean: true
