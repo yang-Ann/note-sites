@@ -3,6 +3,8 @@ on:
   push:
     branches:
       - master # 根据你的主分支名称更改
+permissions:
+  contents: write # 给予工作流写入仓库内容的权限
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -22,5 +24,5 @@ jobs:
         with:
           branch: gh-pages # 设置目标分支
           folder: docs/.vuepress/dist # 设置部署文件夹
-          token: ${{ secrets.GH_PAGES_TOKEN }} # 使用新创建的Secret
+          token: ${{ secrets.GITHUB_TOKEN }} # 使用默认的GITHUB_TOKEN
           clean: true
