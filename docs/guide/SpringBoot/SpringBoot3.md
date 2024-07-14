@@ -3448,7 +3448,157 @@ public class HttpController {
 
 ## JSON
 
-可以使用`hutool`工具库
+可以使用`hutool`工具库的[`JSONUtil`](https://hutool.cn/docs/#/json/JSONUtil?id=jsonutil)工具类, 基本使用如下: 
+
+### JSON解析成字符串
+
+```java
+// 对象转json字符串
+public static void stringIfy() {
+    // TreeMap<String, Object> map = new TreeMap<>(); // 支持有序的
+
+    HashMap<String, Object> map = new HashMap<>();
+    map.put("name", "张三");
+    map.put("age", 18);
+    map.put("isFlag", true);
+    map.put("obj", new HashMap<>() {{
+        put("bar", 1);
+        put("foo", true);
+    }});
+    map.put("list", new ArrayList<>() {{
+        add("1");
+        add(2);
+        add(true);
+    }});
+
+    // 转换为json字符串
+    String jsonStr = JSONUtil.toJsonStr(map);
+    System.out.println("jsonStr = " + jsonStr);
+    // jsonStr = {"isFlag":true,"obj":{"bar":1,"foo":true},"name":"张三","list":["1",2,true],"age":18}
+
+    // 转换为json字符串(格式化)
+    System.out.println("prettyJsonStr = " + JSONUtil.toJsonPrettyStr(map));
+    /*
+    prettyJsonStr = {
+        "isFlag": true,
+        "obj": {
+            "bar": 1,
+            "foo": true
+        },
+        "name": "张三",
+        "list": [
+            "1",
+            2,
+            true
+        ],
+        "age": 18
+    }
+     */
+}
+```
+
+### JSON字符串转对象
+
+```java
+// json字符串转对象
+public static void parse() {
+    String jsonStr = "{\"isFlag\":true,\"obj\":{\"bar\":1,\"foo\":true},\"name\":\"张三\",\"list\":[\"1\",2,true],\"age\":18}";
+    JSONObject entries = JSONUtil.parseObj(jsonStr);
+
+    String name = (String) entries.get("name");
+    System.out.println("name = " + name); // name = 张三
+
+    Boolean isFlag = (Boolean) entries.get("isFlag");
+    System.out.println("isFlag = " + isFlag); // isFlag = true
+
+    ArrayList list = (ArrayList) entries.get("list");
+    System.out.println("list = " + list); // list = [1, 2, true]
+}
+```
+
+### XML字符串转换为JSON
+
+```java
+String s = "<sfzh>123</sfzh><sfz>456</sfz><name>aa</name><gender>1</gender>";
+JSONObject json = JSONUtil.parseFromXml(s);
+
+json.get("sfzh");
+json.get("name");
+```
+
+### JSON转换为XML
+
+```java
+final JSONObject put = JSONUtil.createObj()
+        .set("aaa", "你好")
+        .set("键2", "test");
+
+// <aaa>你好</aaa><键2>test</键2>
+final String s = JSONUtil.toXmlStr(put);
+```
+
+### JSON转Bean
+
+先定义两个较为复杂的Bean（包含泛型），需引入`lombok`, 如下: 
+
+```java
+@Data
+public class Test {
+    private String foo;
+    private boolean bar;
+
+    @Override
+    public String toString() {
+        return "Test{" +
+                "foo='" + foo + '\'' +
+                ", bar=" + bar +
+                '}';
+    }
+}
+
+@Data
+public class Price {
+    private Test myTest;
+    private List<Test> tests;
+
+    @Override
+    public String toString() {
+        return "Price{" +
+                "myTest=" + myTest +
+                ", tests=" + tests +
+                '}';
+    }
+}
+```
+
+从字符串解析成Bean
+
+```java
+// json字符串转bean对象
+public static void parseToBean() {
+    String testJsonStr = "{\"foo\":\"hello\",\"bar\":false}";
+    Test test = JSONUtil.toBean(testJsonStr, Test.class);
+    System.out.println(test);
+    // Test{foo='hello', bar=false}
+
+    StringBuffer stringBuffer = new StringBuffer();
+    stringBuffer.append("{\"myTest\":{\"foo\":\"word\",\"bar\":true}")
+            .append(",")
+            .append("\"tests\":[")
+            .append(testJsonStr)
+            .append(",")
+            .append(testJsonStr)
+            .append(",")
+            .append(testJsonStr)
+            .append("]}");
+
+    Price price = JSONUtil.toBean(stringBuffer.toString(), Price.class);
+    System.out.println(price);
+    // Price{myTest=Test{foo='word', bar=true}, tests=[Test{foo='hello', bar=false}, Test{foo='hello', bar=false}, Test{foo='hello', bar=false}]}
+}
+```
+
+
 
 ## 第三方库
 

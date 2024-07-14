@@ -4017,36 +4017,329 @@ window.addEventListener('mouseup', () => {
 
 ## 打印
 
-`window.open()`新建一个窗口, 然后往窗口中写入HTML字符串即可(`newWindow.document.write()`), 如下: 
+自定义封装打印hook, 如下: 
 
-```ts
-const el = document.querySelect(".print");
-const newWindow = window.open("打印标题", "about:blank");
+```typescript
+// usePrint.ts
 
-if (newWindow) {
-  newWindow.document.write(el.outerHTML);
-  newWindow.window.print();
-  newWindow.window.close();
-} else {
-  console.warn("打印失败");
+class CreatePrint {
+	constructor(
+		/** dom元素 */
+		public dom: Element | string,
+
+		/** 打印配置 */
+		public options: {
+			/** 打印方向
+			 * - portrait 纵向
+			 * - landscape 横向
+			 */
+			direction: "portrait" | "landscape";
+			/** 清除页边距和内边距 */
+			clearMarginAndPadding: boolean;
+			/** 打印页的style */
+			printStyleContent: string;
+			/** 打印页 @page 里添加自定义的style */
+			printPageStyleContent: string;
+		}
+	) {
+		this.options = Object.assign(
+			{
+				clearMarginAndPadding: true
+			},
+			options
+		);
+
+		if (typeof dom === "string") {
+			const queryDom = document.querySelector(dom);
+			if (queryDom) {
+				this.dom = queryDom;
+			} else {
+				this.handleError("dom元素不存在");
+			}
+		}
+
+		this.init();
+	}
+	init() {
+		const content = this.getStyle() + this.getHtml();
+		this.writeHtmlToIframe(content);
+	}
+	/**
+	 * 获取所有内联和外部引用的样式标签，并添加一些自定义的样式规则。
+	 * 这个方法可能用于生成一个包含页面所有样式的字符串，比如为了打印或导出页面时使用。
+	 *
+	 * @return {string} 返回一个包含所有样式标签和额外样式规则的字符串。
+	 */
+	getStyle() {
+		let str = "";
+		// 选取页面上所有的 <style> 和 <link> 标签。
+		const styles = document.querySelectorAll("style,link");
+		for (let i = 0; i < styles.length; i++) {
+			// 在特殊情况下，换行会变成br标签
+			str += styles[i].outerHTML.replace(/<br>/g, "\n");
+		}
+
+		str += `<style>
+      html {
+        -webkit-text-size-adjust: none; /* 禁止用户调整文字大小 */
+        -webkit-print-color-adjust: exact; /* 打印时颜色精确匹配 */
+      }
+      * {
+        ${this.options.clearMarginAndPadding ? "margin: 0; padding: 0;" : ""} /* 是否清除边距 */
+      }
+      @page { /* 定义打印页面的样式 */
+        size:${this.options.direction || ""}; /* 设置页面的方向，如果没有方向选项，则为空 */
+        ${this.options.clearMarginAndPadding ? "margin: 0; padding: 0;" : ""} /* 是否清除边距 */
+        ${this.options.printPageStyleContent ? this.options.printPageStyleContent : ""}
+      }
+
+      ${this.options.printStyleContent ? this.options.printStyleContent : ""}
+      </style>`;
+
+		return str;
+	}
+
+	/** 获取 html 相关的字符串 */
+	getHtml() {
+    // 部分表单的元素需要处理一下, 不然会出现打印页面的状态无法对应的问题
+		const inputs = document.querySelectorAll("input");
+		for (let i = 0; i < inputs.length; i++) {
+			const item = inputs[i];
+			const type = item.getAttribute("type");
+			if (type === "checkbox" || type == "radio") {
+				if (item.checked == true) {
+					item.setAttribute("checked", "checked");
+				} else {
+					item.removeAttribute("checked");
+				}
+			} else if (type === "text") {
+				item.setAttribute("value", item.value);
+			} else {
+				item.setAttribute("value", item.value);
+			}
+		}
+
+		const textareas = document.querySelectorAll("textarea");
+		for (let i = 0; i < textareas.length; i++) {
+			const item = textareas[i];
+			if (item.getAttribute("type") === "textarea") {
+				item.innerHTML = item.value;
+			}
+		}
+
+		const selects = document.querySelectorAll("select");
+		for (let i = 0; i < selects.length; i++) {
+			const item = selects[i];
+			if (item.getAttribute("type") == "select-one") {
+				const childs = item.children;
+
+				for (const key in childs) {
+					const child = childs[key];
+					if (child.tagName == "OPTION") {
+						if (child.getAttribute("selected")) {
+							child.setAttribute("selected", "selected");
+						} else {
+							child.removeAttribute("selected");
+						}
+					}
+				}
+			}
+		}
+    
+		const outerHTML = (this.dom as Element).outerHTML;
+		return outerHTML;
+	}
+	/** 写入html字符串到 iframe 中 */
+	writeHtmlToIframe(content: string) {
+		const iframe: HTMLIFrameElement = document.createElement("iframe");
+		iframe.setAttribute("id", "print-iframe");
+		iframe.setAttribute("style", "position:absolute;width:0;height:0;top:-10px;left:-10px;");
+
+		document.body.appendChild(iframe);
+
+		const iframeWindow = iframe.contentWindow || iframe.contentDocument;
+		const iframeDocument = iframe.contentDocument || iframe.contentWindow?.document;
+
+		if (iframeDocument) {
+			iframeDocument.open();
+			iframeDocument.write(content);
+			iframeDocument.close();
+
+			iframe.onload = () => {
+				this.execPrint(iframeWindow);
+
+				setTimeout(() => {
+					document.body.removeChild(iframe);
+				}, 100);
+			};
+		} else {
+			this.handleError("打印失败");
+		}
+	}
+	/** 执行打印命令 */
+	execPrint(frameWindow: HTMLElement | any) {
+		try {
+			setTimeout(() => {
+				frameWindow.focus();
+
+				try {
+					if (!frameWindow.document.execCommand("print", false, null)) {
+						frameWindow.print();
+					}
+				} catch (e) {
+					frameWindow.print();
+				}
+
+				frameWindow.close();
+			}, 10);
+		} catch (err) {
+			this.handleError(err);
+		}
+	}
+	handleError(err: any) {
+		alert(err);
+		throw new Error(err);
+	}
 }
+
+/** 打印方法 */
+export function usePrint(dom: any, options: any) {
+	return new CreatePrint(dom, options);
+}
+
+/** 根据A4纸张或者其他纸张的宽高结合当前电脑DPI的值计算出相应的宽高,一般是px属性 */
+export const mmToPx = (width: number, height: number) => {
+	const getDPIInfo = getDPI();
+	return {
+		width: Math.ceil((width / 25.4) * getDPIInfo.width),
+		height: Math.ceil((height / 25.4) * getDPIInfo.height)
+	};
+};
+
+/** 获取当前电脑的DPI */
+export const getDPI = () => {
+	const dpiInfo = {
+		height: 0,
+		width: 0
+	};
+	const screenInfo = window.screen as any;
+	if (screenInfo.deviceXDPI) {
+		dpiInfo.width = screenInfo.deviceXDPI;
+		dpiInfo.height = screenInfo.deviceYDPI;
+	} else {
+		const tmpNode = document.createElement("div");
+		tmpNode.style.cssText = "width:1in;height:1in;position:absolute;left:0px;top:0px;z-index:99;visibility:hidden";
+		document.body.appendChild(tmpNode);
+		dpiInfo.width = parseInt(tmpNode.offsetWidth.toString());
+		dpiInfo.height = parseInt(tmpNode.offsetHeight.toString());
+		if (tmpNode.parentNode) tmpNode.parentNode.removeChild(tmpNode);
+	}
+	return dpiInfo;
+};
 ```
 
-原生js打印会丢失样式, 解决的办法是使用**内联样式**或者是把样式写到打印元素的下面, 如下: 
+基本使用如下: 
 
 ```html
-<div class="print">
+<!-- index.html -->
+
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>test print</title>
+</head>
+
+<body>
+
   <style>
-    .box {
-      width: 100px;
-      height: 100px;
-      border: 1px solid #000;
+    /* body {
+      background-color: blue;
+    } */
+
+    .print-comtainer {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-top: 20px;
+      box-sizing: border-box;
+    }
+
+    .display {
+      position: absolute;
+      left: -99999px;
+    }
+
+    button {
+      border: none;
+      border-radius: 4px;
+      box-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+      color: black;
+      padding: 4px 6px;
+    }
+
+    button:active {
+      opacity: .8;
     }
   </style>
-  <div>需要被打印的区域</div>
-  <div class="box">box</div>
-</div>
+
+  <div class="display">
+    <div class="print-comtainer">
+      打印内容
+      <button>全局样式按钮</button>
+
+      <input id="input" type="radio" checked />
+      <input type="radio" />
+      <input type="radio" />
+    </div>
+  </div>
+
+  <button class="print-btn">打印</button>
+
+  <script type="module">
+    import { usePrint, mmToPx } from './usePrint.js';
+
+    const printBtn = document.querySelector(".print-btn");
+    printBtn.onclick = () => {
+      const printComtainer = document.querySelector(".print-comtainer");
+      if (printComtainer) {
+        // 获取A4纸张的像素, 一般是 {width: 794, height: 1123}
+        const a4Info = mmToPx(210, 297);
+
+        /** 打印方向
+         * - portrait 纵向
+         * - landscape 横向
+         */
+        const direction = 'portrait';
+
+        if (direction === 'portrait') {
+          printComtainer.style.width = a4Info.widht + 'px';
+          printComtainer.style.height = a4Info.height + 'px';
+
+          // 纵向打印则是a4纸的width等于高度, height等于宽度
+        } else if (direction === 'landscape') {
+          printComtainer.style.width = a4Info.height + 'px';
+          printComtainer.style.height = a4Info.width + 'px';
+        }
+
+        /** 打印 */
+        usePrint(printComtainer, {
+          direction,
+          printStyleContent: "body { background: #ff0 !important; }"
+        });
+      } else {
+        alert("打印元素获取失败");
+      }
+    }
+  </script>
+</body>
+
+</html>
 ```
+
+
 
 ## File
 

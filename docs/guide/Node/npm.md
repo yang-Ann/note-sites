@@ -638,7 +638,7 @@ npm config set access public
 
 [awesome-nodejs](https://github.com/sindresorhus/awesome-nodejs)
 
-**前端工具包**
+### 前端工具包
 
 |          包名          |                             描述                             |
 | :--------------------: | :----------------------------------------------------------: |
@@ -672,7 +672,7 @@ npm config set access public
 |         semver         |                        版本号生成工具                        |
 | `dot-prop`,`get-value` |                   使用`.`获取对象中的属性                    |
 
-**服务端工具包**
+### 服务端工具包
 
 |                  包名                  |                             作用                             |
 | :------------------------------------: | :----------------------------------------------------------: |
@@ -720,8 +720,11 @@ npm config set access public
 |               estraverse               |                    遍历`esprima`生成的AST                    |
 |               escodegen                |               将`esprima`生成的AST转换为源代码               |
 |                 acorn                  |                           js解析器                           |
+|                  ssh2                  |                           ssh实现                            |
+|            ssh2-sftp-client            |                           ftp实现                            |
+|               dotenvPath               |               加载`.env`文件到`process.env`中                |
 
-**终端工具**
+### 终端工具
 
 | 包名            | 作用                                               |
 | --------------- | -------------------------------------------------- |
@@ -732,7 +735,7 @@ npm config set access public
 | commander       | 命令行界面库                                       |
 | minimist        | 解析命令行参数                                     |
 | chalk           | 终端字符串美化库                                   |
-| picocolors      | 也是终端字符串美化库, 但是比 chalk 要小            |
+| picocolors      | 也是终端字符串美化库, 但是比 `chalk` 要小          |
 | log-symbols     | 终端图标库                                         |
 | ora             | 终端加载动画                                       |
 | ink             | 命令行反应库(使用类似于React的语法编写命令行程序)  |

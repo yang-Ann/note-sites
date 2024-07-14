@@ -26,7 +26,7 @@ if [ ! -d $guideDir ]; then
 fi
 
 # 排除的文件
-ignoreFile=(Outher Script)
+ignoreFile=(Other Script)
 
 # 赋默认值, 报错信息不用管
 ${remote:="origin"} 2> /dev/null 
