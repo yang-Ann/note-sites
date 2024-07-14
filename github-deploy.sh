@@ -30,7 +30,7 @@ ignoreFile=(Other Script)
 
 # 赋默认值, 报错信息不用管
 ${remote:="origin"} 2> /dev/null 
-${branchName:="master"} 2> /dev/null
+${branchName:="github-master"} 2> /dev/null
 now=$(date "+%Y-%m-%d %H:%M:%S")
 
 
@@ -90,7 +90,7 @@ function isPrevCommand() {
 # 部署函数
 function deploy() {
   start=$(date +%s)
-  
+
   # --- git
   git add $1
   isPrevCommand "提交暂存区成功" "提交暂存区失败" 1
