@@ -2,7 +2,7 @@ name: docs
 on:
   push:
     branches:
-      - master # 根据你的主分支名称更改
+      - main # 根据你的主分支名称更改
 permissions:
   contents: write # 给予工作流写入仓库内容的权限
 jobs:
