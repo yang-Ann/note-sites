@@ -30,7 +30,7 @@ ignoreFile=(Other Script)
 
 # 赋默认值, 报错信息不用管
 ${remote:="github-origin"} 2> /dev/null 
-${branchName:="main"} 2> /dev/null
+${branchName:="master"} 2> /dev/null
 now=$(date "+%Y-%m-%d %H:%M:%S")
 
 
@@ -98,8 +98,8 @@ function deploy() {
   git commit -m "$message"
   isPrevCommand "提交成功" "提交失败" 1
 
-  git push $remote $branchName
-  git push origin master
+  git push $remote $branchName:main
+  git push origin $branchName
   isPrevCommand "推送成功" "推送失败" 1
 
   end=$(date +%s)
