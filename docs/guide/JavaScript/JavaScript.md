@@ -7557,7 +7557,29 @@ const sleep = (timeout: number) => new Promise(resolve => setTimeout(resolve, ti
 
 ### 转移Promise执行函数
 
-在`new Promise(resolve, reject => { // ...  })`时可以得到两个修改并触发`Promise`状态的方法, 这个两个方法可以临时保存起来, 然后在需要触发的时候调用即可触发, 这样的场景在使用第三方批量打印标签并且需要在打印完成后读取标签数据时会用到, 具体业务就是**使用`websocket`批量发送打印标签数据, 标签是逐个打印的, 打印完成后返回标签的数据,需要对返回的数据进行处理**, 这个场景第一时间肯定会想到使用栈的方式去执行, 打印前入栈, 打印完成后出栈, 然后继续入栈, 出栈这里不多说, 直接看如何使用`Promise`的方式去处理, 如下:
+在`new Promise(resolve, reject => { // ...  })`时可以得到两个修改并触发`Promise`状态的方法, 这个两个方法可以临时保存起来, 然后在需要触发的时候调用即可触发, 如下: 
+
+```ts
+// ECMA 2024 新增方法
+// const { promise, resolve, reject } = Promise.withResolvers();
+
+// 内部实现原理
+const myWithResolvers = <T = any>(): {
+	resolve: (p: T) => void;
+	reject: (p: T) => void;
+	promise: Promise<T>;
+} => {
+	let resolve, reject;
+	const promise = new Promise<T>((_resolve, _reject) => {
+    // resolve = _resolve;
+		// reject = _reject;
+    [resolve, reject] = [_resolve, _reject];
+	});
+	return { resolve, reject, promise };
+};
+```
+
+这样的场景在使用第三方批量打印标签并且需要在打印完成后读取标签数据时会用到, 具体业务就是**使用`websocket`批量发送打印标签数据, 标签是逐个打印的, 打印完成后返回标签的数据,需要对返回的数据进行处理**, 这个场景第一时间肯定会想到使用栈的方式去执行, 打印前入栈, 打印完成后出栈, 然后继续入栈, 出栈这里不多说, 直接看如何使用`Promise`的方式去处理, 如下:
 
 这里定义一个全局变量和一个获取`Promise`的`resolve`函数的方法:
 

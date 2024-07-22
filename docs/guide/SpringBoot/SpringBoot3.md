@@ -3598,7 +3598,140 @@ public static void parseToBean() {
 }
 ```
 
+## excel
 
+excel解析和生成可以使用`easyexcel`, 先添加依赖: 
+
+```xml
+<dependency>
+    <groupId>com.alibaba</groupId>
+    <artifactId>easyexcel</artifactId>
+    <version>4.0.1</version>
+</dependency>
+```
+
+定义实体类
+
+```java
+package com.example.learn_spring_boot3.entity;
+
+import com.alibaba.excel.annotation.ExcelProperty;
+import lombok.*;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class ExcelStudent {
+
+    /**
+     * 学号
+     */
+    @ExcelProperty("学号")
+    private String studentId;
+
+    /**
+     * 姓名
+     */
+    @ExcelProperty("姓名")
+    private String name;
+
+    /**
+     * 年龄
+     */
+    @ExcelProperty("年龄")
+    private Integer age;
+}
+
+```
+
+基本使用如下: 
+
+```java
+package com.example.learn_spring_boot3.service.impl;
+
+import com.alibaba.excel.EasyExcel;
+import com.alibaba.excel.context.AnalysisContext;
+import com.alibaba.excel.event.AnalysisEventListener;
+import com.alibaba.excel.support.ExcelTypeEnum;
+import com.example.learn_spring_boot3.entity.ExcelStudent;
+import com.example.learn_spring_boot3.exception.ServiceException;
+import com.example.learn_spring_boot3.service.ExcelService;
+import com.example.learn_spring_boot3.utils.ResponseData;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
+import javax.servlet.http.HttpServletResponse;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+@Service
+public class ExcelServiceImpl implements ExcelService {
+
+    /**
+     * 解析excel
+     */
+    @Override
+    public ResponseEntity<ResponseData<Object>> upload(MultipartFile file) {
+        try {
+            String filePath = FileServiceImpl.USER_DIR + File.separator + FileServiceImpl.FILE_SAVE_DIR_NAME + File.separator + System.currentTimeMillis() + ".xlsx";
+            file.transferTo(new File(filePath));
+            EasyExcel.read(filePath, ExcelStudent.class, new ExcelListener(filePath)).excelType(ExcelTypeEnum.XLSX).sheet().doRead();
+            return ResponseEntity.ok(ResponseData.success(null));
+        } catch (Exception err) {
+            err.printStackTrace();
+            throw new ServiceException(403, "excel上传失败");
+        }
+    }
+
+
+    public class ExcelListener extends AnalysisEventListener<ExcelStudent> {
+
+        /**
+         * excel 文件路径
+         */
+        private final String excelFilePath;
+
+        public ExcelListener(String excelFilePath) {
+            this.excelFilePath = excelFilePath;
+        }
+
+        @Override
+        public void invoke(ExcelStudent data, AnalysisContext context) {
+            System.out.println("读取到了数据 data = " + data);
+        }
+
+        @Override
+        public void doAfterAllAnalysed(AnalysisContext context) {
+            File file = new File(this.excelFilePath);
+            boolean delete = file.delete();
+            System.out.println("操作完成, 删除 " + this.excelFilePath + (delete ? "成功" : "失败"));
+        }
+    }
+
+    /**
+     * 生成excel
+     */
+    @Override
+    public void download(String studentIds, HttpServletResponse response) throws IOException {
+        System.out.println("studentIds = " + studentIds);
+
+        List<ExcelStudent> list = new ArrayList<>();
+        list.add(new ExcelStudent("001", "张三", 18));
+        list.add(new ExcelStudent("002", "李四", 12));
+
+        String fileName = "output.xlsx";
+        response.setCharacterEncoding("UTF-8");
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        response.setHeader("Content-Disposition", "attachment; filename=" + fileName);
+
+        EasyExcel.write(response.getOutputStream(), ExcelStudent.class).sheet("学生信息").doWrite(list);
+    }
+}
+
+```
 
 ## 第三方库
 
