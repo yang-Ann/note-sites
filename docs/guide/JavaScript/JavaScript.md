@@ -4339,6 +4339,257 @@ export const getDPI = () => {
 </html>
 ```
 
+## 拖拽
+
+### 指定容器内拖拽元素
+
+```html
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>draggable demo</title>
+</head>
+
+<style>
+  .container {
+    width: 80vw;
+    height: 80vh;
+    margin: 50px auto;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    overflow: hidden;
+    box-sizing: border-box;
+    /* padding: 10px; */
+    position: relative;
+  }
+
+  .block {
+    width: 150px;
+    height: 150px;
+    border-radius: 4px;
+    background-color: #ccc;
+    position: absolute;
+    overflow: hidden;
+  }
+
+  .block>.title {
+    height: 40px;
+    cursor: move;
+    background-color: red;
+  }
+</style>
+
+<body>
+  <div class="container">
+    <div class="block">
+      <div class="title"></div>
+    </div>
+  </div>
+
+  <script type="module">
+    const container = document.querySelector(".container");
+    const blockTitle = document.querySelector(".block > .title");
+
+    let offsetX = 0,
+      offsetY = 0;
+
+    let originTransition;
+
+    let draggableContainer = null;
+
+    blockTitle.addEventListener("mousedown", onMousedown);
+
+    // 鼠标按下事件
+    function onMousedown(e) {
+      console.log("onMousedown");
+
+      // 获取容器
+      draggableContainer = e.target.parentNode;
+
+      if (!draggableContainer) return console.warn("onMousedown 未获取到移动容器");
+
+      // 减少透明色提示
+      originTransition = draggableContainer.style.transition;
+      draggableContainer.style.transition = "opacity 0.5s ease 0s";
+      draggableContainer.style.opacity = "0.5";
+
+      // 获取当前鼠标指针相对于父容器的偏移量
+      offsetX = e.clientX - draggableContainer.offsetLeft;
+      offsetY = e.clientY - draggableContainer.offsetTop;
+
+      // 禁止文字选择
+      document.body.style.userSelect = "none";
+
+      // 监听鼠标移动事件, 注意: 这里是给 body 设置的
+      document.body.addEventListener("mousemove", onMousemove);
+      // 监听鼠标弹起事件, 注意: 这里是给 body 设置的
+      document.body.addEventListener("mouseup", onMouseup);
+    };
+
+    // 鼠标移动事件
+    function onMousemove(e) {
+      console.log("onMousemove");
+
+      if (!draggableContainer) return console.warn("onMousemove 未获取到移动容器");
+
+      // 获取可移动容器的宽高
+      const clientWidth = container.clientWidth;
+      const clientHeight = container.clientHeight;
+
+      // 计算需要移动到的位置
+      let moveX = e.clientX - offsetX;
+      let moveY = e.clientY - offsetY;
+
+      // 不能移出父容器left
+      if (moveX < 0) {
+        moveX = 0;
+
+        // 不能移出父容器right
+      } else if (moveX + draggableContainer.clientWidth > clientWidth) {
+        moveX = clientWidth - draggableContainer.clientWidth;
+      }
+
+      // 不能移出父容器top
+      if (moveY < 0) {
+        moveY = 0;
+
+        // 不能移出父容器bottom
+      } else if (moveY + draggableContainer.clientHeight > clientHeight) {
+        moveY = clientHeight - draggableContainer.clientHeight;
+      }
+
+      // 设置移动的位置
+      draggableContainer.style.left = `${moveX}px`;
+      draggableContainer.style.top = `${moveY}px`;
+
+      // 一次性设置减少页面重绘, 但会覆盖已经设置好的 style
+      // draggableContainer.setAttribute("style", `left: ${moveX}px; top: ${moveY}px;`);
+    }
+
+    // 鼠标弹起事件
+    function onMouseup() {
+      console.log("onMouseup");
+
+      // 重置变量
+      offsetX = offsetY = 0;
+
+      // 复原
+      draggableContainer.style.opacity = '';
+      draggableContainer.style.transition = originTransition;
+      draggableContainer = null;
+      document.body.style.userSelect = "";
+
+      // 取消监听事件
+      document.body.removeEventListener("mousemove", onMousemove);
+      document.body.removeEventListener("mouseup", onMouseup);
+    }
+  </script>
+</body>
+
+</html>
+```
+
+### 拖拽传输数据和文件上传
+
+```html
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>draggable demo</title>
+</head>
+
+<style>
+  .container {
+    width: 200px;
+    height: 200px;
+    margin: 50px 0;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    overflow: hidden;
+    box-sizing: border-box;
+    /* padding: 10px; */
+    position: relative;
+  }
+</style>
+
+<body>
+  <div class="container"></div>
+
+  <p draggable="true" class="text">我是一段可拖拽的文本</p>
+
+  <script type="module">
+    const container = document.querySelector(".container");
+    const text = document.querySelector(".text");
+
+    // 开始拖拽
+    text.addEventListener("dragstart", (e) => {
+      console.log("dragStart: ", e);
+
+      // 设置要传输的数据
+      e.dataTransfer.setData('data', "拖拽数据");
+
+      // 设置拖动元素的样式
+      const img = document.createElement("img");
+      img.src = "./test.png";
+      img.setAttribute("style", "width: 40px; height: 40px;");
+      e.dataTransfer.setDragImage(img, 0, 0);
+    });
+
+    // 被别的拖拽进入
+    container.addEventListener("dragenter", (e) => {
+      e.target.style.border = "6px dashed #ccc";
+      console.log("dragenter", e);
+    });
+
+    // 当拖动的元素位于目标元素之上时持续触发
+    container.addEventListener("dragover", (e) => {
+      // console.log("dragOver: ", e);
+
+      // 阻止默认行为
+      e.preventDefault();
+    });
+
+    // 元素离开拖放目标范围
+    container.addEventListener("dragleave", (e) => {
+      e.target.style.border = '';
+      console.log("dragleave", e);
+    });
+
+    // 被拖动放置后调用
+    container.addEventListener('drop', (e) => {
+      console.log("drop: ", e);
+
+      // 阻止默认行为
+      e.preventDefault();
+
+      // 获取拖拽数据
+      const data = e.dataTransfer.getData('data');
+      if (data) {
+        console.log("data: ", data);
+      }
+
+
+      // 获取拖放的文件列表
+      const files = event.dataTransfer.files;
+
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        console.log(`file${i + 1}`, file);
+      }
+    });
+
+  </script>
+</body>
+
+</html>
+```
+
 
 
 ## File

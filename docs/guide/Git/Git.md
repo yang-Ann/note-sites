@@ -95,15 +95,18 @@ git init dirname # 在指定目录初始化git仓库
 #### 状态查看
 
 ```shell
-git status   #查看工作区、暂存区状态
-git status -s #简洁查看
+git status   # 查看工作区、暂存区状态
+git status -s # 简洁查看
 ```
 
-#### 添加
+#### 暂存区操作
 
 ```shell
-git add 文件名  #将工作区的指定文件添加到暂存区
-git add . #将工作区的所有文件添加到暂存区
+git add 文件名  # 将工作区的指定文件添加到暂存区
+git add . # 将工作区的所有文件添加到暂存区
+
+git rm --cached 文件名  # 将指定的暂存区文件恢复到工作区
+git rm -r --cached . # 将暂存区所有的文件恢复到工作区
 ```
 
 #### 换行符问题
@@ -136,6 +139,9 @@ git commit -m "内容日志" 文件名 #将暂存区内容提交到本地库
 ```sh
 # git push 别名 远程分支名
 git push origin master
+
+# 将本地的 master 分支的内容提交到 origin 别名的远程仓库的 main 分支中
+git push origin master:main
 
 # 首次提交
 git push origin master-u
@@ -190,12 +196,6 @@ doc/*.txt    # 会忽略 doc/* 下所有的 .txt 文件, 但不包括 doc/*/*.tx
 
 - `.gitignore` 这个文件本身会提交到版本库中去, 用来保存的是公共的需要排除的文件
 - `.git/info/exclude` 里设置的则是自己本地需要排除的文件, 它不会影响到其他人, 也不会提交到版本库中
-
-也可以删除已经提交了的文件缓存
-
-```sh
-git rm -r --cached unpackage
-```
 
 #### 查看记录
 
@@ -257,6 +257,7 @@ git reset HEAD index.html #将index.html文件从暂存区清除
 git reset HEAD . #将所有文件从暂存区清除
 
 git rm --cached README.MD # 删除暂存区的某个文本(保存到工作区)
+git rm --cached -r . # 删除暂存区的某个文本(保存到工作区)
 ```
 
 #### 撤销操作
