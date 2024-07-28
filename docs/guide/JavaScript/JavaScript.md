@@ -9061,3 +9061,148 @@ created() {
 "C:\Program Files\Google\Chrome\Application\chrome.exe" --disable-site-isolation-trials --disable-web-security --disable-features=SameSiteByDefaultCookies,CookiesWithoutSameSiteMustBeSecure --user-data-dir="D:\ChromeDevUserData"
 ```
 
+## JSDoc
+
+[JSDoc](https://www.jsdoc.com.cn/)是一个用于 JavaScript 的API文档生成器，类似于 Javadoc 或 phpDocumentor。将文档注释直接添加到源代码中，可以为代码添加类型信息，也可以为源代码生成一个 HTML 文档网站
+
+>   VS Code默认是支持JSDdoc的
+
+### 基本使用
+
+下面是一个JSDoc的简单使用: 
+
+```js
+/**
+ * 名称
+ */
+const myName = "张三";
+```
+
+VS Code默认支持JSDoc, 会提供鼠标悬浮提示, 类型提示等功能, 如下: 
+
+类型提示:
+
+![image-20240728131158683](./images/image-20240728131158683.png) 
+
+鼠标悬浮提示: 
+
+![image-20240728131053131](./images/image-20240728131053131.png) 
+
+描述说明支持markdown语法, 如下: 
+
+```js
+/**
+ * # 一级标题
+ * ## 二级标题
+ * ### 三级标题
+ * #### 四级标题
+ * ##### 五级标题
+ * ###### 六级标题
+ * 
+ * - 无序列表1
+ * - 无序列表2
+ * - 无序列表3
+ * 
+ * 1. 有序列表1
+ * 2. 有序列表2
+ * 3. 有序列表3
+ * 
+ * **加粗**
+ * *斜体*
+ * `高亮`
+ * 
+ * - js代码块
+ * ```js
+ * const msg = "hello js";
+ * console.log(msg);
+ * ```
+ * 
+ * - go代码块
+ * ```go
+ * msg := "hello golang"
+ * println(msg)
+ * ```
+ * 
+ * [链接](https://baidu.com)
+ *
+ * --- 
+ * 
+ * ![图片](https://img1.baidu.com/it/u=687905698,132062380&fm=253&app=120&size=w931&n=0&f=JPEG&fmt=auto?sec=1722272400&t=c596da4cac32e3223d6a10f66cdce330)
+ */
+const testMarkdownJSDoc = "";
+```
+
+渲染效果:
+
+![image-20240728143523657](./images/image-20240728143523657.png) 
+
+### 类型标注
+
+```js
+/**
+ * 相加
+ * @param {number} a 一个数
+ * @param {number} b 两个数
+ * @returns {number} 两数之和
+ */
+function add1(a, b) {
+  return a + b;
+}
+// 等价于ts类型: function add1(a: number, b: number): number
+
+/**
+ * 相加
+ * @param {...number} args 操作数
+ * @returns {number} 相加之和
+ */
+function add2(...args) {
+  return args.reduce((pre, cur) => pre + cur, 0);
+}
+// 等价于ts类型: function add2(...args: number[]): number
+
+/**
+ * 获取信息
+ * @returns {{name: string; age: number}} 相加之和
+ */
+function getInfo() {
+  return {
+    name: "张三",
+    age: 18,
+  }
+}
+// 等价于ts类型: function getInfo(): { name: string; age: number; }
+
+
+/** @type {number} */
+let a1;
+// 等价于ts类型: let a1: number;
+
+/** @type {string[]} */
+let a2;
+// 等价于ts类型: a2: string[]
+
+/** @type {{name: string; age?: number}} */
+let a3;
+// 等价于ts类型: a3: { name: string; age?: number }
+
+/** 
+ * 对象类型
+ * @type {{name: string; age?: number; sex: '0' | '1'; foo: string[]; bar: {a: number; b: boolean} }}
+ */
+const obj1 = {};
+/*
+
+等价于ts类型: 
+{
+  name: string;
+  age?: number;
+  sex: '0' | '1';
+  foo: string[];
+  bar: {
+    a: number;
+    b: boolean;
+  };
+}
+*/
+```
+
