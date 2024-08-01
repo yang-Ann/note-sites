@@ -2491,6 +2491,33 @@ const static: JQueryStatic = {
 }
 ```
 
+##### 扩展为构造函数
+
+有时在使用第三方SDK时, 会在全局提供一些对象, 有些对象的类型是一个构造函数, 如下: 
+
+```ts
+interface Window {
+	SignServer: {
+		foo: string;
+
+		/** 构造函数类型 */
+		new (name: string, age: number): { // 花括号内写实例的类型
+			bar: string;
+			getName: () => string;
+			setName: (name: string) => void;
+		};
+	};
+}
+
+window.SignServer.foo;
+
+const signServer = new window.SignServer("张三", 18);
+
+signServer.bar;
+signServer.getName();
+signServer.setName("李四");
+```
+
 #### 在 npm 包或 UMD 库中扩展全局变量
 
 对于一个 npm 包或者 UMD 库的声明文件, 只有`export`导出的类型声明才能被导入。所以对于 npm 包或 UMD 库, 如果导入此库之后会扩展全局变量, 则需要使用另一种语法在声明文件中扩展全局变量的类型, 那就是`declare global`

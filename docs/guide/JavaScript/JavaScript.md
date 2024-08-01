@@ -9206,3 +9206,117 @@ const obj1 = {};
 */
 ```
 
+### 废弃标注
+
+在JSDoc中可以使用`@deprecated`标签指明一个标识在代码中已经被弃用
+
+```js
+const obj = {
+  /**
+   * 打印方法
+   * 
+   * @deprecated 从 v10.0.0 开始使用 `obj.newPrint()` 代替
+   */
+  print() {},
+  newPrint() {},
+};
+```
+
+VSCode的类型会画一个横线提示弃用, 如下: 
+
+![image-20240801200928949](./images/image-20240801200928949.png) 
+
+### 内联跳转标签
+
+使用`{@link xxx}`可以创建一个跳转标签, 支持单文件内跳转和外部url跳转
+
+```js
+/**
+ * 内联跳转
+ * 
+ * - 跳转到变量 {@link foo}
+ * - 跳转到属性 {@link bar.name}
+ * - 跳转都连接 {@link https://github.com GitHub} 或者 {@link http://www.google.com|Google}
+ * - 跳转都连接(markdown 写法) [GitHub](https://github.com) 或者 [Google](http://www.google.com)
+ */
+function myFunction() { }
+
+
+const foo = "";
+
+
+const bar = {
+  name: "",
+}
+```
+
+VSCdoe会自动生成跳转的连接
+
+![image-20240801204912664](./images/image-20240801204912664.png) 
+
+### 指定this的类型
+
+可以通过`@constructor`+`@this`指定特定的构造函数类型
+
+```js
+/** @constructor */
+function Greeter(name) {
+  setName.apply(this, name);
+}
+
+Greeter.prototype.name = "";
+
+/** @this Greeter 指定为 {@link Greeter} 的类型 */
+function setName(name) {
+  this.name = name;
+}
+```
+
+![image-20240801205855271](./images/image-20240801205855271.png) 
+
+或者使用`@this`手动指定类型
+
+```js
+/** 
+ * @this {{name: string; age: number; sex: '1' | '2'}} 手动指定 this 的类型
+ */
+function setName(name) {
+  this.name = name;
+  this.age = 18;
+}
+```
+
+![image-20240801210016008](./images/image-20240801210016008.png) 
+
+### 声明可以复用的类型
+
+`@typedef` 标签在描述自定义类型时是很有用的，特别是如果你要反复引用它们的时候。这些类型可以在其它标签内使用，如 `@type` 和 `@param`
+
+```js
+/**
+ * 操作数
+ * @typedef {(number|string)} NumberLike
+ * 
+ * 用户类型
+ * @typedef {{ name: string; age: number; }} User
+ */
+
+/** 
+ * 获取用户信息
+ * @param {NumberLike} num
+ * @returns {User}
+ */
+function getUser(num) {}
+// 等价于 ts类型: function getUser(num: NumberLike): User
+
+
+/**
+ * 类型可以直接做合并操作, 类似于ts
+ * @type {User & {sex: '1' | '2'; getName: () => string}}
+ */
+const obj = {};
+
+obj.sex = '1';
+const name = obj.getName();
+```
+

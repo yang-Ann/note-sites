@@ -1195,6 +1195,205 @@ mix-width 视口的最大宽度 （视口小于指定宽度时生效）
 
 `content` 属性一般与 `:before` 及 `:after` 伪元素配合使用，来插入生成内容
 
+## 主题切换
+
+CSS主题切换一般都是利用css变量实现的
+
+### 白天黑夜切换
+
+#### `:has` 配合 `:checked`基本实现
+
+```html
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>theme switch</title>
+</head>
+
+<style>
+  :root {
+    --bg: aliceblue;
+    --color: #000;
+  }
+
+  /* 这里直接用 :has 配合 :checked 来动态匹配当前选中项, 然后改变CSS变量 */
+  :has(#light:checked) {
+    body {
+      --bg: aliceblue;
+      --color: #000;
+    }
+  }
+
+  :has(#dark:checked) {
+    body {
+      --bg: #000;
+      --color: #fff;
+    }
+  }
+
+  /* 利用媒体查询自动跟随系统主题色, 也就是 prefers-color-scheme */
+  @media (prefers-color-scheme: light) {
+    :has(#auto:checked) {
+      body {
+        --bg: aliceblue;
+        --color: #000;
+      }
+    }
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :has(#auto:checked) {
+      body {
+        --bg: #000;
+        --color: #fff;
+      }
+    }
+  }
+
+  /* 样式都使用 css 变量 */
+  body {
+    background-color: var(--bg);
+    color: var(--color);
+  }
+</style>
+
+<body>
+  <fieldset>
+    <input type="radio" name="theme" value="light" id="light" checked> <label for="light">白天</label>
+    <input type="radio" name="theme" value="dark" id="dark"> <label for="dark">黑夜</label>
+    <input type="radio" name="theme" value="auto" id="auto"> <label for="auto">自动</label>
+  </fieldset>
+  <h1>css 主题切换</h1>
+</body>
+
+</html>
+```
+
+#### 通过`color-scheme`实现
+
+```html
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>theme switch</title>
+</head>
+
+<style>
+  :root {
+    --bg: light-dark(aliceblue, #000);
+    --color: light-dark(#000, #fff);
+  }
+
+  /* 白天模式 */
+  :has(#light:checked) {
+    body {
+      color-scheme: light;
+    }
+  }
+
+  /* 黑夜模式 */
+  :has(#dark:checked) {
+    body {
+      color-scheme: dark;
+    }
+  }
+
+  /* 自动模式 */
+  :has(#auto:checked) {
+    body {
+      color-scheme: light dark;
+    }
+  }
+
+  body {
+    background-color: var(--bg);
+    color: var(--color);
+  }
+</style>
+
+<body>
+  <fieldset>
+    <input type="radio" name="theme" value="light" id="light" checked> <label for="light">白天</label>
+    <input type="radio" name="theme" value="dark" id="dark"> <label for="dark">黑夜</label>
+    <input type="radio" name="theme" value="auto" id="auto"> <label for="auto">自动</label>
+  </fieldset>
+  <h1>css 主题切换</h1>
+</body>
+
+</html>
+```
+
+### `light-dark`主题色切换
+
+```html
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>theme switch</title>
+</head>
+
+<style>
+  :root {
+    --color: #000;
+    --primary-red: light-dark(rgb(255, 69, 69), rgb(119, 2, 2));
+    --primary-blue: light-dark(rgb(0, 68, 255), rgb(36, 36, 154));
+    --primary-green: light-dark(rgb(0, 214, 61), rgb(5, 94, 5));
+    --primary-color: var(--primary-red);
+  }
+
+  /* 主题色修改 */
+  :has(#red:checked) {
+    body {
+      --primary-color: var(--primary-red);
+      --color: var(--primary-blue);
+    }
+  }
+
+  :has(#blue:checked) {
+    body {
+      --primary-color: var(--primary-blue);
+      --color: var(--primary-green);
+    }
+  }
+
+  :has(#green:checked) {
+    body {
+      --primary-color: var(--primary-green);
+      --color: var(--primary-red);
+    }
+  }
+
+  /* 样式都使用 css 变量 */
+  body {
+    background-color: var(--primary-color);
+    color: var(--color);
+  }
+</style>
+
+<body>
+  <fieldset>
+    <label>主题色</label>
+    <input type="radio" name="color" value="red" id="red" checked><label for="red">红色</label>
+    <input type="radio" name="color" value="blue" id="blue"><label for="blue">蓝色</label>
+    <input type="radio" name="color" value="green" id="green"><label for="green">绿色</label>
+  </fieldset>
+  <h1>css 主题切换</h1>
+</body>
+
+</html>
+```
+
+
+
 ## 常用的css片段
 
 **固定宽度居中布局**
