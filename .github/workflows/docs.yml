@@ -1,5 +1,6 @@
 name: docs
 on:
+  workflow_dispatch:   # 新增这一行，开启手动运行功能
   push:
     branches:
       - main # 根据你的主分支名称更改
